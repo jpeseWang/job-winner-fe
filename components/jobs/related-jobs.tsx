@@ -20,9 +20,9 @@ export default function RelatedJobs({ currentJobId, category }: RelatedJobsProps
   useEffect(() => {
     const fetchRelatedJobs = async () => {
       try {
-        const allJobsResponse = await jobService.getJobs({ category })
-        const jobsArray = Array.isArray(allJobsResponse.data) ? allJobsResponse.data : []
-        const filteredJobs = jobsArray.filter((job) => job.id !== currentJobId).slice(0, 4)
+        // In a real app, you would fetch related jobs based on category or other criteria
+        const allJobs = await jobService.getJobs({ category })
+        const filteredJobs = allJobs.filter((job) => job.id !== currentJobId).slice(0, 4)
         setJobs(filteredJobs)
       } catch (error) {
         console.error("Failed to fetch related jobs:", error)

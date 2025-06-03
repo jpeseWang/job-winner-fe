@@ -5,9 +5,7 @@ import Link from "next/link"
 import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { usePathname } from "next/navigation"
-import { ThemeToggle } from "./theme-toggle"
-import JobWinnerLogo from "@/public/job-winner-logo.svg"
-import Image from "next/image"
+
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const pathname = usePathname()
@@ -21,9 +19,8 @@ export default function Header() {
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <div className="flex items-center">
           <Link href="/" className="flex items-center gap-2">
-            <div className="rounded-full w-6 h-6 flex items-center justify-center">
-              {/* <span className="text-white font-bold">J</span> */}
-              <Image src={JobWinnerLogo} alt="Job Winner Logo" className="h-8 w-8" />
+            <div className="bg-teal-500 rounded-full w-8 h-8 flex items-center justify-center">
+              <span className="text-white font-bold">J</span>
             </div>
             <span className="font-bold text-xl">Job Winner</span>
           </Link>
@@ -68,7 +65,6 @@ export default function Header() {
             Login
           </Link>
           <Button className="bg-teal-500 hover:bg-teal-600">Sign Up</Button>
-          <ThemeToggle />
         </div>
 
         <button className="md:hidden" onClick={toggleMenu}>
