@@ -28,6 +28,7 @@ export interface IUser extends Document {
   updatedAt: Date
   lastLogin?: Date
   isActive: boolean
+  company?: string
   subscription: {
     tier: SubscriptionTier
     startDate?: Date
@@ -59,7 +60,10 @@ const UserSchema = new Schema<IUser>(
     },
     password: {
       type: String,
-      required: [true, "Please provide a password"],
+      required: function (this: IUser) {
+        // Password is not required for OAuth users
+        return !this.profilePicture || this.profilePicture.indexOf("googleusercontent") === -1
+      },
       minlength: [6, "Password must be at least 6 characters"],
     },
     role: {
@@ -82,6 +86,12 @@ const UserSchema = new Schema<IUser>(
       type: Boolean,
       default: true,
     },
+    company: {
+      type: String,
+      required: function (this: IUser) {
+        return this.role === UserRole.RECRUITER
+      },
+    },
     subscription: {
       tier: {
         type: String,
@@ -102,7 +112,7 @@ const UserSchema = new Schema<IUser>(
 
 // Hash password before saving
 UserSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next()
+  if (!this.isModified("password") || !this.password) return next()
 
   try {
     const salt = await bcrypt.genSalt(10)
@@ -115,6 +125,7 @@ UserSchema.pre("save", async function (next) {
 
 // Compare password method
 UserSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
+  if (!this.password) return false
   return bcrypt.compare(candidatePassword, this.password)
 }
 

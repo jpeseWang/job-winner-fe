@@ -2,13 +2,16 @@ import JobCard from "@/components/job-card"
 import JobFilters from "@/components/job-filters"
 import CompanyCard from "@/components/company-card"
 import { Button } from "@/components/ui/button"
-import Banner from "@/components/banner"
 
 export default function JobsPage() {
   return (
     <main className="min-h-screen">
       {/* Jobs Header */}
-      <Banner title="Job Market"/>
+      <section className="bg-black text-white py-12 px-4 md:px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-4xl font-bold">Jobs</h1>
+        </div>
+      </section>
 
       {/* Jobs Content */}
       <section className="py-8 px-4 md:px-8 lg:px-16">

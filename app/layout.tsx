@@ -11,7 +11,6 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Job Winner - Find Your Dream Job Today",
   description: "A job marketplace with AI-powered CV analysis to help you land your dream job",
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({

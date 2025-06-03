@@ -10,9 +10,11 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/components/ui/use-toast"
-import { ChevronLeft, ChevronRight, Plus, Trash2, Download, Share, FileText, Wand2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, Plus, Trash2, Download, Share, FileText, Wand2, Library } from "lucide-react"
+import CVTemplateLibrary from "@/components/cv/cv-template-library"
 import CVPreview from "@/components/cv/cv-preview"
-import { generateCV } from "@/services/cvService"
+import { generateCV, generateFieldContent } from "@/services/cvService"
+import type { CVTemplate } from "@/types/interfaces"
 
 interface FormSection {
   id: string
@@ -36,6 +38,8 @@ export default function GenerateCVPage() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedCV, setGeneratedCV] = useState<any>(null)
   const [aiPrompt, setAiPrompt] = useState("")
+  const [selectedTemplate, setSelectedTemplate] = useState<CVTemplate | null>(null)
+  const [isGeneratingField, setIsGeneratingField] = useState<string | null>(null)
 
   const [sections, setSections] = useState<FormSection[]>([
     {
@@ -124,6 +128,46 @@ export default function GenerateCVPage() {
     )
   }
 
+  const handleGenerateFieldContent = async (sectionId: string, fieldId: string) => {
+    const section = sections.find((s) => s.id === sectionId)
+    const field = section?.fields.find((f) => f.id === fieldId)
+
+    if (!field) return
+
+    setIsGeneratingField(fieldId)
+
+    try {
+      // Get context from other filled fields
+      const context = sections.reduce((acc, section) => {
+        const sectionData = section.fields.reduce((fieldAcc, field) => {
+          if (field.value) {
+            return { ...fieldAcc, [field.id]: field.value }
+          }
+          return fieldAcc
+        }, {})
+        return { ...acc, [section.id]: sectionData }
+      }, {})
+
+      const result = await generateFieldContent(fieldId, field.label, context)
+
+      if (result && result.content) {
+        handleFieldChange(sectionId, fieldId, result.content)
+        toast({
+          title: "Content Generated",
+          description: `AI-generated content for ${field.label} has been added.`,
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate content. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsGeneratingField(null)
+    }
+  }
+
   const addExperienceSection = () => {
     const experienceSection = sections.find((section) => section.id === "experience")
     if (!experienceSection) return
@@ -185,7 +229,24 @@ export default function GenerateCVPage() {
     }
   }
 
+  const handleSelectTemplate = (template: CVTemplate) => {
+    setSelectedTemplate(template)
+    toast({
+      title: "Template Selected",
+      description: `You've selected the ${template.name} template.`,
+    })
+  }
+
   const handleGenerateCV = async () => {
+    if (!selectedTemplate) {
+      toast({
+        title: "Template Required",
+        description: "Please select a CV template first.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsGenerating(true)
 
     try {
@@ -198,7 +259,11 @@ export default function GenerateCVPage() {
       }, {})
 
       // Call the CV generation service
-      const result = await generateCV(formData)
+      const result = await generateCV({
+        data: formData,
+        templateId: selectedTemplate.id,
+      })
+
       setGeneratedCV(result)
 
       toast({
@@ -226,11 +291,27 @@ export default function GenerateCVPage() {
       return
     }
 
+    if (!selectedTemplate) {
+      toast({
+        title: "Template Required",
+        description: "Please select a CV template first.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsGenerating(true)
 
     try {
       // Call the AI CV generation service
-      const result = await generateCV({ prompt: aiPrompt }, true)
+      const result = await generateCV(
+        {
+          prompt: aiPrompt,
+          templateId: selectedTemplate.id,
+        },
+        true,
+      )
+
       setGeneratedCV(result)
 
       // Populate the form with AI-generated data
@@ -290,10 +371,14 @@ export default function GenerateCVPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="cv-template" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
+              <Library className="h-4 w-4" />
               CV Template
+            </TabsTrigger>
+            <TabsTrigger value="cv-editor" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              CV Editor
             </TabsTrigger>
             <TabsTrigger value="ai-resume-builder" className="flex items-center gap-2">
               <Wand2 className="h-4 w-4" />
@@ -310,6 +395,10 @@ export default function GenerateCVPage() {
           </TabsList>
 
           <TabsContent value="cv-template" className="space-y-6">
+            <CVTemplateLibrary onSelectTemplate={handleSelectTemplate} selectedTemplateId={selectedTemplate?.id} />
+          </TabsContent>
+
+          <TabsContent value="cv-editor" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div>
                 <Card>
@@ -323,7 +412,19 @@ export default function GenerateCVPage() {
                     <div className="space-y-4">
                       {sections[currentStep].fields.map((field, fieldIndex) => (
                         <div key={field.id} className="space-y-2">
-                          <Label htmlFor={field.id}>{field.label}</Label>
+                          <div className="flex justify-between items-center">
+                            <Label htmlFor={field.id}>{field.label}</Label>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleGenerateFieldContent(sections[currentStep].id, field.id)}
+                              disabled={isGeneratingField === field.id}
+                              className="h-8 px-2 text-xs"
+                            >
+                              {isGeneratingField === field.id ? "Generating..." : "Generate with AI"}
+                            </Button>
+                          </div>
                           {field.type === "textarea" ? (
                             <Textarea
                               id={field.id}
@@ -391,7 +492,7 @@ export default function GenerateCVPage() {
                       <Button
                         type="button"
                         onClick={handleGenerateCV}
-                        disabled={isGenerating}
+                        disabled={isGenerating || !selectedTemplate}
                         className="flex items-center gap-1"
                       >
                         {isGenerating ? "Generating..." : "Generate CV"}
@@ -408,7 +509,7 @@ export default function GenerateCVPage() {
                     <CardDescription>See how your CV will look</CardDescription>
                   </CardHeader>
                   <CardContent className="h-[600px] overflow-auto border rounded-md bg-white">
-                    <CVPreview data={sections} generatedCV={generatedCV} />
+                    <CVPreview data={sections} generatedCV={generatedCV} template={selectedTemplate} />
                   </CardContent>
                   <CardFooter className="flex justify-end gap-2">
                     <Button
@@ -464,7 +565,7 @@ export default function GenerateCVPage() {
                     <Button
                       type="button"
                       onClick={handleGenerateWithAI}
-                      disabled={isGenerating || !aiPrompt}
+                      disabled={isGenerating || !aiPrompt || !selectedTemplate}
                       className="w-full flex items-center gap-1"
                     >
                       <Wand2 className="h-4 w-4" />
@@ -481,7 +582,7 @@ export default function GenerateCVPage() {
                     <CardDescription>See how your CV will look</CardDescription>
                   </CardHeader>
                   <CardContent className="h-[600px] overflow-auto border rounded-md bg-white">
-                    <CVPreview data={sections} generatedCV={generatedCV} />
+                    <CVPreview data={sections} generatedCV={generatedCV} template={selectedTemplate} />
                   </CardContent>
                   <CardFooter className="flex justify-end gap-2">
                     <Button

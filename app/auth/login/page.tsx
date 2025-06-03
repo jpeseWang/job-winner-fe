@@ -3,20 +3,22 @@
 import type React from "react"
 
 import { useState } from "react"
+import { signIn, getSession } from "next-auth/react"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
-import { Eye, EyeOff, Mail, Lock, Briefcase, User } from "lucide-react"
-import { useToast } from "@/components/ui/use-toast"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Eye, EyeOff, Mail, Lock, Briefcase, User, AlertCircle } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -25,6 +27,9 @@ export default function LoginPage() {
     email: "",
     password: "",
   })
+
+  const error = searchParams.get("error")
+  const callbackUrl = searchParams.get("callbackUrl") || "/"
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -37,10 +42,9 @@ export default function LoginPage() {
 
     try {
       const result = await signIn("credentials", {
-        redirect: false,
         email: formData.email,
         password: formData.password,
-        userType,
+        redirect: false,
       })
 
       if (result?.error) {
@@ -55,17 +59,37 @@ export default function LoginPage() {
           description: "Welcome back to Job Winner!",
         })
 
-        // Redirect based on user type
-        if (userType === "job_seeker") {
-          router.push("/dashboard/job-seeker")
-        } else {
+        // Get updated session to check user role
+        const session = await getSession()
+
+        // Redirect based on user role or callback URL
+        if (session?.user?.role === "admin") {
+          router.push("/dashboard/admin")
+        } else if (session?.user?.role === "recruiter") {
           router.push("/dashboard/recruiter")
+        } else {
+          router.push("/dashboard/job-seeker")
         }
       }
     } catch (error) {
       toast({
         title: "Login failed",
         description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true)
+    try {
+      await signIn("google", { callbackUrl })
+    } catch (error) {
+      toast({
+        title: "Google sign-in failed",
+        description: "Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -83,6 +107,17 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {error && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                {error === "CredentialsSignin"
+                  ? "Invalid email or password. Please try again."
+                  : "An error occurred during sign in. Please try again."}
+              </AlertDescription>
+            </Alert>
+          )}
+
           <Tabs defaultValue="job_seeker" onValueChange={(value) => setUserType(value as "job_seeker" | "recruiter")}>
             <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="job_seeker" className="flex items-center gap-2">
@@ -109,6 +144,7 @@ export default function LoginPage() {
                     value={formData.email}
                     onChange={handleChange}
                     required
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -131,11 +167,13 @@ export default function LoginPage() {
                     value={formData.password}
                     onChange={handleChange}
                     required
+                    disabled={isLoading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                    disabled={isLoading}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -158,8 +196,14 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <Button variant="outline" type="button" className="w-full">
+            <div className="mt-6">
+              <Button
+                variant="outline"
+                type="button"
+                className="w-full"
+                onClick={handleGoogleSignIn}
+                disabled={isLoading}
+              >
                 <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
                   <path
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -179,17 +223,7 @@ export default function LoginPage() {
                   />
                   <path d="M1 1h22v22H1z" fill="none" />
                 </svg>
-                Google
-              </Button>
-              <Button variant="outline" type="button" className="w-full">
-                <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M10 0C4.477 0 0 4.477 0 10c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V19c0 .27.16.59.67.5C17.14 18.16 20 14.42 20 10A10 10 0 0010 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                GitHub
+                Continue with Google
               </Button>
             </div>
           </div>

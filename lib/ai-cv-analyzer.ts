@@ -1,5 +1,5 @@
-// This is a mock implementation of the AI CV analyzer
 export async function analyzeCV(file: File): Promise<any> {
+  // In a real implementation, you would:
   // 1. Extract text from the CV file (PDF/DOC)
   // 2. Use AI to analyze the content
   // 3. Return structured data
@@ -7,7 +7,7 @@ export async function analyzeCV(file: File): Promise<any> {
   // For demo purposes, we'll simulate the analysis with a delay
   await new Promise((resolve) => setTimeout(resolve, 3000))
 
-  //Sample
+  // This would be the actual AI analysis in a real implementation
   // const { text } = await generateText({
   //   model: openai('gpt-4o'),
   //   prompt: `Analyze this CV and extract key information: ${cvText}`,

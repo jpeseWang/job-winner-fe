@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { Search, MoreVertical, Eye, Download, CheckCircle, XCircle, Clock, MessageSquare, Calendar } from "lucide-react"
-import { useApplications } from "@/hooks"
+import { useApplications } from "@/hooks/index"
 import { ApplicationStatus } from "@/types/enums"
 import { formatDate } from "@/utils"
 import { APPLICATION_STATUSES, DEFAULT_AVATAR } from "@/constants"
