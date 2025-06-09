@@ -12,17 +12,18 @@ export async function POST(request: Request) {
 
     await dbConnect()
 
-    const user = await User.findOne({ verificationToken: token })
+    const user = await User.findOne({ verificationToken: token, verificationExpires: { $gt: Date.now() }, })
 
     if (!user) {
       return NextResponse.json({ error: "Invalid or expired verification token" }, { status: 400 })
     }
 
     // Update user verification status
-    await User.findByIdAndUpdate(user._id, {
-      isVerified: true,
-      verificationToken: undefined,
-    })
+    await User.findOneAndUpdate(
+      { verificationToken: token.trim(), verificationExpires: { $gt: new Date() } },
+      { $set: { isVerified: true }, $unset: { verificationToken: 1, verificationExpires: 1 } },
+      { new: true }
+    )
 
     return NextResponse.json({ message: "Email verified successfully" }, { status: 200 })
   } catch (error) {

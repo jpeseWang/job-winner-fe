@@ -61,10 +61,13 @@ export default function Header() {
         </div>
 
         <div className="hidden md:flex items-center space-x-4">
-          <Link href="/login" className="text-white hover:text-teal-400 transition">
+          <Link href="/auth/login" className="text-white hover:text-teal-400 transition">
             Login
           </Link>
-          <Button className="bg-teal-500 hover:bg-teal-600">Sign Up</Button>
+          <Link href="/auth/register">
+            <Button className="bg-teal-500 hover:bg-teal-600">Sign Up</Button>
+          </Link>
+
         </div>
 
         <button className="md:hidden" onClick={toggleMenu}>
@@ -118,15 +121,15 @@ export default function Header() {
 
           <div className="mt-6 flex flex-col space-y-4">
             <Link
-              href="/login"
+              href="/auth/login"
               className="text-white hover:text-teal-400 transition"
               onClick={() => setIsMenuOpen(false)}
             >
               Login
             </Link>
-            <Button className="bg-teal-500 hover:bg-teal-600" onClick={() => setIsMenuOpen(false)}>
-              Sign Up
-            </Button>
+            <Link href="/auth/register" onClick={() => setIsMenuOpen(false)}>
+              <Button className="bg-teal-500 hover:bg-teal-600">Sign Up</Button>
+            </Link>
           </div>
         </div>
       )}

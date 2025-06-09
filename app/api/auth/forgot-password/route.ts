@@ -1,54 +1,42 @@
 import { NextResponse } from "next/server"
+import crypto from "crypto"
 import dbConnect from "@/lib/db"
 import User from "@/models/User"
 import { sendPasswordResetEmail } from "@/lib/email"
-import crypto from "crypto"
 
 export async function POST(request: Request) {
   try {
     const { email } = await request.json()
 
-    if (!email) {
-      return NextResponse.json({ error: "Email is required" }, { status: 400 })
-    }
+    // luôn trả 200 để tránh dò email
+    const genericSuccess = NextResponse.json(
+      { message: "If that account exists, a password-reset link has been sent." },
+      { status: 200 },
+    )
+
+    if (!email || typeof email !== "string") return genericSuccess
 
     await dbConnect()
 
-    const user = await User.findOne({ email: email.toLowerCase() })
+    const user = await User.findOne({ email: email.toLowerCase().trim() })
+    if (!user) return genericSuccess
 
-    if (!user) {
-      // Don't reveal if user exists or not for security
-      return NextResponse.json(
-        { message: "If an account with that email exists, we've sent a password reset link." },
-        { status: 200 },
-      )
-    }
+    // sinh token thô và hash để lưu
+    const rawToken = crypto.randomBytes(32).toString("hex")
+    const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex")
+    const expires = new Date(Date.now() + 60 * 60 * 1000) // 1 giờ
 
-    // Generate reset token
-    const resetToken = crypto.randomBytes(32).toString("hex")
-    const resetTokenExpires = new Date(Date.now() + 3600000) // 1 hour
+    // ghi đè token cũ (nếu có)
+    user.resetPasswordToken = hashedToken
+    user.resetPasswordExpires = expires
+    await user.save()
 
-    // Save reset token
-    await User.findByIdAndUpdate(user._id, {
-      resetPasswordToken: resetToken,
-      resetPasswordExpires: resetTokenExpires,
-    })
+    // gửi email
+    await sendPasswordResetEmail(user.email, user.name, rawToken)
 
-    // Send reset email (in production)
-    if (process.env.NODE_ENV === "production") {
-      try {
-        await sendPasswordResetEmail(user.email, user.name, resetToken)
-      } catch (emailError) {
-        console.error("Failed to send password reset email:", emailError)
-      }
-    }
-
-    return NextResponse.json(
-      { message: "If an account with that email exists, we've sent a password reset link." },
-      { status: 200 },
-    )
-  } catch (error) {
-    console.error("Forgot password error:", error)
+    return genericSuccess
+  } catch (err) {
+    console.error("Forgot-password error:", err)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

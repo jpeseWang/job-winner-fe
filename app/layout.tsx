@@ -5,6 +5,7 @@ import { Inter } from "next/font/google"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
 import { ThemeProvider } from "@/components/theme-provider"
+import ThemeClientOnly from "@/components/themeClientOnly"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -21,13 +22,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="light">
-          <div className="flex flex-col min-h-screen">
-            <Header />
-            <div className="flex-grow">{children}</div>
-            <Footer />
-          </div>
-        </ThemeProvider>
+        <ThemeClientOnly>
+          <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+            <div className="flex flex-col min-h-screen">
+              <Header />
+              <div className="flex-grow">{children}</div>
+              <Footer />
+            </div>
+          </ThemeProvider>
+        </ThemeClientOnly>
       </body>
     </html>
   )

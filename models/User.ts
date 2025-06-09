@@ -22,6 +22,7 @@ export interface IUser extends Document {
   profilePicture?: string
   isVerified: boolean
   verificationToken?: string
+  verificationExpires?: Date
   resetPasswordToken?: string
   resetPasswordExpires?: Date
   createdAt: Date
@@ -79,6 +80,7 @@ const UserSchema = new Schema<IUser>(
       default: false,
     },
     verificationToken: String,
+    verificationExpires: Date,
     resetPasswordToken: String,
     resetPasswordExpires: Date,
     lastLogin: Date,
