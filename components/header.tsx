@@ -5,15 +5,16 @@ import Link from "next/link"
 import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { usePathname } from "next/navigation"
-
+import { useSession, signIn, signOut } from "next-auth/react"
 export default function Header() {
+  const { data: session, status } = useSession()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const pathname = usePathname()
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
   }
-
+  console.log("Session:", session)
   return (
     <header className="bg-black text-white py-4 px-4 md:px-8 lg:px-16">
       <div className="max-w-7xl mx-auto flex justify-between items-center">

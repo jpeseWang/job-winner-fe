@@ -8,22 +8,22 @@ export default function GoogleRedirect() {
 
   useEffect(() => {
     const setRole = async () => {
-        const role = params.get("role")
-        await fetch("/api/set-role", {
-            method: "POST",
-            headers: {
-            "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ role }),
+      const role = params.get("role")
+      await fetch("/api/set-role", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ role }),
       })
 
-      router.push("/dashboard/job-seeker") 
+      router.push("/dashboard/job-seeker/proposals")
     }
 
     setRole()
   }, [])
 
   return <div className="flex h-screen items-center justify-center bg-white text-gray-500 text-sm">
-      <span>Logging in, please wait...</span>
-    </div>
+    <span>Logging in, please wait...</span>
+  </div>
 }

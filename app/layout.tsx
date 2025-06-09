@@ -6,6 +6,7 @@ import Header from "@/components/header"
 import Footer from "@/components/footer"
 import { ThemeProvider } from "@/components/theme-provider"
 import ThemeClientOnly from "@/components/themeClientOnly"
+import { Providers } from "./providers"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -22,15 +23,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ThemeClientOnly>
-          <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-            <div className="flex flex-col min-h-screen">
-              <Header />
-              <div className="flex-grow">{children}</div>
-              <Footer />
-            </div>
-          </ThemeProvider>
-        </ThemeClientOnly>
+        <Providers>
+          <ThemeClientOnly>
+            <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+              <div className="flex flex-col min-h-screen">
+                <Header />
+                <div className="flex-grow">{children}</div>
+                <Footer />
+              </div>
+            </ThemeProvider>
+          </ThemeClientOnly>
+        </Providers>
       </body>
     </html>
   )
