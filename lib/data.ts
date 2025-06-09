@@ -1,5 +1,3 @@
-// Mock data for the job marketplace
-
 export const jobs = [
   {
     id: "1",

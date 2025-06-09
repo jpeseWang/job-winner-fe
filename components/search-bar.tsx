@@ -32,7 +32,7 @@ export default function SearchBar() {
           <input
             type="text"
             placeholder="Job Title or Keywords"
-            className="w-full focus:outline-none bg-white"
+            className="w-full focus:outline-none"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
           />
@@ -43,7 +43,7 @@ export default function SearchBar() {
           <input
             type="text"
             placeholder="Location"
-            className="w-full focus:outline-none bg-white"
+            className="w-full focus:outline-none"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
           />
@@ -52,7 +52,7 @@ export default function SearchBar() {
         <div className="flex items-center p-2 flex-1">
           <Briefcase className="h-5 w-5 text-gray-400 mr-2" />
           <select
-            className="w-full focus:outline-none bg-transparent text-gray-400"
+            className="w-full focus:outline-none bg-transparent"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
           >
@@ -65,7 +65,7 @@ export default function SearchBar() {
           </select>
         </div>
 
-        <Button type="submit" className="bg-teal-500 text-white hover:bg-teal-600 mt-2 md:mt-0 md:ml-2">
+        <Button type="submit" className="bg-teal-500 hover:bg-teal-600 mt-2 md:mt-0 md:ml-2">
           Search Job
         </Button>
       </div>

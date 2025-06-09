@@ -5,25 +5,23 @@ import Link from "next/link"
 import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { usePathname } from "next/navigation"
-import { ThemeToggle } from "./theme-toggle"
-import JobWinnerLogo from "@/public/job-winner-logo.svg"
-import Image from "next/image"
+import { useSession, signIn, signOut } from "next-auth/react"
 export default function Header() {
+  const { data: session, status } = useSession()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const pathname = usePathname()
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
   }
-
+  console.log("Session:", session)
   return (
     <header className="bg-black text-white py-4 px-4 md:px-8 lg:px-16">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <div className="flex items-center">
           <Link href="/" className="flex items-center gap-2">
-            <div className="rounded-full w-6 h-6 flex items-center justify-center">
-              {/* <span className="text-white font-bold">J</span> */}
-              <Image src={JobWinnerLogo} alt="Job Winner Logo" className="h-8 w-8" />
+            <div className="bg-teal-500 rounded-full w-8 h-8 flex items-center justify-center">
+              <span className="text-white font-bold">J</span>
             </div>
             <span className="font-bold text-xl">Job Winner</span>
           </Link>
@@ -64,11 +62,13 @@ export default function Header() {
         </div>
 
         <div className="hidden md:flex items-center space-x-4">
-          <Link href="/login" className="text-white hover:text-teal-400 transition">
+          <Link href="/auth/login" className="text-white hover:text-teal-400 transition">
             Login
           </Link>
-          <Button className="bg-teal-500 hover:bg-teal-600">Sign Up</Button>
-          <ThemeToggle />
+          <Link href="/auth/register">
+            <Button className="bg-teal-500 hover:bg-teal-600">Sign Up</Button>
+          </Link>
+
         </div>
 
         <button className="md:hidden" onClick={toggleMenu}>
@@ -122,15 +122,15 @@ export default function Header() {
 
           <div className="mt-6 flex flex-col space-y-4">
             <Link
-              href="/login"
+              href="/auth/login"
               className="text-white hover:text-teal-400 transition"
               onClick={() => setIsMenuOpen(false)}
             >
               Login
             </Link>
-            <Button className="bg-teal-500 hover:bg-teal-600" onClick={() => setIsMenuOpen(false)}>
-              Sign Up
-            </Button>
+            <Link href="/auth/register" onClick={() => setIsMenuOpen(false)}>
+              <Button className="bg-teal-500 hover:bg-teal-600">Sign Up</Button>
+            </Link>
           </div>
         </div>
       )}

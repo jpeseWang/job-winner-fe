@@ -1,49 +1,101 @@
 import { NextResponse } from "next/server"
-import { userService } from "@/services"
-import { validateUser } from "@/utils/validators"
+import dbConnect from "@/lib/db"
+import User from "@/models/User"
+import { sendVerificationEmail } from "@/lib/email" 
+import crypto from "crypto"
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
+    const { name, email, password, role = "job_seeker", company } = await request.json()
 
-    // Validate user data
-    const { data, errors } = validateUser(body)
-
-    if (errors) {
-      return NextResponse.json({ error: errors[0].message }, { status: 400 })
+    // Validate required fields
+    if (!name || !email || !password) {
+      return NextResponse.json({ error: "Name, email, and password are required" }, { status: 400 })
     }
 
-    // Check if user already exists
-    const existingUser = await userService.getUserByEmail(body.email)
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return NextResponse.json({ error: "Please provide a valid email address" }, { status: 400 })
+    }
 
+    // Validate password strength
+    if (password.length < 6) {
+      return NextResponse.json({ error: "Password must be at least 6 characters long" }, { status: 400 })
+    }
+
+    // Validate role
+    const validRoles = ["job_seeker", "recruiter", "admin"]
+    if (!validRoles.includes(role)) {
+      return NextResponse.json({ error: "Invalid role specified" }, { status: 400 })
+    }
+
+    // Validate company for recruiters
+    if (role === "recruiter" && !company) {
+      return NextResponse.json({ error: "Company name is required for recruiters" }, { status: 400 })
+    }
+
+    await dbConnect()
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email: email.toLowerCase() })
     if (existingUser) {
       return NextResponse.json({ error: "User with this email already exists" }, { status: 409 })
     }
 
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(32).toString("hex")
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000)
+
     // Create user
-    const newUser = await userService.createUser({
-      name: body.name,
-      email: body.email,
-      password: body.password, // In a real app, this would be hashed
-      role: body.role,
-      company: body.company,
+    const userData: any = {
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
+      password,
+      role,
+      verificationToken,
+      verificationExpires,
+      isVerified: false,
+      isActive: true,
+    }
+
+    // Add company for recruiters
+    if (role === "recruiter" && company) {
+      userData.company = company.trim()
+    }
+
+    const user = await User.create({
+      ...userData,
     })
 
-    // Return success response without sensitive data
+    // Gửi email xác thực
+    try {
+      await sendVerificationEmail(user.email, user.name, verificationToken)
+    } catch (emailError) {
+      console.error("Failed to send verification email:", emailError)
+    }
+
+    // Return success response (exclude sensitive data)
     return NextResponse.json(
       {
-        id: newUser.id,
-        name: newUser.name,
-        email: newUser.email,
-        role: newUser.role,
+        message: "User registered successfully",
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          isVerified: user.isVerified,
+        },
       },
       { status: 201 },
     )
   } catch (error) {
     console.error("Registration error:", error)
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to register user" },
-      { status: 500 },
-    )
+
+    if (error instanceof Error) {
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

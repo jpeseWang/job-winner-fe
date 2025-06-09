@@ -34,7 +34,7 @@ export default function CategoryCard({ icon, title, jobCount }: CategoryCardProp
   return (
     <Link href={`/jobs/category/${title.toLowerCase().replace(/\s+/g, "-")}`}>
       <div className="bg-white rounded-lg p-6 text-center hover:shadow-md transition">
-        <div className="flex justify-center mb-4 text-gray-500">{getIcon()}</div>
+        <div className="flex justify-center mb-4">{getIcon()}</div>
         <h3 className="font-semibold mb-2">{title}</h3>
         <p className="text-sm text-gray-500">{jobCount} jobs</p>
       </div>

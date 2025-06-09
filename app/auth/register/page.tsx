@@ -3,8 +3,9 @@
 import type React from "react"
 
 import { useState } from "react"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { signIn, signOut } from "next-auth/react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,15 +13,15 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { Eye, EyeOff, Mail, Lock, Briefcase, User, Building } from "lucide-react"
-import { useToast } from "@/components/ui/use-toast"
-import { validateUser } from "@/utils/validators"
+import { useToast } from "@/hooks/use-toast"
 
 export default function RegisterPage() {
+  const [userType, setUserType] = useState<"job_seeker" | "recruiter">("job_seeker")
+  const [errorMessage, setErrorMessage] = useState("")
   const router = useRouter()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [userType, setUserType] = useState<"job_seeker" | "recruiter">("job_seeker")
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -36,27 +37,17 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setErrorMessage("")
 
     try {
-      // Validate form data
       const userData = {
-        ...formData,
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
         role: userType,
+        ...(userType === "recruiter" && { company: formData.company }),
       }
 
-      const { data, errors } = validateUser(userData)
-
-      if (errors) {
-        toast({
-          title: "Validation Error",
-          description: errors[0]?.message || "Please check your information and try again.",
-          variant: "destructive",
-        })
-        setIsLoading(false)
-        return
-      }
-
-      // Register user
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
@@ -68,20 +59,39 @@ export default function RegisterPage() {
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || "Registration failed")
+        const message = result?.error || "Registration failed"
+        setErrorMessage(message)
+        return
       }
 
       toast({
         title: "Registration successful",
-        description: "Your account has been created. You can now log in.",
+        description: "Please check your inbox to verify your email.",
       })
 
       // Redirect to login page
-      router.push("/auth/login")
+      router.push(`/auth/verify-email?email=${(formData.email)}`)
+    } catch (error: any) {
+      console.error("Error:", error)
+      setErrorMessage(
+        error instanceof Error ? error.message : "An unexpected error occurred. Please try again."
+      )
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleGoogleSignUp = async () => {
+    setIsLoading(true)
+    try {
+      //Đang dùng tạm để test chức năng login bằng google thôi
+      await signOut({ redirect: false })
+
+      await signIn("google", {  prompt: "select_account", callbackUrl: `http://localhost:3000/auth/google-redirect?role=${userType}`, })
     } catch (error) {
       toast({
-        title: "Registration failed",
-        description: error instanceof Error ? error.message : "An unexpected error occurred. Please try again.",
+        title: "Google sign-up failed",
+        description: "Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -96,6 +106,30 @@ export default function RegisterPage() {
           <CardTitle className="text-2xl font-bold text-center">Create an account</CardTitle>
           <CardDescription className="text-center">Enter your information to create your account</CardDescription>
         </CardHeader>
+        {errorMessage && (
+          <div className="mb-6 w-full rounded border border-red-300 bg-white-50 px-4 py-3 text-sm text-red-600 flex justify-center text-center max-w-sm mx-auto">
+            <div className="flex items-start gap-2">
+              {/* icon cảnh báo */}
+              <svg
+                className="mt-[2px] h-5 w-5 flex-shrink-0 text-red-500"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v4m0 4h.01M4.93 19h14.14a1.5 1.5 0 001.44-1.85L13.44 5.3a1.5 1.5 0 00-2.88 0L3.49 17.15A1.5 1.5 0 004.93 19z"
+                />
+              </svg>
+
+              {/* nội dung lỗi */}
+              <p className="leading-snug">{errorMessage}</p>
+            </div>
+          </div>
+        )}
+
         <CardContent>
           <Tabs defaultValue="job_seeker" onValueChange={(value) => setUserType(value as "job_seeker" | "recruiter")}>
             <TabsList className="grid w-full grid-cols-2 mb-6">
@@ -122,6 +156,7 @@ export default function RegisterPage() {
                     value={formData.name}
                     onChange={handleChange}
                     required
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -139,6 +174,7 @@ export default function RegisterPage() {
                     value={formData.email}
                     onChange={handleChange}
                     required
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -156,6 +192,7 @@ export default function RegisterPage() {
                       value={formData.company}
                       onChange={handleChange}
                       required={userType === "recruiter"}
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -174,18 +211,18 @@ export default function RegisterPage() {
                     value={formData.password}
                     onChange={handleChange}
                     required
+                    disabled={isLoading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                    disabled={isLoading}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                <p className="text-xs text-gray-500">
-                  Password must be at least 8 characters long and include a mix of letters, numbers, and symbols.
-                </p>
+                <p className="text-xs text-gray-500">Password must be at least 6 characters long.</p>
               </div>
 
               <Button type="submit" className="w-full bg-teal-600 hover:bg-teal-700" disabled={isLoading}>
@@ -204,8 +241,14 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <Button variant="outline" type="button" className="w-full">
+            <div className="mt-6">
+              <Button
+                variant="outline"
+                type="button"
+                className="w-full"
+                onClick={handleGoogleSignUp}
+                disabled={isLoading}
+              >
                 <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
                   <path
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -225,17 +268,7 @@ export default function RegisterPage() {
                   />
                   <path d="M1 1h22v22H1z" fill="none" />
                 </svg>
-                Google
-              </Button>
-              <Button variant="outline" type="button" className="w-full">
-                <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M10 0C4.477 0 0 4.477 0 10c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V19c0 .27.16.59.67.5C17.14 18.16 20 14.42 20 10A10 10 0 0010 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                GitHub
+                Continue with Google
               </Button>
             </div>
           </div>
