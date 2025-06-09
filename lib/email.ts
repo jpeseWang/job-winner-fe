@@ -1,56 +1,83 @@
-export async function sendVerificationEmail(email: string, name: string, token: string) {
-  const verificationUrl = `${process.env.NEXTAUTH_URL}/auth/verify-email?token=${token}`
+// lib/email.ts
+import nodemailer from "nodemailer"
 
-  // Mock email sending for development
-  console.log(`
-    Verification Email for ${name} (${email}):
-    Click here to verify your email: ${verificationUrl}
-  `)
+const canSend =
+  process.env.SMTP_HOST &&
+  process.env.SMTP_USER &&
+  process.env.SMTP_PASS &&
+  process.env.EMAIL_FROM
 
-  // In production, implement actual email sending:
-  /*
-  const emailData = {
-    to: email,
-    subject: "Verify your email address",
-    html: `
-      <h1>Welcome to Job Winner!</h1>
-      <p>Hi ${name},</p>
-      <p>Please click the link below to verify your email address:</p>
-      <a href="${verificationUrl}">Verify Email</a>
-      <p>If you didn't create an account, please ignore this email.</p>
-    `
+// tạo transporter chỉ khi đủ cấu hình
+const transporter = canSend
+  ? nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT || 465),
+      secure: process.env.SMTP_SECURE !== "false", // mặc định true
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    })
+  : null
+
+// 👇 helper chung
+async function _send(options: {
+  to: string
+  subject: string
+  html: string
+  text: string
+}) {
+  if (transporter) {
+    await transporter!.sendMail({ from: process.env.EMAIL_FROM, ...options })
+  } else {
+    // dev hoặc thiếu SMTP: chỉ log ra console
+    /* eslint-disable no-console */
+    console.log(`── Email (mock) ──
+To: ${options.to}
+Subject: ${options.subject}
+${options.text}
+──────────────────`)
   }
-  
-  // Send email using your preferred service
-  await emailService.send(emailData)
-  */
 }
 
-export async function sendPasswordResetEmail(email: string, name: string, token: string) {
-  const resetUrl = `${process.env.NEXTAUTH_URL}/auth/reset-password?token=${token}`
+// === VERIFY ===
+export async function sendVerificationEmail(
+  email: string,
+  name: string,
+  token: string,
+) {
+  const url = `${process.env.BASE_URL}/auth/verify-email/token?token=${token}`
 
-  // Mock email sending for development
-  console.log(`
-    Password Reset Email for ${name} (${email}):
-    Click here to reset your password: ${resetUrl}
-  `)
-
-  // In production, implement actual email sending:
-  /*
-  const emailData = {
+  await _send({
     to: email,
-    subject: "Reset your password",
+    subject: "Verify your JobWinner account",
     html: `
-      <h1>Password Reset Request</h1>
-      <p>Hi ${name},</p>
-      <p>You requested to reset your password. Click the link below to set a new password:</p>
-      <a href="${resetUrl}">Reset Password</a>
-      <p>This link will expire in 1 hour.</p>
-      <p>If you didn't request this, please ignore this email.</p>
-    `
-  }
-  
-  // Send email using your preferred service
-  await emailService.send(emailData)
-  */
+      <p>Hi ${name || "there"},</p>
+      <p>Thanks for signing up! Please confirm your email by clicking the link below:</p>
+      <p><a href="${url}" style="color:#0d9488">Verify my email</a></p>
+      <p>This link will expire in 24 hours.</p>
+    `,
+    text: `Hi ${name || ""}, Confirm your account: ${url}`,
+  })
+}
+
+// === RESET PASSWORD ===
+export async function sendPasswordResetEmail(
+  email: string,
+  name: string,
+  token: string,
+) {
+  const url = `${process.env.BASE_URL}/auth/reset-password?token=${token}`
+
+  await _send({
+    to: email,
+    subject: "Reset your JobWinner password",
+    html: `
+      <p>Hi ${name || "there"},</p>
+      <p>You requested to reset your password. Click the link below:</p>
+      <p><a href="${url}" style="color:#0d9488">Reset password</a></p>
+      <p>This link will expire in 1 hour. If you didn’t request it, just ignore this email.</p>
+    `,
+    text: `Hi ${name || ""}, Reset your password: ${url}`,
+  })
 }

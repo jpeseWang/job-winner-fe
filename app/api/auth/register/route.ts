@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import dbConnect from "@/lib/db"
 import User from "@/models/User"
-import { sendVerificationEmail } from "@/lib/email"
+import { sendVerificationEmail } from "@/lib/email" 
 import crypto from "crypto"
 
 export async function POST(request: Request) {
@@ -45,6 +45,7 @@ export async function POST(request: Request) {
 
     // Generate verification token
     const verificationToken = crypto.randomBytes(32).toString("hex")
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000)
 
     // Create user
     const userData: any = {
@@ -53,6 +54,7 @@ export async function POST(request: Request) {
       password,
       role,
       verificationToken,
+      verificationExpires,
       isVerified: false,
       isActive: true,
     }
@@ -62,16 +64,15 @@ export async function POST(request: Request) {
       userData.company = company.trim()
     }
 
-    const user = await User.create(userData)
+    const user = await User.create({
+      ...userData,
+    })
 
-    // Send verification email (in production)
-    if (process.env.NODE_ENV === "production") {
-      try {
-        await sendVerificationEmail(user.email, user.name, verificationToken)
-      } catch (emailError) {
-        console.error("Failed to send verification email:", emailError)
-        // Don't fail registration if email fails
-      }
+    // Gửi email xác thực
+    try {
+      await sendVerificationEmail(user.email, user.name, verificationToken)
+    } catch (emailError) {
+      console.error("Failed to send verification email:", emailError)
     }
 
     // Return success response (exclude sensitive data)

@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { signIn } from "next-auth/react"
+import { signIn, signOut } from "next-auth/react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,11 +16,12 @@ import { Eye, EyeOff, Mail, Lock, Briefcase, User, Building } from "lucide-react
 import { useToast } from "@/hooks/use-toast"
 
 export default function RegisterPage() {
+  const [userType, setUserType] = useState<"job_seeker" | "recruiter">("job_seeker")
+  const [errorMessage, setErrorMessage] = useState("")
   const router = useRouter()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [userType, setUserType] = useState<"job_seeker" | "recruiter">("job_seeker")
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -36,6 +37,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setErrorMessage("")
 
     try {
       const userData = {
@@ -57,22 +59,23 @@ export default function RegisterPage() {
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || "Registration failed")
+        const message = result?.error || "Registration failed"
+        setErrorMessage(message)
+        return
       }
 
       toast({
         title: "Registration successful",
-        description: "Your account has been created. You can now log in.",
+        description: "Please check your inbox to verify your email.",
       })
 
       // Redirect to login page
-      router.push("/auth/login")
-    } catch (error) {
-      toast({
-        title: "Registration failed",
-        description: error instanceof Error ? error.message : "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      })
+      router.push(`/auth/verify-email?email=${(formData.email)}`)
+    } catch (error: any) {
+      console.error("Error:", error)
+      setErrorMessage(
+        error instanceof Error ? error.message : "An unexpected error occurred. Please try again."
+      )
     } finally {
       setIsLoading(false)
     }
@@ -81,7 +84,10 @@ export default function RegisterPage() {
   const handleGoogleSignUp = async () => {
     setIsLoading(true)
     try {
-      await signIn("google", { callbackUrl: "/dashboard/job-seeker" })
+      //Đang dùng tạm để test chức năng login bằng google thôi
+      await signOut({ redirect: false })
+
+      await signIn("google", {  prompt: "select_account", callbackUrl: `http://localhost:3000/auth/google-redirect?role=${userType}`, })
     } catch (error) {
       toast({
         title: "Google sign-up failed",
@@ -100,6 +106,30 @@ export default function RegisterPage() {
           <CardTitle className="text-2xl font-bold text-center">Create an account</CardTitle>
           <CardDescription className="text-center">Enter your information to create your account</CardDescription>
         </CardHeader>
+        {errorMessage && (
+          <div className="mb-6 w-full rounded border border-red-300 bg-white-50 px-4 py-3 text-sm text-red-600 flex justify-center text-center max-w-sm mx-auto">
+            <div className="flex items-start gap-2">
+              {/* icon cảnh báo */}
+              <svg
+                className="mt-[2px] h-5 w-5 flex-shrink-0 text-red-500"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v4m0 4h.01M4.93 19h14.14a1.5 1.5 0 001.44-1.85L13.44 5.3a1.5 1.5 0 00-2.88 0L3.49 17.15A1.5 1.5 0 004.93 19z"
+                />
+              </svg>
+
+              {/* nội dung lỗi */}
+              <p className="leading-snug">{errorMessage}</p>
+            </div>
+          </div>
+        )}
+
         <CardContent>
           <Tabs defaultValue="job_seeker" onValueChange={(value) => setUserType(value as "job_seeker" | "recruiter")}>
             <TabsList className="grid w-full grid-cols-2 mb-6">
