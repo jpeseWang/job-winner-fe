@@ -10,9 +10,9 @@ export async function GET(request: Request) {
   }
 
   const target =
-    session.user.role === "admin"
+    session.user.role == "admin"
       ? "/dashboard/admin"
-      : session.user.role === "recruiter"
+      : session.user.role == "recruiter"
         ? "/dashboard/recruiter"
         : "/dashboard/job-seeker"
 
