@@ -25,7 +25,7 @@ export default function GoogleRedirect() {
           router.push("/dashboard/recruiter")
           break
         case UserRole.JOB_SEEKER:
-          router.push("/dashboard/job-seeker")
+          router.push("/dashboard/job-seeker/proposals")
           break
         default:
           router.push("/")
