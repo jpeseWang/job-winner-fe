@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mã xác thực Job Winner</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9fafb;
+      color: #374151;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #ffffff;
+    }
+    .header {
+      text-align: center;
+      padding: 20px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .logo {
+      width: 120px;
+      height: auto;
+    }
+    .content {
+      padding: 30px 20px;
+      text-align: center;
+    }
+    .verification-code {
+      font-size: 32px;
+      font-weight: bold;
+      letter-spacing: 5px;
+      color: #10b981;
+      background-color: #f0fdf4;
+      border: 1px solid #dcfce7;
+      border-radius: 8px;
+      padding: 15px 20px;
+      margin: 30px auto;
+      display: inline-block;
+    }
+    .footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 12px;
+      color: #6b7280;
+      border-top: 1px solid #e5e7eb;
+    }
+    .button {
+      display: inline-block;
+      background-color: #10b981;
+      color: #ffffff;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: 500;
+      margin-top: 20px;
+    }
+    .note {
+      font-size: 14px;
+      color: #6b7280;
+      margin-top: 30px;
+      padding: 0 20px;
+    }
+    h1 {
+      color: #10b981;
+      margin-top: 0;
+    }
+    @media only screen and (max-width: 600px) {
+      .container {
+        width: 100%;
+      }
+      .verification-code {
+        font-size: 28px;
+        letter-spacing: 3px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="https://example.com/job-winner-logo.png" alt="Job Winner Logo" class="logo">
+    </div>
+    
+    <div class="content">
+      <h1>Xác thực tài khoản của bạn</h1>
+      
+      <p>Xin chào {{name}},</p>
+      
+      <p>Cảm ơn bạn đã đăng ký tài khoản tại <strong>Job Winner</strong>. Để hoàn tất quá trình đăng ký, vui lòng nhập mã xác thực dưới đây vào trang xác thực:</p>
+      
+      <div class="verification-code">{{code}}</div>
+      
+      <p>Mã xác thực này sẽ hết hạn sau 30 phút.</p>
+      
+      <a href="https://jobwinner.vn/xac-thuc" class="button">Đến trang xác thực</a>
+      
+      <p class="note">Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này hoặc liên hệ với chúng tôi nếu bạn có bất kỳ câu hỏi nào.</p>
+    </div>
+    
+    <div class="footer">
+      <p>&copy; 2025 Job Winner. Đã đăng ký bản quyền.</p>
+      <p>Tầng 5, Tòa nhà FutureTech, 123 Đường Cách Mạng, Quận 3, TP. Hồ Chí Minh, Việt Nam</p>
+      <p>
+        <a href="https://jobwinner.vn/chinh-sach-bao-mat">Chính sách bảo mật</a> | 
+        <a href="https://jobwinner.vn/dieu-khoan-su-dung">Điều khoản sử dụng</a> | 
+        <a href="https://jobwinner.vn/huy-dang-ky">Hủy đăng ký</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>
