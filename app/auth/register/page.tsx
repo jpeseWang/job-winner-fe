@@ -87,7 +87,7 @@ export default function RegisterPage() {
       //Đang dùng tạm để test chức năng login bằng google thôi
       await signOut({ redirect: false })
 
-      await signIn("google", {  prompt: "select_account", callbackUrl: `http://localhost:3000/auth/google-redirect?role=${userType}`, })
+      await signIn("google", { prompt: "select_account", callbackUrl: `/auth/google-redirect?role=${userType}`, })
     } catch (error) {
       toast({
         title: "Google sign-up failed",

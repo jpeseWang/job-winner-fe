@@ -13,6 +13,12 @@ export async function POST(req: NextRequest) {
 
   const client = await clientPromise
   const db = client.db()
+  const user = await db.collection("users").findOne({ email: session.user.email })
+
+  if (user?.role) {
+    // Role already set, just return success without updating
+    return NextResponse.json({ success: true })
+  }
 
   await db.collection("users").updateOne(
     { email: session.user.email },

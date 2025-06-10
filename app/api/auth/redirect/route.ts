@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "../[...nextauth]/route"
+import { UserRole } from "@/types/enums"
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions)
@@ -8,11 +9,11 @@ export async function GET(request: Request) {
   if (!session || !session.user?.role) {
     return NextResponse.redirect(new URL("/auth/login", request.url))
   }
-
+console.log("ROLE >> :", session.user.role)
   const target =
-    session.user.role == "admin"
+    session.user.role == UserRole.ADMIN
       ? "/dashboard/admin"
-      : session.user.role == "recruiter"
+      : session.user.role == UserRole.RECRUITER
         ? "/dashboard/recruiter"
         : "/dashboard/job-seeker"
 
