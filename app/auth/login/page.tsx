@@ -71,7 +71,7 @@ export default function LoginPage() {
       const result = await signIn("credentials", {
         email: formData.email,
         password: formData.password,
-        role: userType, 
+        role: userType,
         callbackUrl: "/api/auth/redirect",
         redirect: true,
       })
@@ -96,7 +96,7 @@ export default function LoginPage() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
     try {
-      await signIn("google", {  prompt: "select_account", callbackUrl: `/api/auth/redirect?role=${userType}` })
+      await signIn("google", { prompt: "select_account", callbackUrl: `/auth/google-redirect?role=${userType}` })
     } catch {
       toast({
         title: "Google sign-in failed",
