@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { CheckCircle, AlertCircle, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { authService } from "@/services"
 
 export default function VerifyByTokenPage() {
   const searchParams = useSearchParams()
@@ -25,20 +26,10 @@ export default function VerifyByTokenPage() {
 
     const run = async () => {
       try {
-        const res = await fetch("/api/auth/verify-email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token }),
-        })
-        const data = await res.json()
-        if (res.ok) {
-          setStatus("success")
-          setMessage(data.message)
-          setTimeout(() => router.push("/auth/login"), 3000)
-        } else {
-          setStatus("error")
-          setMessage(data.error ?? "Verification failed")
-        }
+        const data = await authService.verifyEmail(token)
+        setStatus("success")
+        setMessage(data.message)
+        setTimeout(() => router.push("/auth/login"), 3000)
       } catch {
         setStatus("error")
         setMessage("An unexpected error occurred")
