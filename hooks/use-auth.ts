@@ -3,6 +3,7 @@
 import { useSession, signIn, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
+import { UserRole } from "@/types/enums"
 
 type UserWithRole = {
   name?: string | null
@@ -47,7 +48,7 @@ export function useAuth() {
   }
 
   const isAuthenticated = !!session
-  const isAdmin = session?.user?.role === "admin"
+  const isAdmin = session?.user?.role === UserRole.ADMIN
 
   return {
     user: session?.user,

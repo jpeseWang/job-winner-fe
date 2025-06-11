@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Lock, Eye, EyeOff, AlertCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { authService } from "@/services"
 
 export default function ResetPasswordPage() {
   const router = useRouter()
@@ -61,28 +62,17 @@ export default function ResetPasswordPage() {
     }
 
     try {
-      const response = await fetch("/api/auth/reset-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          token,
-          password: formData.password,
-        }),
+      await authService.resetPassword({
+        token,
+        password: formData.password,
       })
 
-      const result = await response.json()
-
-      if (response.ok) {
-        toast({
-          title: "Password reset successful",
-          description: "Your password has been updated. You can now log in with your new password.",
-        })
-        router.push("/auth/login")
-      } else {
-        throw new Error(result.error || "Failed to reset password")
-      }
+      toast({
+        title: "Password reset successful",
+        description: "Your password has been updated. You can now log in with your new password.",
+      })
+      
+      router.push("/auth/login")
     } catch (error) {
       toast({
         title: "Reset failed",

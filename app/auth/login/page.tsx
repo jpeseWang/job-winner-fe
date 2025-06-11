@@ -18,6 +18,7 @@ import {
   Eye, EyeOff, Mail, Lock, Briefcase, User, AlertCircle,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { UserRole } from "@/types/enums"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -26,7 +27,7 @@ export default function LoginPage() {
 
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [userType, setUserType] = useState<"job_seeker" | "recruiter">("job_seeker")
+  const [userType, setUserType] = useState<UserRole.JOB_SEEKER | UserRole.RECRUITER>(UserRole.JOB_SEEKER)
   const [formData, setFormData] = useState({ email: "", password: "" })
 
   /** Giải mã và quy đổi lỗi về thông điệp thân thiện */
@@ -129,7 +130,7 @@ export default function LoginPage() {
 
           <Tabs
             defaultValue="job_seeker"
-            onValueChange={v => setUserType(v as "job_seeker" | "recruiter")}
+            onValueChange={v => setUserType(v as UserRole.JOB_SEEKER | UserRole.RECRUITER)}
           >
             <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="job_seeker" className="flex items-center gap-2">

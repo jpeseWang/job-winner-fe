@@ -14,6 +14,7 @@ import { useJobs } from "@/hooks/index"
 import type { JobStatus } from "@/types/enums"
 import { formatDate } from "@/utils"
 import { JOB_STATUSES } from "@/constants"
+import { jobService } from "@/services"
 
 export default function RecruiterJobsTab() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -45,16 +46,8 @@ export default function RecruiterJobsTab() {
     if (window.confirm("Are you sure you want to delete this job?")) {
       try {
         // Call the API to delete the job
-        const response = await fetch(`/api/jobs/${id}`, {
-          method: "DELETE",
-        })
-
-        if (response.ok) {
-          // Refresh the jobs list
-          refresh()
-        } else {
-          console.error("Failed to delete job")
-        }
+        await jobService.deleteJob(id)
+        refresh()
       } catch (error) {
         console.error("Error deleting job:", error)
       }

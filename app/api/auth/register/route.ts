@@ -3,10 +3,11 @@ import dbConnect from "@/lib/db"
 import User from "@/models/User"
 import { sendVerificationEmail } from "@/lib/email" 
 import crypto from "crypto"
+import { UserRole } from "@/types/enums"
 
 export async function POST(request: Request) {
   try {
-    const { name, email, password, role = "job_seeker", company } = await request.json()
+    const { name, email, password, role = UserRole.JOB_SEEKER, company } = await request.json()
 
     // Validate required fields
     if (!name || !email || !password) {
@@ -25,13 +26,13 @@ export async function POST(request: Request) {
     }
 
     // Validate role
-    const validRoles = ["job_seeker", "recruiter", "admin"]
+    const validRoles = [UserRole.JOB_SEEKER, UserRole.RECRUITER, UserRole.ADMIN]
     if (!validRoles.includes(role)) {
       return NextResponse.json({ error: "Invalid role specified" }, { status: 400 })
     }
 
     // Validate company for recruiters
-    if (role === "recruiter" && !company) {
+    if (role === UserRole.RECRUITER && !company) {
       return NextResponse.json({ error: "Company name is required for recruiters" }, { status: 400 })
     }
 
@@ -60,7 +61,7 @@ export async function POST(request: Request) {
     }
 
     // Add company for recruiters
-    if (role === "recruiter" && company) {
+    if (role === UserRole.RECRUITER && company) {
       userData.company = company.trim()
     }
 

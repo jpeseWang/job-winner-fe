@@ -14,9 +14,11 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { Eye, EyeOff, Mail, Lock, Briefcase, User, Building } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { UserRole } from "@/types/enums"
+import { authService } from "@/services"
 
 export default function RegisterPage() {
-  const [userType, setUserType] = useState<"job_seeker" | "recruiter">("job_seeker")
+  const [userType, setUserType] = useState<UserRole.JOB_SEEKER | UserRole.RECRUITER>(UserRole.JOB_SEEKER)
   const [errorMessage, setErrorMessage] = useState("")
   const router = useRouter()
   const { toast } = useToast()
@@ -45,24 +47,10 @@ export default function RegisterPage() {
         email: formData.email,
         password: formData.password,
         role: userType,
-        ...(userType === "recruiter" && { company: formData.company }),
+        ...(userType === UserRole.RECRUITER && { company: formData.company }),
       }
 
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userData),
-      })
-
-      const result = await response.json()
-
-      if (!response.ok) {
-        const message = result?.error || "Registration failed"
-        setErrorMessage(message)
-        return
-      }
+      await authService.register(userData)
 
       toast({
         title: "Registration successful",
@@ -131,7 +119,7 @@ export default function RegisterPage() {
         )}
 
         <CardContent>
-          <Tabs defaultValue="job_seeker" onValueChange={(value) => setUserType(value as "job_seeker" | "recruiter")}>
+          <Tabs defaultValue="job_seeker" onValueChange={(value) => setUserType(value as UserRole.JOB_SEEKER | UserRole.RECRUITER)}>
             <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="job_seeker" className="flex items-center gap-2">
                 <User className="h-4 w-4" />
@@ -179,7 +167,7 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {userType === "recruiter" && (
+              {userType === UserRole.RECRUITER && (
                 <div className="space-y-2">
                   <Label htmlFor="company">Company Name</Label>
                   <div className="relative">
@@ -191,7 +179,7 @@ export default function RegisterPage() {
                       className="pl-10"
                       value={formData.company}
                       onChange={handleChange}
-                      required={userType === "recruiter"}
+                      required={userType === UserRole.RECRUITER}
                       disabled={isLoading}
                     />
                   </div>
