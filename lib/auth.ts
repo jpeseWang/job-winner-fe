@@ -5,6 +5,7 @@ import { MongoDBAdapter } from "@auth/mongodb-adapter"
 import { MongoClient } from "mongodb"
 import dbConnect from "@/lib/db"
 import User from "@/models/User"
+import { UserRole } from "@/types/enums"
 
 const client = new MongoClient(process.env.MONGODB_URI!)
 const clientPromise = Promise.resolve(client)
@@ -21,7 +22,7 @@ export const authOptions: NextAuthOptions = {
           name: profile.name,
           email: profile.email,
           image: profile.picture,
-          role: "job_seeker", // Default role for Google sign-up
+          role: UserRole.JOB_SEEKER, // Default role for Google sign-up
         }
       },
     }),
@@ -101,7 +102,7 @@ export const authOptions: NextAuthOptions = {
             name: user.name,
             email: user.email,
             profilePicture: user.image,
-            role: "job_seeker",
+            role: UserRole.JOB_SEEKER,
             isVerified: true, // Google accounts are pre-verified
             isActive: true,
           })

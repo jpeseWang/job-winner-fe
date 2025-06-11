@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import dbConnect from "@/lib/db"
 import User from "@/models/User"
+import { sendWelcomeEmail } from "@/lib/email"
 
 export async function POST(request: Request) {
   try {
@@ -19,11 +20,15 @@ export async function POST(request: Request) {
     }
 
     // Update user verification status
-    await User.findOneAndUpdate(
+     const updatedUser = await User.findOneAndUpdate(
       { verificationToken: token.trim(), verificationExpires: { $gt: new Date() } },
       { $set: { isVerified: true }, $unset: { verificationToken: 1, verificationExpires: 1 } },
       { new: true }
     )
+
+    if (updatedUser) {
+      await sendWelcomeEmail(updatedUser.email, updatedUser.name || '')
+    }
 
     return NextResponse.json({ message: "Email verified successfully" }, { status: 200 })
   } catch (error) {

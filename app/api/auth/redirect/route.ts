@@ -15,7 +15,9 @@ console.log("ROLE >> :", session.user.role)
       ? "/dashboard/admin"
       : session.user.role == UserRole.RECRUITER
         ? "/dashboard/recruiter"
-        : "/dashboard/job-seeker"
+        : session.user.role == UserRole.JOB_SEEKER
+          ? "/dashboard/job-seeker/proposals"
+          : "/unauthorized"
 
   return NextResponse.redirect(new URL(target, request.url))
 }

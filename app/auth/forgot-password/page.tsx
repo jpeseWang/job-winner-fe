@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Mail, ArrowLeft } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { authService } from "@/services"
 
 export default function ForgotPasswordPage() {
   const { toast } = useToast()
@@ -22,25 +23,12 @@ export default function ForgotPasswordPage() {
     setIsLoading(true)
 
     try {
-      const response = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
+      const result = await authService.forgotPassword(email)
+      setIsSubmitted(true)
+      toast({
+        title: "Reset link sent",
+        description: result.message,
       })
-
-      const result = await response.json()
-
-      if (response.ok) {
-        setIsSubmitted(true)
-        toast({
-          title: "Reset link sent",
-          description: result.message,
-        })
-      } else {
-        throw new Error(result.error || "Failed to send reset link")
-      }
     } catch (error) {
       toast({
         title: "Error",

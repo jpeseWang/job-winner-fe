@@ -26,6 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { placeholderUsers } from "@/utils/placeholders"
+import { UserRole } from "@/types/enums"
 
 export default function ManageUsersPage() {
   const [users, setUsers] = useState(placeholderUsers)
@@ -94,19 +95,19 @@ export default function ManageUsersPage() {
 
   const getRoleBadge = (role: string) => {
     switch (role) {
-      case "admin":
+      case UserRole.ADMIN:
         return (
           <Badge variant="default" className="bg-purple-100 text-purple-800">
             Admin
           </Badge>
         )
-      case "recruiter":
+      case UserRole.RECRUITER:
         return (
           <Badge variant="default" className="bg-blue-100 text-blue-800">
             Recruiter
           </Badge>
         )
-      case "job_seeker":
+      case UserRole.JOB_SEEKER:
         return <Badge variant="outline">Job Seeker</Badge>
       default:
         return <Badge variant="outline">{role}</Badge>

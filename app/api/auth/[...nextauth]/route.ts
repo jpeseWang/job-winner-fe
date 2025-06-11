@@ -4,6 +4,7 @@ import GoogleProvider from "next-auth/providers/google"
 import clientPromise from "@/lib/mongodb"
 import type { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
+import { UserRole } from "@/types/enums"
 
 import dbConnect from "@/lib/db"
 import User from "@/models/User"
@@ -24,7 +25,7 @@ export const authOptions: NextAuthOptions = {
         const { email, password, role } = credentials as {
           email: string
           password: string
-          role: "job_seeker" | "recruiter"
+          role: UserRole.JOB_SEEKER | UserRole.RECRUITER
         }
         // 1) Kết nối DB & tìm user theo email
         await dbConnect()

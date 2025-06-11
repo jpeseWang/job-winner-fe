@@ -39,6 +39,12 @@ export const userService = {
     }
   },
 
+  // Update user role
+  async updateRole(role: UserRole) { 
+    const response = await axiosInstance.post("/set-role", { role })
+    return response.data
+  },
+
   // Create a new user
   async createUser(userData: Partial<User>): Promise<User> {
     const response = await axiosInstance.post("/users", userData)
