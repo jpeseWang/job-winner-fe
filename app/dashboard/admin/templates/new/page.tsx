@@ -144,7 +144,7 @@ export default function NewTemplatePage() {
                     placeholder={`Paste your HTML template code here with {{placeholders}} for dynamic content. Example: {{${email}}}, {{${skills}}}`}
                   ></Textarea>
                   <div className="text-sm text-gray-500 dark:text-gray-400">
-                    Use double curly braces for placeholders, e.g. {{ name }}, {email}, {skills}, etc.
+                    Use double curly braces for placeholders, e.g. c.
                   </div>
                 </TabsContent>
 
