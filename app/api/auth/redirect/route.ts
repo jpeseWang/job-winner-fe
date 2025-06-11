@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   if (!session || !session.user?.role) {
     return NextResponse.redirect(new URL("/auth/login", request.url))
   }
-console.log("ROLE >> :", session.user.role)
+  console.log("ROLE >> :", session.user.role)
   const target =
     session.user.role == UserRole.ADMIN
       ? "/dashboard/admin"
