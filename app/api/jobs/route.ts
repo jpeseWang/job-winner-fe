@@ -16,6 +16,7 @@ export async function GET(req: NextRequest) {
     experienceLevel,
     page = "1",
     limit = "20",
+    sort = "latest"
   } = Object.fromEntries(req.nextUrl.searchParams)
 
   const query: any = {}
@@ -42,8 +43,10 @@ export async function GET(req: NextRequest) {
 
   const skip = (parseInt(page) - 1) * parseInt(limit)
 
+  const sortOrder = sort === "oldest" ? 1 : -1
+
   const [data, total] = await Promise.all([
-    Job.find(query).skip(skip).limit(+limit).sort({ createdAt: -1 }),
+    Job.find(query).skip(skip).limit(+limit).sort({ createdAt: sortOrder }),
     Job.countDocuments(query),
   ])
 
