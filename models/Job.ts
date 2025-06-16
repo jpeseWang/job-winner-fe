@@ -7,6 +7,7 @@ export enum JobType {
   FREELANCE = "Freelance",
   INTERNSHIP = "Internship",
   TEMPORARY = "Temporary",
+  REMOTE = "Remote",
 }
 
 export enum JobStatus {
@@ -19,18 +20,17 @@ export enum JobStatus {
 }
 
 export enum ExperienceLevel {
-  ENTRY = "Entry level",
-  JUNIOR = "Junior",
-  MID = "Mid level",
-  SENIOR = "Senior",
+  ENTRY = "Entry Level",
+  MID = "Mid Level",
+  SENIOR = "Senior Level",
   LEAD = "Lead",
-  EXECUTIVE = "Executive",
+  MANAGER = "Manager",
 }
 
 export interface IJob extends Document {
   title: string
-  company: mongoose.Types.ObjectId
-  recruiter: mongoose.Types.ObjectId
+  company: string
+  recruiter: string
   description: string
   responsibilities: string[]
   requirements: string[]
@@ -71,14 +71,14 @@ const JobSchema = new Schema<IJob>(
       maxlength: [100, "Job title cannot be more than 100 characters"],
     },
     company: {
-      type: Schema.Types.ObjectId,
-      ref: "Company",
-      required: true,
+      type: String,
+      required: [true, "Please provide a company name"],
+      trim: true,
     },
     recruiter: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+      type: String,
+      required: [true, "Please provide a recruiter ID"],
+      trim: true,
     },
     description: {
       type: String,
@@ -194,6 +194,10 @@ const JobSchema = new Schema<IJob>(
     publishedAt: {
       type: Date,
     },
+    updatedAt: {
+      type: Date,
+      default: Date.now,
+    }
   },
   { timestamps: true },
 )
@@ -203,6 +207,7 @@ JobSchema.pre("save", function (next) {
   if (this.isModified("status") && this.status === JobStatus.ACTIVE && !this.publishedAt) {
     this.publishedAt = new Date()
   }
+  this.updatedAt = new Date()
   next()
 })
 
@@ -217,4 +222,9 @@ JobSchema.index({
   category: "text",
 })
 
-export default mongoose.models.Job || mongoose.model<IJob>("Job", JobSchema)
+// Delete the existing model if it exists to prevent the "Cannot overwrite model once compiled" error
+if (mongoose.models.Job) {
+  delete mongoose.models.Job
+}
+
+export default mongoose.model<IJob>("Job", JobSchema)

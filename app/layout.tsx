@@ -7,6 +7,7 @@ import Footer from "@/components/footer"
 import { ThemeProvider } from "@/components/theme-provider"
 import ThemeClientOnly from "@/components/themeClientOnly"
 import { Providers } from "./providers"
+import { Toaster } from "sonner"
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -34,6 +35,7 @@ export default function RootLayout({
             </ThemeProvider>
           </ThemeClientOnly>
         </Providers>
+        <Toaster />
       </body>
     </html>
   );

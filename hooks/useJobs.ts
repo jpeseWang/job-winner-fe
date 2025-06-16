@@ -62,7 +62,7 @@ export function useJobs(filters: JobFilters = {}, options: UseJobsOptions = {}) 
   }
 
   return {
-    jobs: data?.data || [],
+    jobs: data?.jobs || [],
     total: data?.total || 0,
     totalPages: data?.totalPages || 0,
     currentPage: page,
