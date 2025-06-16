@@ -3,6 +3,7 @@
 import { useState } from "react"
 import JobCard from "@/components/job-card"
 import JobFilters from "@/components/job-filters"
+import type { JobFilters as JobFiltersType } from "@/types/interfaces/job" 
 import CompanyCard from "@/components/company-card"
 import { Button } from "@/components/ui/button"
 import { useJobs } from "@/hooks/useJobs"
@@ -10,16 +11,20 @@ import { Loader2 } from "lucide-react"
 import type { Job } from "@/types/interfaces"
 
 export default function JobsPage() {
-  const [filters, setFilters] = useState({
+  const [sort, setSort] = useState<"latest" | "oldest">("latest")
+
+  const [filters, setFilters] = useState<JobFiltersType>({
     keyword: "",
     location: "",
     category: [] as string[],
     type: [] as string[],
     experienceLevel: [] as string[],
+    sort: "latest",
   })
 
   const { jobs, total, isLoading, totalPages, currentPage, goToPage } = useJobs({
     ...filters,
+    sort,
     limit: 10,
   })
 
@@ -56,11 +61,17 @@ export default function JobsPage() {
 
                 <div className="flex items-center gap-2">
                   <span className="text-sm">Sort by:</span>
-                    <select className="border rounded-md px-2 py-1 text-sm">
-                      <option>Latest</option>
-                      <option>Oldest</option>
-                      <option>Highest Salary</option>
-                      <option>Lowest Salary</option>
+                    <select
+                      value={sort}
+                      onChange={(e) => {
+                        setSort(e.target.value as "latest" | "oldest")
+                        goToPage(1)
+                        window.scrollTo({ top: 0, behavior: "smooth" })
+                      }}
+                      className="border rounded-md px-2 py-1 text-sm"
+                    >
+                      <option value="latest">Latest</option>
+                      <option value="oldest">Oldest</option>
                     </select>
                 </div>
               </div>

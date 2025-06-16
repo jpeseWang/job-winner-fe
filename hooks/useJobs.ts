@@ -22,6 +22,8 @@ export function useJobs(filters: JobFilters = {}, options: UseJobsOptions = {}) 
   if (filters.keyword) queryParams.append("keyword", filters.keyword)
   if (filters.location) queryParams.append("location", filters.location)
 
+  if (filters.sort) queryParams.append("sort", filters.sort)
+
   if (filters.category?.length)
     queryParams.append("category", filters.category.join(","))
 
