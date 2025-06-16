@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import JobCard from "@/components/job-card"
 import JobFilters from "@/components/job-filters"
 import CompanyCard from "@/components/company-card"
@@ -9,9 +10,24 @@ import { Loader2 } from "lucide-react"
 import type { Job } from "@/types/interfaces"
 
 export default function JobsPage() {
-  const { jobs, total, isLoading, currentPage, totalPages, goToPage } = useJobs()
+  const [filters, setFilters] = useState({
+    keyword: "",
+    location: "",
+    category: [] as string[],
+    type: [] as string[],
+    experienceLevel: [] as string[],
+  })
 
-  console.log("Jobs data received:", jobs)
+  const { jobs, total, isLoading, totalPages, currentPage, goToPage } = useJobs({
+    ...filters,
+    limit: 10,
+  })
+
+  const handleFilterChange = (newFilters: typeof filters) => {
+    setFilters(newFilters)
+    goToPage(1) 
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
 
   return (
     <main className="min-h-screen">
@@ -25,27 +41,31 @@ export default function JobsPage() {
       {/* Jobs Content */}
       <section className="py-8 px-4 md:px-8 lg:px-16">
         <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-6">
-            <p className="text-sm text-gray-500">Showing {jobs.length} out of {total} results</p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm">Sort by:</span>
-              <select className="border rounded-md px-2 py-1 text-sm">
-                <option>Latest</option>
-                <option>Oldest</option>
-                <option>Highest Salary</option>
-                <option>Lowest Salary</option>
-              </select>
-            </div>
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {/* Filters Sidebar */}
             <div className="md:col-span-1">
-              <JobFilters />
+              <JobFilters onChange={handleFilterChange} />
             </div>
 
             {/* Job Listings */}
             <div className="md:col-span-3">
+              <div className="flex justify-between items-center mb-6">
+                <p className="text-sm text-gray-500">
+                  Showing {jobs.length} out of {total} results
+                </p>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">Sort by:</span>
+                    <select className="border rounded-md px-2 py-1 text-sm">
+                      <option>Latest</option>
+                      <option>Oldest</option>
+                      <option>Highest Salary</option>
+                      <option>Lowest Salary</option>
+                    </select>
+                </div>
+              </div>
+
+
               {isLoading ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="w-8 h-8 animate-spin" />
@@ -53,19 +73,24 @@ export default function JobsPage() {
               ) : (
                 <>
                   <div className="grid grid-cols-1 gap-6">
-                    {jobs.map((job: Job) => {
-                      console.log("Individual job salary:", job.salary);
+                    {jobs.map((job: Job, idx: number) => {
+                      const uniqueKey = (job as any)._id ?? job.id ?? idx
+                      const jobId = (job as any)._id ?? job.id ?? ""
 
-                      const salaryString = job.salary ? 
-                        (job.salary.isNegotiable ? 
-                          "Negotiable" :
-                          `${job.salary.min ? `$${job.salary.min}` : ""}${job.salary.min && job.salary.max ? " - " : ""}${job.salary.max ? `$${job.salary.max}` : ""} per ${job.salary.period}`
-                        ) : "";
+                      const salaryString = job.salary
+                        ? job.salary.isNegotiable
+                          ? "Negotiable"
+                          : `${job.salary.min ? `$${job.salary.min}` : ""}${
+                              job.salary.min && job.salary.max ? " - " : ""
+                            }${job.salary.max ? `$${job.salary.max}` : ""} per ${
+                              job.salary.period
+                            }`
+                        : ""
 
                       return (
                         <JobCard
-                          key={job.id}
-                          id={job.id}
+                          key={uniqueKey}
+                          id={jobId}
                           title={job.title}
                           company={job.company}
                           location={job.location}
@@ -89,7 +114,10 @@ export default function JobsPage() {
                             variant={currentPage === page ? "default" : "outline"}
                             size="sm"
                             className="w-8 h-8 p-0"
-                            onClick={() => goToPage(page)}
+                            onClick={() => {
+                              goToPage(page)
+                              window.scrollTo({ top: 0, behavior: "smooth" })
+                            }}
                           >
                             {page}
                           </Button>

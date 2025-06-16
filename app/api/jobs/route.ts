@@ -1,58 +1,57 @@
-import { NextResponse } from "next/server"
+import { NextResponse, NextRequest } from "next/server"
 import { z } from "zod"
-import { jobs } from "@/lib/data"
 import Job from "@/models/Job"
 import dbConnect from "@/lib/db"
 import { validateJob } from "@/utils/validators"
 
 // GET /api/jobs - Get all jobs with optional filtering
-export async function GET(request: Request) {
+export async function GET(req: NextRequest) {
   await dbConnect()
-  const { searchParams } = new URL(request.url)
 
-  const keyword = searchParams.get("keyword")
-  const location = searchParams.get("location")
-  const category = searchParams.get("category")
-  const page = Number.parseInt(searchParams.get("page") || "1")
-  const limit = Number.parseInt(searchParams.get("limit") || "10")
+  const {
+    keyword,
+    location,
+    category,
+    type,
+    experienceLevel,
+    page = "1",
+    limit = "20",
+  } = Object.fromEntries(req.nextUrl.searchParams)
 
-  let query: any = {}
+  const query: any = {}
 
   if (keyword) {
-    query.$or = [
-      { title: { $regex: keyword, $options: "i" } },
-      { company: { $regex: keyword, $options: "i" } },
-      { description: { $regex: keyword, $options: "i" } },
-    ]
+    query.$text = { $search: keyword }
   }
 
   if (location) {
-    query.location = { $regex: location, $options: "i" }
+    query.location = location
   }
 
   if (category) {
-    query.category = { $regex: category, $options: "i" }
+    query.category = { $in: category.split(",") }
   }
 
-  const totalJobs = await Job.countDocuments(query)
-  const jobs = await Job.find(query)
-    .limit(limit)
-    .skip((page - 1) * limit)
-    .sort({ createdAt: -1 })
+  if (type) {
+    query.type = { $in: type.split(",") }
+  }
 
-  // Transform jobs to include 'id' and remove '_id'
-  const transformedJobs = jobs.map(job => {
-    const jobObject = job.toJSON();
-    const { _id, ...rest } = jobObject;
-    return { ...rest, id: _id.toString() };
-  });
+  if (experienceLevel) {
+    query.experienceLevel = { $in: experienceLevel.split(",") }
+  }
+
+  const skip = (parseInt(page) - 1) * parseInt(limit)
+
+  const [data, total] = await Promise.all([
+    Job.find(query).skip(skip).limit(+limit).sort({ createdAt: -1 }),
+    Job.countDocuments(query),
+  ])
 
   return NextResponse.json({
-    jobs: transformedJobs,
-    total: totalJobs,
-    page,
-    limit,
-    totalPages: Math.ceil(totalJobs / limit),
+    data,
+    total,
+    currentPage: +page,
+    totalPages: Math.ceil(total / +limit),
   })
 }
 

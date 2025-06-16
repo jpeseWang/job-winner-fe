@@ -63,3 +63,30 @@ export interface Company {
   website: string
   industry: string
 }
+
+export interface FilterOption {
+  label: string
+  count: number
+}
+
+export interface Filters {
+  categories: FilterOption[]
+  locations: string[]
+  types: FilterOption[]
+  experienceLevels: FilterOption[]
+}
+
+export interface JobFilters {
+  keyword?: string
+  location?: string
+  category?: string[]
+  type?: string[]
+  experienceLevel?: string[]
+  minSalary?: number
+  maxSalary?: number
+  page?: number
+  limit?: number
+  status?: JobStatus
+  featured?: boolean
+}
+
