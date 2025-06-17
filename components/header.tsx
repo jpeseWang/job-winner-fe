@@ -17,7 +17,7 @@ export default function Header() {
     setIsMenuOpen(!isMenuOpen)
   }
   console.log("Session:", session)
-
+  console.log("Status:", status)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -87,17 +87,28 @@ export default function Header() {
               </button>
 
               <div
-                className={`absolute right-0 top-12 bg-white text-black rounded shadow-md py-2 w-40 z-50 transform transition-all duration-200 ${
-                  isMenuOpen ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
-                }`}
+                className={`absolute right-0 top-12 bg-white text-black rounded shadow-md py-2 w-40 z-50 transform transition-all duration-200 ${isMenuOpen ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
+                  }`}
               >
+                <Link
+                  href={
+                    session?.user?.role === UserRole.JOB_SEEKER
+                      ? "/dashboard/job-seeker/my-profile"
+                      : session?.user?.role === UserRole.RECRUITER
+                        ? "/dashboard/recruiter"
+                        : "/dashboard/admin"
+                  }
+                  className="block px-4 py-2 hover:bg-gray-100"
+                >
+                  Profile
+                </Link>
                 <Link
                   href={
                     session?.user?.role === UserRole.JOB_SEEKER
                       ? "/dashboard/job-seeker/proposals"
                       : session?.user?.role === UserRole.RECRUITER
-                      ? "/dashboard/recruiter"
-                      : "/dashboard/admin"
+                        ? "/dashboard/recruiter"
+                        : "/dashboard/admin"
                   }
                   className="block px-4 py-2 hover:bg-gray-100"
                 >

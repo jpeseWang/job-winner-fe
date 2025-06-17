@@ -19,9 +19,9 @@ export default function RecruiterDashboardHeader() {
             <div className="flex-shrink-0 flex items-center">
               <Link href="/" className="flex items-center gap-2">
                 <div className="bg-teal-500 rounded-full w-8 h-8 flex items-center justify-center">
-                  <span className="text-white font-bold">J</span>
+                  <span className="text-white font-bold">R</span>
                 </div>
-                <span className="font-bold text-xl">Job Winner</span>
+                <span className="font-bold text-xl">Recruiter</span>
               </Link>
             </div>
             <nav className="hidden sm:ml-6 sm:flex sm:space-x-8">

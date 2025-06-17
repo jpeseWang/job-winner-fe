@@ -1,23 +1,34 @@
-import { NextResponse } from "next/server"
+import { NextResponse, NextRequest } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "../[...nextauth]/route"
 import { UserRole } from "@/types/enums"
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions)
 
   if (!session || !session.user?.role) {
-    return NextResponse.redirect(new URL("/auth/login", request.url))
+    const loginUrl = request.nextUrl.clone()
+    loginUrl.pathname = '/auth/login'
+    return NextResponse.redirect(loginUrl)
   }
-console.log("ROLE >> :", session.user.role)
-  const target =
-    session.user.role == UserRole.ADMIN
-      ? "/dashboard/admin"
-      : session.user.role == UserRole.RECRUITER
-        ? "/dashboard/recruiter"
-        : session.user.role == UserRole.JOB_SEEKER
-          ? "/dashboard/job-seeker/proposals"
-          : "/unauthorized"
 
-  return NextResponse.redirect(new URL(target, request.url))
+  let targetPath: string;
+  switch (session.user.role) {
+    case UserRole.ADMIN:
+      targetPath = "/dashboard/admin";
+      break;
+    case UserRole.RECRUITER:
+      targetPath = "/dashboard/recruiter";
+      break;
+    case UserRole.JOB_SEEKER:
+      targetPath = "/dashboard/job-seeker/proposals";
+      break;
+    default:
+      targetPath = "/unauthorized";
+      break;
+  }
+  const redirectUrl = request.nextUrl.clone()
+  redirectUrl.pathname = targetPath
+
+  return NextResponse.redirect(redirectUrl)
 }

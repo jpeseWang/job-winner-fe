@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server"
 import dbConnect from "@/lib/db"
 import User from "@/models/User"
-import { sendVerificationEmail } from "@/lib/email" 
+import { sendVerificationEmail } from "@/lib/email"
 import crypto from "crypto"
 import { UserRole } from "@/types/enums"
-
+import Profile from "@/models/Profile"
 export async function POST(request: Request) {
   try {
     const { name, email, password, role = UserRole.JOB_SEEKER, company } = await request.json()
@@ -69,6 +69,14 @@ export async function POST(request: Request) {
       ...userData,
     })
 
+    if (role === UserRole.JOB_SEEKER) {
+      await Profile.create({
+        user: user._id,
+
+      })
+    }
+
+
     // Gửi email xác thực
     try {
       await sendVerificationEmail(user.email, user.name, verificationToken)
@@ -100,3 +108,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
+
+

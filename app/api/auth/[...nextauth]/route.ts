@@ -17,9 +17,9 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email:    { label: "Email",    type: "text" },
+        email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
-        role:     { label: "Role", type: "text" },
+        role: { label: "Role", type: "text" },
       },
       async authorize(credentials) {
         const { email, password, role } = credentials as {
@@ -48,7 +48,7 @@ export const authOptions: NextAuthOptions = {
 
         // 5) Trả object cho NextAuth ghi vào JWT / session
         return {
-          id:   user._id.toString(),
+          id: user._id.toString(),
           name: user.name,
           email: user.email,
           role: user.role,
@@ -87,17 +87,26 @@ export const authOptions: NextAuthOptions = {
       return true
     },
     async jwt({ token, user }) {
-      if (user) token.role = user.role
+      if (user) {
+        token.role = user.role;
+        token.id = user.id;
+        token.email = user.email;
+        token.name = user.name;
+      }
+
       return token
     },
     async session({ session, token }) {
-      session.user.role = token.role   // không cần query DB
+      session.user.role = token.role;
+      session.user.id = token.id;
+      session.user.email = token.email;
+      session.user.name = token.name;
       return session
     },
-    },
+  },
   pages: {
     signIn: "/auth/login",
-    error : "/auth/login",
+    error: "/auth/login",
   },
 }
 

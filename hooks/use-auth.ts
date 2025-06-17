@@ -6,10 +6,12 @@ import { useEffect, useState } from "react"
 import { UserRole } from "@/types/enums"
 
 type UserWithRole = {
+  id?: string | null
   name?: string | null
   email?: string | null
   image?: string | null
   role?: string | null
+  photo?: string | null
 }
 
 type SessionWithRole = {
