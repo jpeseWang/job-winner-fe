@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+
 import { JobCategory, JobLocation, JobType, ExperienceLevel } from "@/types/enums/index" 
 import Job from "@/models/Job"
 
