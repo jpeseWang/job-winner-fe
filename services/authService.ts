@@ -8,9 +8,14 @@ export const authService = {
     password: string
     role: UserRole
     company?: string
-  }) {
-    const response = await axiosInstance.post("/auth/register", data)
-    return response.data
+  })  {
+    try {
+      const response = await axiosInstance.post("/auth/register", data)
+      return response.data
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error || "Registration failed"
+      throw new Error(errorMessage)
+    }
   },
 
   async forgotPassword(email: string): Promise<{ message: string }> {

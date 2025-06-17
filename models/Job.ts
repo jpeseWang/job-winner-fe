@@ -1,47 +1,11 @@
 import mongoose, { type Document, Schema } from "mongoose"
-
-export enum JobCategory{
-  TECHNOLOGY = "Technology",
-  TELECOMMUNICATIONS = "Telecommunications",
-  HEALTH = "Health Medical",
-  EDUCATION = "Education",
-  FINANCIAL = "Financial Services"
-}
-
-export enum JobLocation {
-  HAICHAU = "Hai Chau",
-  LIENCHIEU = "Lien Chieu",
-  SONTRA = "Son Tra",
-  THANHKHE = "Thanh Khe",
-  CAMLE = "Cam Le"
-}
-
-export enum JobType {
-  FULL_TIME = "Full-time",
-  PART_TIME = "Part-time",
-  CONTRACT = "Contract",
-  FREELANCE = "Freelance",
-  INTERNSHIP = "Internship",
-  TEMPORARY = "Temporary",
-  REMOTE = "Remote",
-}
-
-export enum ExperienceLevel {
-  ENTRY = "Entry Level",
-  MID = "Mid Level",
-  SENIOR = "Senior Level",
-  LEAD = "Lead",
-  MANAGER = "Manager",
-}
-
-export enum JobStatus {
-  DRAFT = "draft",
-  PENDING = "pending",
-  ACTIVE = "active",
-  PAUSED = "paused",
-  CLOSED = "closed",
-  REJECTED = "rejected",
-}
+import {
+  JobType,
+  JobStatus,
+  JobCategory,
+  JobLocation,
+  ExperienceLevel,
+} from "@/types/enums"
 
 export interface IJob extends Document {
   title: string
@@ -239,8 +203,8 @@ JobSchema.index({
 })
 
 // Delete the existing model if it exists to prevent the "Cannot overwrite model once compiled" error
-if (mongoose.models.Job) {
-  delete mongoose.models.Job
-}
+// if (mongoose.models.Job) {
+//   delete mongoose.models.Job
+// }
 
-export default mongoose.model<IJob>("Job", JobSchema)
+export default mongoose.models.Job || mongoose.model<IJob>("Job", JobSchema)
