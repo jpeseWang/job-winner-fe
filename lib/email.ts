@@ -41,6 +41,53 @@ ${options.text}
   }
 }
 
+// === CONTACT FORM ===
+export async function sendContactEmail(
+  firstName: string,
+  lastName: string,
+  email: string,
+  message: string,
+) {
+  const fullName = `${firstName.trim()} ${lastName.trim()}`
+  const adminEmail = process.env.ADMIN_EMAIL || "anhwuan2k4@gmail.com"
+
+  const html = loadHtmlTemplate('verification-contact', {
+    name: fullName,
+    email,
+    message,
+  })
+
+  await _send({
+    to: adminEmail,
+    subject: `📬 Liên hệ mới từ ${fullName}`,
+    html,
+   text: `Liên hệ mới từ ${fullName} (${email}):\n\n${message}`
+,
+  })
+}
+// === Verify Contact FORM ===
+export async function sendContactConfirmationEmail(
+  firstName: string,
+  lastName: string,
+  email: string,
+  message: string
+) {
+  const fullName = `${firstName.trim()} ${lastName.trim()}`
+  const html = loadHtmlTemplate("contact-information", {
+    name: fullName,
+    email,
+    message,
+  })
+
+  await _send({
+    to: email, 
+    subject: "Chúng tôi đã nhận được liên hệ của bạn",
+    html,
+    text: `Chào ${fullName},\n\nCảm ơn bạn đã liên hệ. Chúng tôi sẽ phản hồi sớm nhất.\n\nNội dung:\n${message}`,
+  })
+}
+
+
 // === VERIFY ===
 export async function sendVerificationEmail(
   email: string,
