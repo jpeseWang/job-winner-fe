@@ -11,6 +11,7 @@ type UserWithRole = {
   email?: string | null
   image?: string | null
   role?: string | null
+  photo?: string | null
 }
 
 type SessionWithRole = {

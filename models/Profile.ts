@@ -1,31 +1,5 @@
 import mongoose, { type Document, Schema } from "mongoose"
-
-export interface Education {
-  degree: string
-  institution: string
-  location?: string
-  startDate: Date
-  endDate?: Date
-  description?: string
-}
-
-export interface Experience {
-  title: string
-  company: string
-  location?: string
-  startDate: Date
-  endDate?: Date
-  description: string
-  isCurrentPosition?: boolean
-}
-
-export interface SocialLinks {
-  linkedin?: string
-  github?: string
-  twitter?: string
-  portfolio?: string
-  other?: string
-}
+import { IEducation, IExperience, ISocialLinks } from "@/types/interfaces/user"
 
 export interface IProfile extends Document {
   user: mongoose.Types.ObjectId
@@ -36,10 +10,10 @@ export interface IProfile extends Document {
   website?: string
   skills: string[]
   languages: { language: string; proficiency: string }[]
-  education: Education[]
-  experience: Experience[]
+  education: IEducation[]
+  experience: IExperience[]
   certifications: { name: string; issuer: string; date: Date; expires?: Date; url?: string }[]
-  socialLinks: SocialLinks
+  socialLinks: ISocialLinks
   resumeUrl?: string
   isPublic: boolean
   completionPercentage: number
@@ -56,12 +30,12 @@ const ProfileSchema = new Schema<IProfile>(
     },
     title: {
       type: String,
-     
+
       maxlength: [100, "Title cannot be more than 100 characters"],
     },
     bio: {
       type: String,
-     
+
       maxlength: [1000, "Bio cannot be more than 1000 characters"],
     },
     location: {

@@ -11,9 +11,16 @@ export enum UserStatus {
   PENDING = "pending",
 }
 
-export interface User {
+export interface IUser {
+  user: {
+    id: string
+    name: string
+    email: string
+    photo?: string
+  }
   id: string
   name: string
+  phone: string
   email: string
   role: UserRole
   status: UserStatus
@@ -23,32 +30,47 @@ export interface User {
   lastActive: string
 }
 
-export interface UserProfile {
+export interface IUserProfile {
   id: string
-  userId: string
   name: string
+  email?: string
+  phone?: string
   title: string
   location: string
   skills: string[]
-  experience: string
-  education: Education[]
+  experience: IExperience[]
+  education: IEducation[]
   bio: string
   contactEmail: string
   profilePicture?: string
   resumeUrl?: string
-  socialLinks?: SocialLinks
+  socialLinks?: ISocialLinks
   isPublic: boolean
 }
 
-export interface Education {
+export interface IEducation {
   degree: string
   institution: string
-  year: string
+  location?: string
+  startDate: Date
+  endDate?: Date
+  description?: string
 }
 
-export interface SocialLinks {
+export interface ISocialLinks {
   linkedin?: string
   github?: string
-  dribbble?: string
+  twitter?: string
   portfolio?: string
+  other?: string
+}
+
+export interface IExperience {
+  title: string
+  company: string
+  location?: string
+  startDate: Date
+  endDate?: Date
+  description: string
+  isCurrentPosition?: boolean
 }
