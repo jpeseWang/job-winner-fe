@@ -88,6 +88,6 @@ export interface JobFilters {
   limit?: number
   status?: JobStatus
   featured?: boolean
-  sort?: "latest" | "oldest"
+  sort?: "latest" | "oldest" | "highestSalary" | "lowestSalary"
 }
 

@@ -1,6 +1,5 @@
 import { z } from "zod"
-import { JobType, UserRole } from "@/types/enums"
-import { ExperienceLevel, JobStatus } from "@/models/Job"
+import { JobType, UserRole, ExperienceLevel, JobStatus } from "@/types/enums"
 
 // Job validation schema
 export const jobSchema = z.object({
