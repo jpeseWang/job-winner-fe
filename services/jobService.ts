@@ -1,34 +1,25 @@
 import axiosInstance from "@/lib/axios"
 import type { Job, PaginatedResponse } from "@/types/interfaces"
-import type { JobStatus, JobType } from "@/types/enums"
-
-interface JobFilters {
-  keyword?: string
-  location?: string
-  category?: string
-  type?: JobType
-  page?: number
-  limit?: number
-  status?: JobStatus
-  featured?: boolean
-}
+import type { JobStatus } from "@/types/enums"
+import type { JobFilters } from "@/types/interfaces/job"
 
 export const jobService = {
   // Get all jobs with optional filtering
-  async getJobs(filters: JobFilters = {}): Promise<PaginatedResponse<Job>> {
+  async getJobs(filters: JobFilters = {}) {
     const params = new URLSearchParams()
 
-    if (filters.keyword) params.append("keyword", filters.keyword)
-    if (filters.location) params.append("location", filters.location)
-    if (filters.category) params.append("category", filters.category)
-    if (filters.type) params.append("type", filters.type)
-    if (filters.status) params.append("status", filters.status)
-    if (filters.featured !== undefined) params.append("featured", filters.featured.toString())
-    if (filters.page) params.append("page", filters.page.toString())
-    if (filters.limit) params.append("limit", filters.limit.toString())
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value === undefined || value === null || value === "") return
 
-    const response = await axiosInstance.get(`/jobs?${params.toString()}`)
-    return response.data
+      if (Array.isArray(value) && value.length > 0) {
+        params.append(key, value.join(","))
+      } else if (!Array.isArray(value)) {
+        params.append(key, String(value))
+      }
+    })
+
+    const res = await axiosInstance.get(`/jobs?${params.toString()}`)
+    return res.data
   },
 
   // Get a specific job by ID
@@ -64,6 +55,17 @@ export const jobService = {
   // Toggle featured status
   async toggleFeatured(id: string, featured: boolean): Promise<Job> {
     const response = await axiosInstance.patch(`/jobs/${id}/featured`, { featured })
+    return response.data
+  },
+
+  // Get filter metadata (categories, types, levels, etc.)
+  async getFilterMetadata(): Promise<{
+    categories: { label: string; count: number }[]
+    types: { label: string; count: number }[]
+    experienceLevels: { label: string; count: number }[]
+    locations: string[]
+  }> {
+    const response = await axiosInstance.get("/meta/job-filters")
     return response.data
   },
 }
