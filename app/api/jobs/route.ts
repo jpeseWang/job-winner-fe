@@ -8,7 +8,7 @@ import { authOptions } from "@/lib/auth"
 import { UserRole } from "@/types/enums"
 import { addDays } from "date-fns"
 import { getActiveSubscription, hasQuota, incrementJobPosting, getJobDurationForPlan } from "@/lib/subscription"
-import { JobStatus, SubscriptionPlan } from "@/types/enums"
+import { JobStatus } from "@/types/enums"
 
 export async function GET(req: NextRequest) {
   try {
