@@ -23,7 +23,8 @@ import { Switch } from "@/components/ui/switch"
 import { Search, MoreVertical, Eye, Edit, Trash2, Plus, Upload, FileCode, Download, Copy } from "lucide-react"
 import Image from "next/image"
 import type { CVTemplate } from "@/types/interfaces"
-import { placeholders } from "@/utils/placeholders" // Importing placeholders
+// import { placeholders } from "@/utils/placeholders" 
+// Importing placeholders
 
 export default function AdminTemplatesTab() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -149,7 +150,7 @@ export default function AdminTemplatesTab() {
             <DialogHeader>
               <DialogTitle>Create New CV Template</DialogTitle>
               <DialogDescription>
-                Create a new CV template by providing HTML and CSS. Use {placeholders} for dynamic content.
+                Create a new CV template by providing HTML and CSS. Use placeholders for dynamic content.
               </DialogDescription>
             </DialogHeader>
 
@@ -253,7 +254,7 @@ export default function AdminTemplatesTab() {
             <DialogHeader>
               <DialogTitle>Upload CV Template</DialogTitle>
               <DialogDescription>
-                Upload an HTML template file with CSS. Make sure to use {placeholders} for dynamic content.
+                Upload an HTML template file with CSS. Make sure to use placeholders for dynamic content.
               </DialogDescription>
             </DialogHeader>
 

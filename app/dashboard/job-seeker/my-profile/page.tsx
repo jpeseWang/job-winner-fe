@@ -17,14 +17,22 @@ import { userService } from "@/services"
 import { validateProfile } from "@/utils/validators"
 import { Plus, Trash2, Upload, Save, User, MapPin, Mail, Phone, Briefcase, GraduationCap, Award } from "lucide-react"
 import { DEFAULT_AVATAR } from "@/constants"
+import { useAuth } from "@/hooks/use-auth"
 
 export default function MyProfilePage() {
   const router = useRouter()
   const { toast } = useToast()
+  const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState("personal")
 
   const [profile, setProfile] = useState({
+    user: {
+      id: user?.id || "",
+      name: user?.name || "",
+      email: user?.email || "",
+    
+    },
     name: "",
     title: "",
     location: "",
@@ -50,7 +58,7 @@ export default function MyProfilePage() {
       try {
         setIsLoading(true)
         // In a real app, you would get the user ID from the session
-        const userId = "user-1" // Mock user ID
+        const userId = user?.id 
         const userProfile = await userService.getUserProfile(userId)
 
         if (userProfile) {
@@ -225,7 +233,7 @@ export default function MyProfilePage() {
       }
 
       // In a real app, you would get the user ID from the session
-      const userId = "user-1" // Mock user ID
+      const userId = user?.id
       await userService.updateUserProfile(userId, profile)
 
       toast({
@@ -243,6 +251,7 @@ export default function MyProfilePage() {
     }
   }
 
+  console.log("Profile data:", profile)
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex justify-between items-center mb-6">
@@ -281,7 +290,7 @@ export default function MyProfilePage() {
                     />
                   </label>
                 </div>
-                <h2 className="text-xl font-semibold">{profile.name || "Your Name"}</h2>
+                <h2 className="text-xl font-semibold">{profile.user.name || "Your Name"}</h2>
                 <p className="text-gray-500">{profile.title || "Your Title"}</p>
               </div>
 
@@ -294,7 +303,7 @@ export default function MyProfilePage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-gray-500" />
-                  <span>{profile.contactEmail || "your.email@example.com"}</span>
+                  <span>{profile.user.email || "your.email@example.com"}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-gray-500" />
@@ -435,7 +444,7 @@ export default function MyProfilePage() {
                         <Input
                           id="linkedin"
                           name="linkedin"
-                          value={profile.socialLinks.linkedin}
+                          value={profile.socialLinks?.linkedin}
                           onChange={handleSocialLinkChange}
                           placeholder="https://linkedin.com/in/username"
                         />
@@ -445,7 +454,7 @@ export default function MyProfilePage() {
                         <Input
                           id="github"
                           name="github"
-                          value={profile.socialLinks.github}
+                          value={profile.socialLinks?.github}
                           onChange={handleSocialLinkChange}
                           placeholder="https://github.com/username"
                         />
@@ -455,7 +464,7 @@ export default function MyProfilePage() {
                         <Input
                           id="twitter"
                           name="twitter"
-                          value={profile.socialLinks.twitter}
+                          value={profile.socialLinks?.twitter}
                           onChange={handleSocialLinkChange}
                           placeholder="https://twitter.com/username"
                         />
@@ -465,7 +474,7 @@ export default function MyProfilePage() {
                         <Input
                           id="portfolio"
                           name="portfolio"
-                          value={profile.socialLinks.portfolio}
+                          value={profile.socialLinks?.portfolio}
                           onChange={handleSocialLinkChange}
                           placeholder="https://yourportfolio.com"
                         />

@@ -16,12 +16,12 @@ export default function AdminDashboardHeader() {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <Link href="/" className="flex items-center gap-2">
+              {/* <Link href="/" className="flex items-center gap-2">
                 <div className="bg-teal-500 rounded-full w-8 h-8 flex items-center justify-center">
                   <span className="text-white font-bold">J</span>
                 </div>
                 <span className="font-bold text-xl">Job Winner</span>
-              </Link>
+              </Link> */}
               <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded">Admin</span>
             </div>
             <nav className="hidden sm:ml-6 sm:flex sm:space-x-8">

@@ -1,15 +1,15 @@
-import { NextResponse } from "next/server"
+import { NextResponse, NextRequest } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "../[...nextauth]/route"
 import { UserRole } from "@/types/enums"
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions)
 
   if (!session || !session.user?.role) {
     return NextResponse.redirect(new URL("/auth/login", request.url))
   }
-console.log("ROLE >> :", session.user.role)
+  console.log("ROLE >> :", session.user.role)
   const target =
     session.user.role == UserRole.ADMIN
       ? "/dashboard/admin"

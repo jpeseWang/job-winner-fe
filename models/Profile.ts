@@ -56,14 +56,12 @@ const ProfileSchema = new Schema<IProfile>(
     },
     title: {
       type: String,
-      required: [true, "Please provide a professional title"],
-      trim: true,
+     
       maxlength: [100, "Title cannot be more than 100 characters"],
     },
     bio: {
       type: String,
-      required: [true, "Please provide a bio"],
-      trim: true,
+     
       maxlength: [1000, "Bio cannot be more than 1000 characters"],
     },
     location: {
