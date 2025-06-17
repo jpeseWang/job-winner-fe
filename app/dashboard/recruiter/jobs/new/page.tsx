@@ -114,13 +114,18 @@ export default function NewJobPage() {
     setIsSubmitting(true)
 
     try {
-      const transformedSalary = formData.salary ? {
-        min: undefined,
-        max: undefined,
-        currency: "USD",
-        isNegotiable: false,
-        period: "yearly",
-      } : undefined;
+      // Parse salary range from string (e.g., "80000-100000")
+      let transformedSalary = undefined;
+      if (formData.salary) {
+        const [minStr, maxStr] = formData.salary.split('-').map(s => s.trim().replace(/[^0-9]/g, ''));
+        transformedSalary = {
+          min: minStr ? parseInt(minStr, 10) : undefined,
+          max: maxStr ? parseInt(maxStr, 10) : undefined,
+          currency: "USD",
+          isNegotiable: false,
+          period: "yearly",
+        };
+      }
 
       const jobData = {
         ...formData,

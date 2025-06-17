@@ -1,5 +1,21 @@
 import mongoose, { type Document, Schema } from "mongoose"
 
+export enum JobCategory{
+  TECHNOLOGY = "Technology",
+  TELECOMMUNICATIONS = "Telecommunications",
+  HEALTH = "Health Medical",
+  EDUCATION = "Education",
+  FINANCIAL = "Financial Services"
+}
+
+export enum JobLocation {
+  HAICHAU = "Hai Chau",
+  LIENCHIEU = "Lien Chieu",
+  SONTRA = "Son Tra",
+  THANHKHE = "Thanh Khe",
+  CAMLE = "Cam Le"
+}
+
 export enum JobType {
   FULL_TIME = "Full-time",
   PART_TIME = "Part-time",
@@ -8,6 +24,14 @@ export enum JobType {
   INTERNSHIP = "Internship",
   TEMPORARY = "Temporary",
   REMOTE = "Remote",
+}
+
+export enum ExperienceLevel {
+  ENTRY = "Entry Level",
+  MID = "Mid Level",
+  SENIOR = "Senior Level",
+  LEAD = "Lead",
+  MANAGER = "Manager",
 }
 
 export enum JobStatus {
@@ -19,14 +43,6 @@ export enum JobStatus {
   REJECTED = "rejected",
 }
 
-export enum ExperienceLevel {
-  ENTRY = "Entry Level",
-  MID = "Mid Level",
-  SENIOR = "Senior Level",
-  LEAD = "Lead",
-  MANAGER = "Manager",
-}
-
 export interface IJob extends Document {
   title: string
   company: string
@@ -36,8 +52,8 @@ export interface IJob extends Document {
   requirements: string[]
   benefits: string[]
   type: JobType
-  category: string
-  location: string
+  category: JobCategory
+  location: JobLocation
   isRemote: boolean
   salary: {
     min?: number
@@ -110,20 +126,20 @@ const JobSchema = new Schema<IJob>(
     },
     category: {
       type: String,
+      enum: Object.values(JobCategory),
       required: [true, "Please specify job category"],
-      trim: true,
     },
     location: {
       type: String,
+      enum: Object.values(JobLocation),
       required: [true, "Please provide job location"],
-      trim: true,
     },
     isRemote: {
       type: Boolean,
       default: false,
     },
     salary: {
-      min: {
+min: {
         type: Number,
       },
       max: {
