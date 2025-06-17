@@ -14,7 +14,7 @@ import CandidatesTab from "@/components/dashboard/recruiter/candidates-tab"
 import AnalyticsTab from "@/components/dashboard/recruiter/analytics-tab"
 
 interface Job {
-  id: string
+  _id: string
   title: string
   company: string
   location: string
@@ -44,13 +44,19 @@ export default function RecruiterDashboard() {
           throw new Error("Failed to fetch jobs")
         }
         const result = await response.json()
-        setJobs(result.jobs)
+        console.log('API Response:', result) // Debug log
         
-        // Calculate stats
+        // Get jobs from the data property
+        const jobsArray = result.data || []
+        console.log('Jobs array:', jobsArray) // Debug log
+        
+        setJobs(jobsArray)
+        
+        // Calculate stats with null checks
         setStats({
-          totalJobs: result.jobs.length,
-          activeJobs: result.jobs.filter((job: Job) => job.status === "active").length,
-          totalApplications: result.jobs.reduce((sum: number, job: Job) => sum + job.applications, 0)
+          totalJobs: jobsArray?.length || 0,
+          activeJobs: jobsArray?.filter((job: Job) => job?.status === "active")?.length || 0,
+          totalApplications: jobsArray?.reduce((sum: number, job: Job) => sum + (job?.applications || 0), 0) || 0
         })
       } catch (error) {
         console.error("Error fetching jobs:", error)
@@ -140,15 +146,15 @@ export default function RecruiterDashboard() {
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
-              ) : jobs.length === 0 ? (
+              ) : !jobs || jobs.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   No jobs posted yet. Create your first job posting!
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {jobs.slice(0, 5).map((job) => (
+                  {jobs.slice(0, 10).map((job) => (
                     <div
-                      key={job.id}
+                      key={job._id}
                       className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                     >
                       <div className="space-y-1">
@@ -170,14 +176,14 @@ export default function RecruiterDashboard() {
                           </p>
                         </div>
                         <Button variant="outline" size="sm" asChild>
-                          <Link href={`/dashboard/recruiter/jobs/${job.id}`}>
+                          <Link href={`/dashboard/recruiter/jobs/${job._id}`}>
                             View Details
                           </Link>
                         </Button>
                       </div>
                     </div>
                   ))}
-                  {jobs.length > 5 && (
+                  {jobs.length > 10 && (
                     <div className="text-center">
                       <Button variant="link" asChild>
                         <Link href="/dashboard/recruiter/jobs">View All Jobs</Link>

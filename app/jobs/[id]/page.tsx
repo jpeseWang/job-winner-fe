@@ -46,18 +46,24 @@ export default function JobDetailsPage({ params }: JobDetailsPageProps) {
 
   // Helper function to format salary
   const formatSalary = (salary: Job['salary']) => {
-    if (!salary) return ""
-    if (salary.isNegotiable) return "Negotiable"
+    console.log('Raw salary data:', salary); // Debug log
     
-    let salaryString = ""
-    if (salary.min) salaryString += `$${salary.min}`
-    if (salary.min && salary.max) salaryString += " - "
-    if (salary.max) salaryString += `$${salary.max}`
-    if (salary.period) salaryString += ` per ${salary.period}`
-    return salaryString.trim()
+    if (!salary) return "Not specified";
+    if (salary.isNegotiable) return "Negotiable";
+    
+    let salaryString = "";
+    if (salary.min) salaryString += `${salary.min.toLocaleString()}`;
+    if (salary.min && salary.max) salaryString += " - ";
+    if (salary.max) salaryString += `${salary.max.toLocaleString()}`;
+    if (salary.currency) salaryString += ` ${salary.currency}`;
+    if (salary.period) salaryString += ` per ${salary.period}`;
+    
+    console.log('Formatted salary:', salaryString); // Debug log
+    return salaryString.trim() || "Not specified";
   }
 
   const formattedSalary = formatSalary(job.salary);
+  console.log('Job salary:', job.salary); // Debug log
 
   return (
     <main className="flex flex-col min-h-screen">

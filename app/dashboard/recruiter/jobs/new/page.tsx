@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch"
 import { categories } from "@/lib/data"
 import { Loader2, Plus, Trash2 } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
+import { JobLocation, JobCategory } from "@/types/enums"
 
 export default function NewJobPage() {
   const router = useRouter()
@@ -20,8 +21,8 @@ export default function NewJobPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [requirements, setRequirements] = useState<string[]>([""])
   const [benefits, setBenefits] = useState<string[]>([""])
-  const [responsibilities, setResponsibilities] = useState<string[]>([])
-  const [skills, setSkills] = useState<string[]>([])
+  const [responsibilities, setResponsibilities] = useState<string[]>([""])
+  const [skills, setSkills] = useState<string[]>([""])
   const [formData, setFormData] = useState({
     title: "",
     company: "",
@@ -114,13 +115,18 @@ export default function NewJobPage() {
     setIsSubmitting(true)
 
     try {
-      const transformedSalary = formData.salary ? {
-        min: undefined,
-        max: undefined,
-        currency: "USD",
-        isNegotiable: false,
-        period: "yearly",
-      } : undefined;
+      // Parse salary range from string (e.g., "80000-100000")
+      let transformedSalary = undefined;
+      if (formData.salary) {
+        const [minStr, maxStr] = formData.salary.split('-').map(s => s.trim().replace(/[^0-9]/g, ''));
+        transformedSalary = {
+          min: minStr ? parseInt(minStr, 10) : undefined,
+          max: maxStr ? parseInt(maxStr, 10) : undefined,
+          currency: "USD",
+          isNegotiable: false,
+          period: "yearly",
+        };
+      }
 
       const jobData = {
         ...formData,
@@ -148,6 +154,7 @@ export default function NewJobPage() {
       console.log('Response:', data)
 
       if (!response.ok) {
+        console.error('API Error Response:', data);
         let errorMessage = "Failed to create job"
         if (data.error) {
           if (Array.isArray(data.error) && data.error.length > 0) {
@@ -217,14 +224,21 @@ export default function NewJobPage() {
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="location">Location</Label>
-                  <Input
-                    id="location"
-                    name="location"
-                    placeholder="e.g. New York, USA"
+                  <Select
                     value={formData.location}
-                    onChange={handleInputChange}
-                    required
-                  />
+                    onValueChange={(value) => handleSelectChange("location", value)}
+                  >
+                    <SelectTrigger id="location">
+                      <SelectValue placeholder="Select job location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.values(JobLocation).map((location) => (
+                        <SelectItem key={location} value={location}>
+                          {location}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
@@ -249,18 +263,18 @@ export default function NewJobPage() {
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
+                  <Label htmlFor="category">Job Category</Label>
                   <Select
                     value={formData.category}
                     onValueChange={(value) => handleSelectChange("category", value)}
                   >
                     <SelectTrigger id="category">
-                      <SelectValue placeholder="Select category" />
+                      <SelectValue placeholder="Select job category" />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.name}
+                      {Object.values(JobCategory).map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
                         </SelectItem>
                       ))}
                     </SelectContent>
