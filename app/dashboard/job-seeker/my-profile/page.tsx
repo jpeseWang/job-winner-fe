@@ -302,7 +302,7 @@ export default function MyProfilePage() {
 
 
                 </div>
-                <h2 className="text-xl font-semibold">{profile.name || "Your Name"}</h2>
+                <h2 className="text-xl font-semibold">{profile.user.name || "Your Name"}</h2>
                 <p className="text-gray-500">{profile.title || "Your Title"}</p>
               </div>
 
