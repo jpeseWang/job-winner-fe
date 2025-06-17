@@ -11,7 +11,7 @@ import { Loader2 } from "lucide-react"
 import type { Job } from "@/types/interfaces"
 
 export default function JobsPage() {
-  const [sort, setSort] = useState<"latest" | "oldest">("latest")
+  const [sort, setSort] = useState<JobFiltersType["sort"]>("latest")
 
   const [filters, setFilters] = useState<JobFiltersType>({
     keyword: "",
@@ -64,7 +64,7 @@ export default function JobsPage() {
                     <select
                       value={sort}
                       onChange={(e) => {
-                        setSort(e.target.value as "latest" | "oldest")
+                        setSort(e.target.value as JobFiltersType["sort"])
                         goToPage(1)
                         window.scrollTo({ top: 0, behavior: "smooth" })
                       }}
@@ -72,6 +72,8 @@ export default function JobsPage() {
                     >
                       <option value="latest">Latest</option>
                       <option value="oldest">Oldest</option>
+                      <option value="highestSalary">Highest Salary</option>
+                      <option value="lowestSalary">Lowest Salary</option>
                     </select>
                 </div>
               </div>

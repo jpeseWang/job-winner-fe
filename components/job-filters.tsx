@@ -1,10 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Filter, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { jobService } from "@/services"
 import type { Filters } from "@/types/interfaces/job"
+import { debounce } from "lodash"
 
 type Props = {
   onChange: (filters: {
@@ -42,6 +43,21 @@ export default function JobFilters({ onChange }: Props) {
     fetchFilters()
   }, [])
 
+  // ✅ Debounced keyword handler
+  const debouncedKeywordChange = useMemo(
+    () =>
+      debounce((updatedKeyword: string) => {
+        onChange({
+          keyword: updatedKeyword,
+          location: selected.location,
+          category: [...selected.categories],
+          type: [...selected.types],
+          experienceLevel: [...selected.experienceLevels],
+        })
+      }, 300),
+    [selected]
+  )
+
   const toggle = (
     field: "categories" | "types" | "experienceLevels",
     val: string
@@ -78,7 +94,11 @@ export default function JobFilters({ onChange }: Props) {
             type="text"
             placeholder="e.g. Web Developer"
             value={selected.keyword}
-            onChange={(e) => setSelected({ ...selected, keyword: e.target.value })}
+            onChange={(e) => {
+              const keyword = e.target.value
+              setSelected((prev) => ({ ...prev, keyword }))
+              debouncedKeywordChange(keyword)
+            }}
             className="w-full border rounded-md px-3 py-2 text-sm"
           />
         </div>
@@ -102,7 +122,7 @@ export default function JobFilters({ onChange }: Props) {
         <div className="mb-6">
           <h4 className="font-medium mb-2">Category</h4>
           <div className="space-y-2">
-            {filters.categories.map((cat: { label: string; count: number }) => (
+            {filters.categories.map((cat) => (
               <div key={cat.label} className="flex items-center">
                 <input
                   type="checkbox"
@@ -111,7 +131,9 @@ export default function JobFilters({ onChange }: Props) {
                   onChange={() => toggle("categories", cat.label)}
                   className="mr-2"
                 />
-                <label htmlFor={`cat-${cat.label}`} className="text-sm">{cat.label}</label>
+                <label htmlFor={`cat-${cat.label}`} className="text-sm">
+                  {cat.label}
+                </label>
                 <span className="ml-auto text-xs text-gray-500">({cat.count})</span>
               </div>
             ))}
@@ -121,7 +143,7 @@ export default function JobFilters({ onChange }: Props) {
         <div className="mb-6">
           <h4 className="font-medium mb-2">Job Type</h4>
           <div className="space-y-2">
-            {filters.types.map((type: { label: string; count: number }) => (
+            {filters.types.map((type) => (
               <div key={type.label} className="flex items-center">
                 <input
                   type="checkbox"
@@ -130,7 +152,9 @@ export default function JobFilters({ onChange }: Props) {
                   onChange={() => toggle("types", type.label)}
                   className="mr-2"
                 />
-                <label htmlFor={`type-${type.label}`} className="text-sm">{type.label}</label>
+                <label htmlFor={`type-${type.label}`} className="text-sm">
+                  {type.label}
+                </label>
                 <span className="ml-auto text-xs text-gray-500">({type.count})</span>
               </div>
             ))}
@@ -140,7 +164,7 @@ export default function JobFilters({ onChange }: Props) {
         <div className="mb-6">
           <h4 className="font-medium mb-2">Experience Level</h4>
           <div className="space-y-2">
-            {filters.experienceLevels.map((exp: { label: string; count: number }) => (
+            {filters.experienceLevels.map((exp) => (
               <div key={exp.label} className="flex items-center">
                 <input
                   type="checkbox"
@@ -149,7 +173,9 @@ export default function JobFilters({ onChange }: Props) {
                   onChange={() => toggle("experienceLevels", exp.label)}
                   className="mr-2"
                 />
-                <label htmlFor={`exp-${exp.label}`} className="text-sm">{exp.label}</label>
+                <label htmlFor={`exp-${exp.label}`} className="text-sm">
+                  {exp.label}
+                </label>
                 <span className="ml-auto text-xs text-gray-500">({exp.count})</span>
               </div>
             ))}

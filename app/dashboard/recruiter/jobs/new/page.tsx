@@ -10,10 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { categories } from "@/lib/data"
 import { Loader2, Plus, Trash2 } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
-import { JobLocation, JobCategory } from "@/types/enums"
+import { JobLocation, JobCategory, JobType, ExperienceLevel } from "@/types/enums"
 
 export default function NewJobPage() {
   const router = useRouter()
@@ -251,11 +250,11 @@ export default function NewJobPage() {
                       <SelectValue placeholder="Select job type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Full-time">Full-time</SelectItem>
-                      <SelectItem value="Part-time">Part-time</SelectItem>
-                      <SelectItem value="Contract">Contract</SelectItem>
-                      <SelectItem value="Freelance">Freelance</SelectItem>
-                      <SelectItem value="Internship">Internship</SelectItem>
+                      {Object.values(JobType).map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -291,11 +290,11 @@ export default function NewJobPage() {
                       <SelectValue placeholder="Select experience level" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Entry Level">Entry Level</SelectItem>
-                      <SelectItem value="Mid Level">Mid Level</SelectItem>
-                      <SelectItem value="Senior Level">Senior Level</SelectItem>
-                      <SelectItem value="Lead">Lead</SelectItem>
-                      <SelectItem value="Manager">Manager</SelectItem>
+                      {Object.values(ExperienceLevel).map((level) => (
+                        <SelectItem key={level} value={level}>
+                          {level}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

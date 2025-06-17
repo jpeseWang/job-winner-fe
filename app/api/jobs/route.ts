@@ -43,10 +43,27 @@ export async function GET(req: NextRequest) {
 
   const skip = (parseInt(page) - 1) * parseInt(limit)
 
-  const sortOrder = sort === "oldest" ? 1 : -1
+  // ✅ Xử lý sort theo sort param
+  let sortOption: any = {}
+
+  switch (sort) {
+    case "oldest":
+      sortOption = { createdAt: 1 }
+      break
+    case "highestSalary":
+      sortOption = { "salary.max": -1 }
+      break
+    case "lowestSalary":
+      sortOption = { "salary.max": 1 }
+      break
+    case "latest":
+    default:
+      sortOption = { createdAt: -1 }
+      break
+  }
 
   const [data, total] = await Promise.all([
-    Job.find(query).skip(skip).limit(+limit).sort({ createdAt: sortOrder }),
+    Job.find(query).skip(skip).limit(+limit).sort(sortOption),
     Job.countDocuments(query),
   ])
 
