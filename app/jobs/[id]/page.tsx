@@ -1,12 +1,16 @@
+"use client"
+
 import Image from "next/image"
 import Link from "next/link"
-import { Briefcase, MapPin, Clock, DollarSign, Building, GraduationCap, Bookmark } from "lucide-react"
+import { Briefcase, MapPin, Clock, DollarSign, Building, GraduationCap, Bookmark, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import JobContactForm from "@/components/jobs/job-contact-form"
 import RelatedJobs from "@/components/jobs/related-jobs"
-import { jobService } from "@/services/jobService"
+import { useJob } from "@/hooks/useJobs"
+import { useToast } from "@/components/ui/use-toast"
+import type { Job } from "@/types/interfaces"
 
 interface JobDetailsPageProps {
   params: {
@@ -14,35 +18,61 @@ interface JobDetailsPageProps {
   }
 }
 
-export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
-  // In a real app, fetch job data from API
-  const job = await jobService.getJobById(params.id)
+export default function JobDetailsPage({ params }: JobDetailsPageProps) {
+  const { toast } = useToast()
+  const { job, isLoading, error } = useJob(params.id)
 
-  if (!job) {
+  if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold">Job not found</h1>
-        <p className="mt-4">The job you're looking for doesn't exist or has been removed.</p>
-        <Button asChild className="mt-6">
-          <Link href="/jobs">Browse Jobs</Link>
-        </Button>
-      </div>
+      <main className="flex flex-col min-h-screen items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin" />
+        <p className="mt-2 text-gray-500">Loading job details...</p>
+      </main>
     )
   }
 
+  if (error || !job) {
+    toast({
+      title: "Error",
+      description: error ? error.message : "Failed to load job details.",
+      variant: "destructive",
+    })
+    return (
+      <main className="flex flex-col min-h-screen items-center justify-center">
+        <p className="text-lg text-gray-500">Job not found or an error occurred.</p>
+      </main>
+    )
+  }
+
+  // Helper function to format salary
+  const formatSalary = (salary: Job['salary']) => {
+    console.log('Raw salary data:', salary); // Debug log
+    
+    if (!salary) return "Not specified";
+    if (salary.isNegotiable) return "Negotiable";
+    
+    let salaryString = "";
+    if (salary.min) salaryString += `${salary.min.toLocaleString()}`;
+    if (salary.min && salary.max) salaryString += " - ";
+    if (salary.max) salaryString += `${salary.max.toLocaleString()}`;
+    if (salary.currency) salaryString += ` ${salary.currency}`;
+    if (salary.period) salaryString += ` per ${salary.period}`;
+    
+    console.log('Formatted salary:', salaryString); // Debug log
+    return salaryString.trim() || "Not specified";
+  }
+
+  const formattedSalary = formatSalary(job.salary);
+  console.log('Job salary:', job.salary); // Debug log
+
   return (
     <main className="flex flex-col min-h-screen">
-      {/* Hero Section */}
-      <section className="bg-black text-white py-16">
-        <div className="container mx-auto text-center">
-          <h1 className="text-4xl font-bold mb-4">Job Details</h1>
-        </div>
-      </section>
-
       {/* Job Posted Time */}
       <div className="container mx-auto px-4 md:px-6 py-4">
         <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-500">10 min ago</span>
+          <span className="text-sm text-gray-500">
+            Posted {job.postedDays} days ago
+          </span>
           <Button variant="outline" size="icon">
             <Bookmark className="h-4 w-4" />
             <span className="sr-only">Save job</span>
@@ -89,11 +119,19 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <DollarSign className="h-4 w-4 text-gray-400" />
-                <span>{job.salary}</span>
+                <span>{formattedSalary}</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Clock className="h-4 w-4 text-gray-400" />
-                <span>Apply by {new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}</span>
+                <span>
+                  {job.applicationDeadline 
+                    ? `Apply by ${new Date(job.applicationDeadline).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}`
+                    : 'No deadline specified'}
+                </span>
               </div>
             </div>
 
@@ -101,73 +139,65 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
             <div>
               <h2 className="text-xl font-semibold mb-4">Job Description</h2>
               <p className="text-gray-600 mb-4">
-                Nunc sed tempus dui nisi sed massa. Ornare varius faucibus nisi vitae vitae cras ornare. Cras facilisis
-                dignissim augue lorem amet adipiscing cursus fames mauris. Tortor amet porta proin in. Orci imperdiet
-                nisi dignissim pellentesque morbi vitae. Quisque tincidunt metus lectus porta eget blandit suscipit sem
-                nunc. Tortor gravida amet amet sapien mauris massa.Tortor varius nam malesuada duis blandit elit sit et.
-                Ante mauris morbi diam habitant donec.
-              </p>
-              <p className="text-gray-600">
-                Et nunc ut tempus duis nisi sed massa. Ornare varius faucibus nisi vitae vitae cras ornare. Cras
-                facilisis dignissim augue lorem amet adipiscing cursus fames mauris. Tortor amet porta proin in. Orci
-                imperdiet nisi dignissim pellentesque morbi vitae. Quisque tincidunt metus lectus porta eget blandit
-                suscipit sem nunc. Tortor varius nam malesuada duis blandit elit sit et.
+                {job.description}
               </p>
             </div>
 
             {/* Key Responsibilities */}
-            <div>
-              <h2 className="text-xl font-semibold mb-4">Key Responsibilities</h2>
-              <ul className="space-y-3">
-                {[1, 2, 3, 4, 5].map((item) => (
-                  <li key={item} className="flex items-start gap-2">
-                    <div className="mt-1 text-teal-500">✓</div>
-                    <p className="text-gray-600">
-                      {item % 2 === 0
-                        ? "Cras facilisis dignissim augue lorem amet adipiscing cursus fames mauris. Tortor amet porta proin in."
-                        : "Et nunc ut tempus duis nisi sed massa. Ornare varius faucibus nisi vitae vitae cras ornare. Cras facilisis dignissim augue."}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {job.responsibilities && job.responsibilities.length > 0 && (
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Key Responsibilities</h2>
+                <ul className="space-y-3">
+                  {job.responsibilities.map((resp, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <div className="mt-1 text-teal-500">✓</div>
+                      <p className="text-gray-600">{resp}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
-            {/* Professional Skills */}
-            <div>
-              <h2 className="text-xl font-semibold mb-4">Professional Skills</h2>
-              <ul className="space-y-3">
-                {[1, 2, 3, 4, 5].map((item) => (
-                  <li key={item} className="flex items-start gap-2">
-                    <div className="mt-1 text-teal-500">✓</div>
-                    <p className="text-gray-600">
-                      {item % 2 === 0
-                        ? "Ornare varius faucibus nisi vitae vitae cras ornare."
-                        : "Tortor amet porta proin in. Orci imperdiet nisi dignissim pellentesque morbi vitae."}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {/* Professional Skills / Requirements */}
+            {job.requirements && job.requirements.length > 0 && (
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Requirements</h2>
+                <ul className="space-y-3">
+                  {job.requirements.map((req, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <div className="mt-1 text-teal-500">✓</div>
+                      <p className="text-gray-600">{req}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            {job.skills && job.skills.length > 0 && (
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Professional Skills</h2>
+                <ul className="space-y-3">
+                  {job.skills.map((skill, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <div className="mt-1 text-teal-500">✓</div>
+                      <p className="text-gray-600">{skill}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Tags */}
             <div>
               <h3 className="font-semibold mb-3">Tags:</h3>
               <div className="flex flex-wrap gap-2">
-                <Badge variant="outline" className="bg-gray-50 hover:bg-gray-100">
-                  Full-time
-                </Badge>
-                <Badge variant="outline" className="bg-gray-50 hover:bg-gray-100">
-                  Commerce
-                </Badge>
-                <Badge variant="outline" className="bg-gray-50 hover:bg-gray-100">
-                  New York
-                </Badge>
-                <Badge variant="outline" className="bg-gray-50 hover:bg-gray-100">
-                  Corporate
-                </Badge>
-                <Badge variant="outline" className="bg-gray-50 hover:bg-gray-100">
-                  Location
-                </Badge>
+                <Badge variant="outline" className="bg-gray-50 hover:bg-gray-100">{job.type}</Badge>
+                <Badge variant="outline" className="bg-gray-50 hover:bg-gray-100">{job.category}</Badge>
+                <Badge variant="outline" className="bg-gray-50 hover:bg-gray-100">{job.location}</Badge>
+                {job.isRemote && <Badge variant="outline" className="bg-gray-50 hover:bg-gray-100">Remote-friendly</Badge>}
+                {job.skills?.map((skill, index) => (
+                  <Badge key={index} variant="outline" className="bg-gray-50 hover:bg-gray-100">{skill}</Badge>
+                ))}
               </div>
             </div>
 
@@ -255,7 +285,7 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
                   </div>
                   <div>
                     <h4 className="text-sm font-medium">Experience</h4>
-                    <p className="text-gray-600">3-5 Years</p>
+                    <p className="text-gray-600">{job.experienceLevel}</p>
                   </div>
                 </div>
 
@@ -265,7 +295,7 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
                   </div>
                   <div>
                     <h4 className="text-sm font-medium">Degree</h4>
-                    <p className="text-gray-600">Bachelor</p>
+                    <p className="text-gray-600">{job.educationLevel || 'Not specified'}</p>
                   </div>
                 </div>
 
@@ -275,7 +305,7 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
                   </div>
                   <div>
                     <h4 className="text-sm font-medium">Offered Salary</h4>
-                    <p className="text-gray-600">{job.salary}</p>
+                    <p className="text-gray-600">{formattedSalary}</p>
                   </div>
                 </div>
 
@@ -293,7 +323,7 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
               {/* Map */}
               <div className="mt-4 h-[150px] w-full rounded-md overflow-hidden">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d193595.15830869428!2d-74.11976397304903!3d40.69766374874431!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c24fa5d33f083b%3A0xc80b8f06e177fe62!2sNew%20York%2C%20NY%2C%20USA!5e0!3m2!1sen!2s!4v1716151234567!5m2!1sen!2s"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.241263499315!2d-122.4141656846827!3d37.77492977975927!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8085808f1a3e7b7b%3A0x3a9c9b1c1e0b3f7d!2sSan%20Francisco%2C%20CA%2C%20USA!5e0!3m2!1sen!2s!4v1634151234567!5m2!1sen!2s"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}

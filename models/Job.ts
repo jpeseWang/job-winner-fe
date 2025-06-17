@@ -1,43 +1,23 @@
 import mongoose, { type Document, Schema } from "mongoose"
-
-export enum JobType {
-  FULL_TIME = "Full-time",
-  PART_TIME = "Part-time",
-  CONTRACT = "Contract",
-  FREELANCE = "Freelance",
-  INTERNSHIP = "Internship",
-  TEMPORARY = "Temporary",
-}
-
-export enum JobStatus {
-  DRAFT = "draft",
-  PENDING = "pending",
-  ACTIVE = "active",
-  PAUSED = "paused",
-  CLOSED = "closed",
-  REJECTED = "rejected",
-}
-
-export enum ExperienceLevel {
-  ENTRY = "Entry level",
-  JUNIOR = "Junior",
-  MID = "Mid level",
-  SENIOR = "Senior",
-  LEAD = "Lead",
-  EXECUTIVE = "Executive",
-}
+import {
+  JobType,
+  JobStatus,
+  JobCategory,
+  JobLocation,
+  ExperienceLevel,
+} from "@/types/enums"
 
 export interface IJob extends Document {
   title: string
-  company: mongoose.Types.ObjectId
-  recruiter: mongoose.Types.ObjectId
+  company: string
+  recruiter: string
   description: string
   responsibilities: string[]
   requirements: string[]
   benefits: string[]
   type: JobType
-  category: string
-  location: string
+  category: JobCategory
+  location: JobLocation
   isRemote: boolean
   salary: {
     min?: number
@@ -71,14 +51,14 @@ const JobSchema = new Schema<IJob>(
       maxlength: [100, "Job title cannot be more than 100 characters"],
     },
     company: {
-      type: Schema.Types.ObjectId,
-      ref: "Company",
-      required: true,
+      type: String,
+      required: [true, "Please provide a company name"],
+      trim: true,
     },
     recruiter: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+      type: String,
+      required: [true, "Please provide a recruiter ID"],
+      trim: true,
     },
     description: {
       type: String,
@@ -110,20 +90,20 @@ const JobSchema = new Schema<IJob>(
     },
     category: {
       type: String,
+      enum: Object.values(JobCategory),
       required: [true, "Please specify job category"],
-      trim: true,
     },
     location: {
       type: String,
+      enum: Object.values(JobLocation),
       required: [true, "Please provide job location"],
-      trim: true,
     },
     isRemote: {
       type: Boolean,
       default: false,
     },
     salary: {
-      min: {
+min: {
         type: Number,
       },
       max: {
@@ -194,6 +174,10 @@ const JobSchema = new Schema<IJob>(
     publishedAt: {
       type: Date,
     },
+    updatedAt: {
+      type: Date,
+      default: Date.now,
+    }
   },
   { timestamps: true },
 )
@@ -203,6 +187,7 @@ JobSchema.pre("save", function (next) {
   if (this.isModified("status") && this.status === JobStatus.ACTIVE && !this.publishedAt) {
     this.publishedAt = new Date()
   }
+  this.updatedAt = new Date()
   next()
 })
 
@@ -216,5 +201,10 @@ JobSchema.index({
   location: "text",
   category: "text",
 })
+
+// Delete the existing model if it exists to prevent the "Cannot overwrite model once compiled" error
+// if (mongoose.models.Job) {
+//   delete mongoose.models.Job
+// }
 
 export default mongoose.models.Job || mongoose.model<IJob>("Job", JobSchema)

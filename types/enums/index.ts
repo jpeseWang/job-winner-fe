@@ -39,3 +39,27 @@ export enum SortOrder {
   ASC = "asc",
   DESC = "desc",
 }
+
+export enum JobCategory{
+  TECHNOLOGY = "Technology",
+  TELECOMMUNICATIONS = "Telecommunications",
+  HEALTH = "Health Medical",
+  EDUCATION = "Education",
+  FINANCIAL = "Financial Services"
+}
+
+export enum JobLocation {
+  HAICHAU = "Hai Chau",
+  LIENCHIEU = "Lien Chieu",
+  SONTRA = "Son Tra",
+  THANHKHE = "Thanh Khe",
+  CAMLE = "Cam Le"
+}
+
+export enum ExperienceLevel {
+  ENTRY = "Entry Level",
+  MID = "Mid Level",
+  SENIOR = "Senior Level",
+  LEAD = "Lead",
+  MANAGER = "Manager",
+}

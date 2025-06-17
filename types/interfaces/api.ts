@@ -1,8 +1,6 @@
-
-
 // API response interfaces
 export interface PaginatedResponse<T> {
-  data: T[]
+  jobs: T[]
   total: number
   page: number
   limit: number

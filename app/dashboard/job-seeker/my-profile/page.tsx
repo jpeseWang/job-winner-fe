@@ -17,32 +17,39 @@ import { userService } from "@/services"
 import { validateProfile } from "@/utils/validators"
 import { Plus, Trash2, Upload, Save, User, MapPin, Mail, Phone, Briefcase, GraduationCap, Award } from "lucide-react"
 import { DEFAULT_AVATAR } from "@/constants"
+import { useAuth } from "@/hooks/use-auth"
+import { IUserProfile, IUser } from "@/types/interfaces/user"
 
 export default function MyProfilePage() {
   const router = useRouter()
   const { toast } = useToast()
+  const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState("personal")
 
-  const [profile, setProfile] = useState({
-    name: "",
+  const [profile, setProfile] = useState<IUserProfile>({
+
+    id: user?.id || "",
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: "",
     title: "",
     location: "",
-    bio: "",
-    contactEmail: "",
-    phone: "",
-    skills: [] as string[],
-    experience: [] as any[],
-    education: [] as any[],
+    profilePicture: DEFAULT_AVATAR,
     socialLinks: {
       linkedin: "",
       github: "",
       twitter: "",
       portfolio: "",
     },
-    profilePicture: DEFAULT_AVATAR,
-    resumeUrl: "",
+    skills: [],
+    experience: [],
+    education: [],
     isPublic: true,
+    bio: "",
+    contactEmail: user?.email || "",
+    resumeUrl: "",
+
   })
 
   useEffect(() => {
@@ -50,7 +57,10 @@ export default function MyProfilePage() {
       try {
         setIsLoading(true)
         // In a real app, you would get the user ID from the session
-        const userId = "user-1" // Mock user ID
+        const userId = user?.id
+        if (!userId) {
+          throw new Error("User ID is missing")
+        }
         const userProfile = await userService.getUserProfile(userId)
 
         if (userProfile) {
@@ -92,7 +102,7 @@ export default function MyProfilePage() {
 
   const handleSkillChange = (index: number, value: string) => {
     setProfile((prev) => {
-      const newSkills = [...prev.skills]
+      const newSkills = [...(prev.skills || [])]
       newSkills[index] = value
       return { ...prev, skills: newSkills }
     })
@@ -101,7 +111,7 @@ export default function MyProfilePage() {
   const addSkill = () => {
     setProfile((prev) => ({
       ...prev,
-      skills: [...prev.skills, ""],
+      skills: [...(prev.skills || []), ""],
     }))
   }
 
@@ -130,8 +140,8 @@ export default function MyProfilePage() {
           title: "",
           company: "",
           location: "",
-          startDate: "",
-          endDate: "",
+          startDate: new Date(),
+          endDate: new Date(),
           description: "",
         },
       ],
@@ -163,8 +173,8 @@ export default function MyProfilePage() {
           degree: "",
           institution: "",
           location: "",
-          startDate: "",
-          endDate: "",
+          startDate: new Date(),
+          endDate: new Date(),
         },
       ],
     }))
@@ -225,7 +235,7 @@ export default function MyProfilePage() {
       }
 
       // In a real app, you would get the user ID from the session
-      const userId = "user-1" // Mock user ID
+      const userId = user?.id || ""
       await userService.updateUserProfile(userId, profile)
 
       toast({
@@ -243,6 +253,7 @@ export default function MyProfilePage() {
     }
   }
 
+  console.log("Profile data > ", profile)
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex justify-between items-center mb-6">
@@ -294,7 +305,7 @@ export default function MyProfilePage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-gray-500" />
-                  <span>{profile.contactEmail || "your.email@example.com"}</span>
+                  <span>{profile.email || "your.email@example.com"}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-gray-500" />
@@ -435,7 +446,7 @@ export default function MyProfilePage() {
                         <Input
                           id="linkedin"
                           name="linkedin"
-                          value={profile.socialLinks.linkedin}
+                          value={profile.socialLinks?.linkedin}
                           onChange={handleSocialLinkChange}
                           placeholder="https://linkedin.com/in/username"
                         />
@@ -445,7 +456,7 @@ export default function MyProfilePage() {
                         <Input
                           id="github"
                           name="github"
-                          value={profile.socialLinks.github}
+                          value={profile.socialLinks?.github}
                           onChange={handleSocialLinkChange}
                           placeholder="https://github.com/username"
                         />
@@ -455,7 +466,7 @@ export default function MyProfilePage() {
                         <Input
                           id="twitter"
                           name="twitter"
-                          value={profile.socialLinks.twitter}
+                          value={profile.socialLinks?.twitter}
                           onChange={handleSocialLinkChange}
                           placeholder="https://twitter.com/username"
                         />
@@ -465,7 +476,7 @@ export default function MyProfilePage() {
                         <Input
                           id="portfolio"
                           name="portfolio"
-                          value={profile.socialLinks.portfolio}
+                          value={profile.socialLinks?.portfolio}
                           onChange={handleSocialLinkChange}
                           placeholder="https://yourportfolio.com"
                         />
@@ -475,7 +486,7 @@ export default function MyProfilePage() {
                 </TabsContent>
 
                 <TabsContent value="experience" className="space-y-6">
-                  {profile.experience.map((exp, index) => (
+                  {profile.experience?.map((exp, index) => (
                     <Card key={index}>
                       <CardHeader className="pb-2">
                         <div className="flex justify-between">
@@ -525,7 +536,7 @@ export default function MyProfilePage() {
                               <Input
                                 id={`exp-start-${index}`}
                                 type="month"
-                                value={exp.startDate}
+                                value={exp.startDate instanceof Date ? exp.startDate.toISOString().slice(0, 7) : exp.startDate}
                                 onChange={(e) => handleExperienceChange(index, "startDate", e.target.value)}
                               />
                             </div>
@@ -534,7 +545,7 @@ export default function MyProfilePage() {
                               <Input
                                 id={`exp-end-${index}`}
                                 type="month"
-                                value={exp.endDate}
+                                value={exp.endDate instanceof Date ? exp.endDate.toISOString().slice(0, 7) : exp.endDate}
                                 onChange={(e) => handleExperienceChange(index, "endDate", e.target.value)}
                                 placeholder="Present"
                               />
@@ -615,7 +626,7 @@ export default function MyProfilePage() {
                               <Input
                                 id={`edu-start-${index}`}
                                 type="month"
-                                value={edu.startDate}
+                                value={edu.startDate instanceof Date ? edu.startDate.toISOString().slice(0, 7) : edu.startDate}
                                 onChange={(e) => handleEducationChange(index, "startDate", e.target.value)}
                               />
                             </div>
@@ -624,7 +635,7 @@ export default function MyProfilePage() {
                               <Input
                                 id={`edu-end-${index}`}
                                 type="month"
-                                value={edu.endDate}
+                                value={edu.endDate instanceof Date ? edu.endDate.toISOString().slice(0, 7) : edu.endDate}
                                 onChange={(e) => handleEducationChange(index, "endDate", e.target.value)}
                               />
                             </div>
@@ -650,7 +661,7 @@ export default function MyProfilePage() {
                       Add skills that showcase your expertise. These will be visible to recruiters.
                     </p>
 
-                    {profile.skills.map((skill, index) => (
+                    {profile.skills?.map((skill, index) => (
                       <div key={index} className="flex items-center gap-2">
                         <Input
                           value={skill}
