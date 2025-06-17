@@ -7,7 +7,8 @@ export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions)
 
   if (!session || !session.user?.role) {
-    const loginUrl = new URL("/auth/login", request.url)
+    const loginUrl = request.nextUrl.clone()
+    loginUrl.pathname = '/auth/login'
     return NextResponse.redirect(loginUrl)
   }
 
@@ -26,8 +27,7 @@ export async function GET(request: NextRequest) {
       targetPath = "/unauthorized";
       break;
   }
-
-  const redirectUrl = new URL(request.url)
+  const redirectUrl = request.nextUrl.clone()
   redirectUrl.pathname = targetPath
 
   return NextResponse.redirect(redirectUrl)
