@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { useJobs } from "@/hooks/useJobs"
 import { Loader2 } from "lucide-react"
 import type { Job } from "@/types/interfaces"
+import { formatSalary } from "@/utils/formatters";
 
 export default function JobsPage() {
   const [sort, setSort] = useState<JobFiltersType["sort"]>("latest")
@@ -89,16 +90,7 @@ export default function JobsPage() {
                     {jobs.map((job: Job, idx: number) => {
                       const uniqueKey = (job as any)._id ?? job.id ?? idx
                       const jobId = (job as any)._id ?? job.id ?? ""
-
-                      const salaryString = job.salary
-                        ? job.salary.isNegotiable
-                          ? "Negotiable"
-                          : `${job.salary.min ? `$${job.salary.min}` : ""}${
-                              job.salary.min && job.salary.max ? " - " : ""
-                            }${job.salary.max ? `$${job.salary.max}` : ""} per ${
-                              job.salary.period
-                            }`
-                        : ""
+                      const salaryString = formatSalary(job.salary)
 
                       return (
                         <JobCard
@@ -108,10 +100,11 @@ export default function JobsPage() {
                           company={job.company}
                           location={job.location}
                           type={job.type}
+                          category={job.category}
+                          experienceLevel={job.experienceLevel}
                           salary={salaryString}
                           postedDays={job.postedDays || 0}
                           logo={job.companyLogo || "/placeholder.svg?height=40&width=40"}
-                          detailed
                         />
                       )
                     })}

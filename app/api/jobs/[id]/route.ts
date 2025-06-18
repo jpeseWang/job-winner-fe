@@ -2,16 +2,22 @@ import { NextResponse } from "next/server"
 import dbConnect from '@/lib/db'
 import Job from '@/models/Job'
 import { z } from "zod"
-import { jobs } from "@/lib/data"
+
+// Helper: lấy ID từ URL
+function getIdFromRequest(request: Request): string | null {
+  const url = new URL(request.url)
+  const segments = url.pathname.split("/")
+  return segments.pop() || null
+}
 
 // GET /api/jobs/[id] - Get a single job by ID
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: Request) {
   try {
     await dbConnect()
-    const job = await Job.findById(params.id)
+    const id = getIdFromRequest(request)
+    if (!id) return NextResponse.json({ error: "Invalid ID" }, { status: 400 })
+
+    const job = await Job.findById(id)
 
     if (!job) {
       return NextResponse.json(
@@ -35,14 +41,15 @@ export async function GET(
 }
 
 // PUT /api/jobs/[id] - Update a job (requires authentication)
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request) {
   try {
     await dbConnect()
-    const id = params.id
-    const body = await request.json()
+    const id = getIdFromRequest(request)
+    if (!id) return NextResponse.json({ error: "Invalid ID" }, { status: 400 })
 
     // Validate job data (using the same schema from /api/jobs/route.ts)
     // For this example, I'll use a basic update. In a real app, you'd use a validator like validateJob
+    const body = await request.json()
     const updatedJob = await Job.findByIdAndUpdate(id, body, { new: true })
 
     if (!updatedJob) {
@@ -64,13 +71,13 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 }
 
 // DELETE /api/jobs/[id] - Delete a job
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: Request) {
   try {
     await dbConnect()
-    const job = await Job.findByIdAndDelete(params.id)
+    const id = getIdFromRequest(request)
+    if (!id) return NextResponse.json({ error: "Invalid ID" }, { status: 400 })
+
+    const job = await Job.findByIdAndDelete(id)
 
     if (!job) {
       return NextResponse.json(

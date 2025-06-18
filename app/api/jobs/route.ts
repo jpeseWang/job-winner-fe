@@ -43,7 +43,6 @@ export async function GET(req: NextRequest) {
 
   const skip = (parseInt(page) - 1) * parseInt(limit)
 
-  // ✅ Xử lý sort theo sort param
   let sortOption: any = {}
 
   switch (sort) {
