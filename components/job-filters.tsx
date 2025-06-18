@@ -36,12 +36,16 @@ export default function JobFilters({ onChange }: Props) {
   })
 
   useEffect(() => {
-    const fetchFilters = async () => {
+  const fetchFilters = async () => {
+    try {
       const data = await jobService.getFilterMetadata()
       setFilters(data)
+    } catch (err) {
+      console.error("Failed to load filter metadata:", err)
     }
-    fetchFilters()
-  }, [])
+  }
+  fetchFilters()
+}, [])
 
   // ✅ Debounced keyword handler
   const debouncedKeywordChange = useMemo(

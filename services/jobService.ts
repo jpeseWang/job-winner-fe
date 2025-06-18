@@ -4,13 +4,11 @@ import type { JobStatus } from "@/types/enums"
 import type { JobFilters } from "@/types/interfaces/job"
 
 export const jobService = {
-  // Get all jobs with optional filtering
   async getJobs(filters: JobFilters = {}) {
     const params = new URLSearchParams()
 
     Object.entries(filters).forEach(([key, value]) => {
       if (value === undefined || value === null || value === "") return
-
       if (Array.isArray(value) && value.length > 0) {
         params.append(key, value.join(","))
       } else if (!Array.isArray(value)) {
@@ -18,54 +16,83 @@ export const jobService = {
       }
     })
 
-    const res = await axiosInstance.get(`/jobs?${params.toString()}`)
-    return res.data
+    try {
+      const res = await axiosInstance.get(`/jobs?${params.toString()}`)
+      return res.data
+    } catch (error: any) {
+      throw new Error(error?.response?.data?.error || "Failed to fetch jobs")
+    }
   },
 
-  // Get a specific job by ID
   async getJobById(id: string): Promise<Job> {
-    const response = await axiosInstance.get(`/jobs/${id}`)
-    return response.data
+    try {
+      const res = await axiosInstance.get(`/jobs/${id}`)
+      return res.data
+    } catch (error: any) {
+      if (error?.response?.status === 404) {
+        throw new Error("Job not found")
+      }
+      throw new Error(error?.response?.data?.error || "Failed to fetch job")
+    }
   },
 
-  // Create a new job
   async createJob(jobData: Partial<Job>): Promise<Job> {
-    const response = await axiosInstance.post("/jobs", jobData)
-    return response.data
+    try {
+      const res = await axiosInstance.post("/jobs", jobData)
+      return res.data
+    } catch (error: any) {
+      throw new Error(error?.response?.data?.error || "Failed to create job")
+    }
   },
 
-  // Update an existing job
   async updateJob(id: string, jobData: Partial<Job>): Promise<Job> {
-    const response = await axiosInstance.put(`/jobs/${id}`, jobData)
-    return response.data
+    try {
+      const res = await axiosInstance.put(`/jobs/${id}`, jobData)
+      return res.data
+    } catch (error: any) {
+      if (error?.response?.status === 404) {
+        throw new Error("Job not found for update")
+      }
+      throw new Error(error?.response?.data?.error || "Failed to update job")
+    }
   },
 
-  // Delete a job
   async deleteJob(id: string): Promise<{ success: boolean; message: string }> {
-    const response = await axiosInstance.delete(`/jobs/${id}`)
-    return response.data
+    try {
+      const res = await axiosInstance.delete(`/jobs/${id}`)
+      return res.data
+    } catch (error: any) {
+      if (error?.response?.status === 404) {
+        throw new Error("Job not found for deletion")
+      }
+      throw new Error(error?.response?.data?.error || "Failed to delete job")
+    }
   },
 
-  // Change job status
   async changeJobStatus(id: string, status: JobStatus): Promise<Job> {
-    const response = await axiosInstance.patch(`/jobs/${id}/status`, { status })
-    return response.data
+    try {
+      const res = await axiosInstance.patch(`/jobs/${id}/status`, { status })
+      return res.data
+    } catch (error: any) {
+      throw new Error(error?.response?.data?.error || "Failed to change job status")
+    }
   },
 
-  // Toggle featured status
   async toggleFeatured(id: string, featured: boolean): Promise<Job> {
-    const response = await axiosInstance.patch(`/jobs/${id}/featured`, { featured })
-    return response.data
+    try {
+      const res = await axiosInstance.patch(`/jobs/${id}/featured`, { featured })
+      return res.data
+    } catch (error: any) {
+      throw new Error(error?.response?.data?.error || "Failed to toggle featured")
+    }
   },
 
-  // Get filter metadata (categories, types, levels, etc.)
-  async getFilterMetadata(): Promise<{
-    categories: { label: string; count: number }[]
-    types: { label: string; count: number }[]
-    experienceLevels: { label: string; count: number }[]
-    locations: string[]
-  }> {
-    const response = await axiosInstance.get("/meta/job-filters")
-    return response.data
+  async getFilterMetadata() {
+    try {
+      const res = await axiosInstance.get("/meta/job-filters")
+      return res.data
+    } catch (error: any) {
+      throw new Error(error?.response?.data?.error || "Failed to load filter metadata")
+    }
   },
 }
