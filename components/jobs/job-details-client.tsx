@@ -29,14 +29,10 @@ interface JobDetailsClientProps {
 }
 
 export default function JobDetailsClient({ id }: JobDetailsClientProps) {
-
   const { toast } = useToast();
   const { job, isLoading, error } = useJob(id);
 
-  if (isLoading) {
     return <Loading message="Loading job details..." />
-  }
-
   if (error || !job) {
     toast({
       title: "Error",
