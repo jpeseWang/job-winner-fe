@@ -1,0 +1,336 @@
+[
+  {
+    "title": "Senior Level Full-Stack Developer",
+    "company": "Innovatech Solutions Inc.",
+    "recruiter": "60d5f3f7e8b9a2b8d4c1e8a1",
+    "description": "We are seeking a highly skilled Senior Level Full-Stack Developer to join our dynamic team. You will be responsible for designing, developing, and maintaining our web applications, working on both the front-end and back-end. The ideal candidate has a passion for creating clean, efficient code and a desire to solve complex problems.",
+    "responsibilities": [
+      "Develop and maintain scalable web applications using the MERN stack.",
+      "Collaborate with cross-functional teams to define, design, and ship new features.",
+      "Write clean, maintainable, and efficient code.",
+      "Troubleshoot, debug and upgrade existing software.",
+      "Participate in code reviews to maintain high-quality code."
+    ],
+    "requirements": [
+      "5+ years of experience in full-stack development.",
+      "Proficiency with Node.js, Express, React, and MongoDB.",
+      "Strong understanding of RESTful APIs and microservices architecture.",
+      "Experience with cloud services (AWS, Google Cloud, or Azure).",
+      "Excellent problem-solving skills and attention to detail."
+    ],
+    "benefits": [
+      "Comprehensive health, dental, and vision insurance.",
+      "Flexible working hours and remote work options.",
+      "Generous paid time off and company holidays.",
+      "401(k) matching program.",
+      "Annual budget for professional development."
+    ],
+    "type": "Full-time",
+    "category": "Technology",
+    "location": "Hai Chau",
+    "isRemote": true,
+    "salary": {
+      "min": 120000,
+      "max": 150000,
+      "currency": "USD",
+      "isNegotiable": true,
+      "period": "yearly"
+    },
+    "experienceLevel": "Senior Level",
+    "educationLevel": "Bachelor's Degree in Computer Science or related field",
+    "skills": ["Node.js", "React", "MongoDB", "AWS", "TypeScript", "GraphQL"],
+    "applicationDeadline": "2025-08-31T23:59:59.000Z",
+    "applicationUrl": "https://jobs.innovatech.com/apply/12345",
+    "contactEmail": "careers@innovatech.com",
+    "status": "active",
+    "rejectionReason": null,
+    "isFeatured": true,
+    "views": 1523,
+    "applications": 89,
+    "publishedAt": "2025-06-15T10:00:00.000Z",
+    "createdAt": "2025-06-15T09:30:00.000Z",
+    "updatedAt": "2025-06-18T14:00:00.000Z"
+  },
+  {
+    "title": "UI/UX Designer",
+    "company": "Creative Minds Studio",
+    "recruiter": "60d5f3f7e8b9a2b8d4c1e8b5",
+    "description": "Creative Minds Studio is looking for a talented UI/UX Designer to create amazing user experiences. The ideal candidate should have an eye for clean and artful design, possess superior UI/UX skills, and be able to translate high-level requirements into interaction flows and artifacts.",
+    "responsibilities": [
+      "Design user-centric interfaces for web and mobile applications.",
+      "Create wireframes, storyboards, user flows, and site maps.",
+      "Collaborate with product management and engineering to define and implement innovative solutions."
+    ],
+    "requirements": [
+      "Proven UI/UX design experience with a strong portfolio.",
+      "Proficiency in Figma, Sketch, or Adobe XD.",
+      "Excellent visual design skills with sensitivity to user-system interaction."
+    ],
+    "benefits": [
+      "Competitive salary and benefits package.",
+      "A creative and collaborative work environment."
+    ],
+    "type": "Contract",
+    "category": "Technology",
+    "location": "Son Tra",
+    "isRemote": false,
+    "salary": {
+      "min": 50,
+      "max": 75,
+      "currency": "GBP",
+      "isNegotiable": false,
+      "period": "hourly"
+    },
+    "experienceLevel": "Mid Level",
+    "educationLevel": "Degree in Design, Human-Computer Interaction or related field",
+    "skills": ["Figma", "User Research", "Prototyping", "Wireframing"],
+    "applicationUrl": null,
+    "contactEmail": "hr@creativeminds.io",
+    "status": "draft",
+    "rejectionReason": null,
+    "isFeatured": false,
+    "views": 0,
+    "applications": 0,
+    "publishedAt": null,
+    "createdAt": "2025-06-18T11:00:00.000Z",
+    "updatedAt": "2025-06-18T11:00:00.000Z"
+  },
+  {
+    "title": "Digital Marketing Intern",
+    "company": "GrowthHackers LLC",
+    "recruiter": "60d5f3f7e8b9a2b8d4c1e8c2",
+    "description": "Join our marketing team as an intern and gain hands-on experience in SEO, content marketing, and social media campaigns. This is a great opportunity for a student or recent graduate looking to start a career in digital marketing.",
+    "responsibilities": [
+      "Assist with SEO research and content creation.",
+      "Help manage social media channels.",
+      "Support the marketing team in daily administrative tasks."
+    ],
+    "requirements": [
+      "Currently enrolled in or recently graduated from a Marketing, Communications, or related program.",
+      "Strong desire to learn along with professional drive.",
+      "Familiarity with social media platforms."
+    ],
+    "benefits": [
+      "Paid internship.",
+      "Mentorship from experienced marketers.",
+      "Flexible schedule."
+    ],
+    "type": "Internship",
+    "category": "Financial Services",
+    "location": "Thanh Khe",
+    "isRemote": false,
+    "salary": {
+      "min": 20,
+      "currency": "USD",
+      "isNegotiable": false,
+      "period": "hourly"
+    },
+    "experienceLevel": "Entry Level",
+    "skills": ["SEO", "Content Writing", "Social Media"],
+    "contactEmail": "internships@growthhackers.com",
+    "status": "expired",
+    "isFeatured": false,
+    "views": 850,
+    "applications": 120,
+    "publishedAt": "2025-04-01T09:00:00.000Z",
+    "createdAt": "2025-03-28T15:00:00.000Z",
+    "updatedAt": "2025-05-30T17:00:00.000Z"
+  },
+  {
+    "title": "Frontend Developer",
+    "company": "PixelCraft",
+    "recruiter": "664af3e9d4c8c7bfb914f6e1",
+    "description": "We are seeking a talented frontend developer to join our growing team.",
+    "responsibilities": [
+      "Develop and maintain React.js applications",
+      "Collaborate with UI/UX designers",
+      "Ensure responsive design implementation"
+    ],
+    "requirements": [
+      "2+ years of frontend development",
+      "Proficiency in React and TypeScript"
+    ],
+    "benefits": ["Remote-friendly", "Flexible hours", "Performance bonuses"],
+    "type": "Full-time",
+    "category": "Technology",
+    "location": "Lien Chieu",
+    "isRemote": true,
+    "salary": {
+      "min": 1200,
+      "max": 1800,
+      "currency": "USD",
+      "isNegotiable": true,
+      "period": "monthly"
+    },
+    "experienceLevel": "Mid Level",
+    "educationLevel": "Bachelor's Degree",
+    "skills": ["React", "JavaScript", "HTML", "CSS"],
+    "applicationDeadline": "2025-07-31T00:00:00Z",
+    "applicationUrl": "https://careers.pixelcraft.dev/apply/frontend",
+    "contactEmail": "jobs@pixelcraft.dev",
+    "status": "active",
+    "isFeatured": true,
+    "views": 150,
+    "applications": 12,
+    "createdAt": "2025-06-10T12:00:00Z",
+    "updatedAt": "2025-06-17T08:00:00Z",
+    "publishedAt": "2025-06-11T10:00:00Z"
+  },
+  {
+    "title": "Marketing Intern",
+    "company": "GreenMind Co.",
+    "recruiter": "664af3e9d4c8c7bfb914f6e3",
+    "description": "Support the marketing team in digital campaigns and branding initiatives.",
+    "responsibilities": [
+      "Assist in social media content creation",
+      "Coordinate with designers and copywriters",
+      "Track analytics and generate reports"
+    ],
+    "requirements": [
+      "Strong written communication skills",
+      "Familiarity with Canva and Instagram"
+    ],
+    "benefits": ["Lunch allowance", "Certificate of Internship"],
+    "type": "Internship",
+    "category": "Financial Services",
+    "location": "Cam Le",
+    "isRemote": false,
+    "salary": {
+      "currency": "VND",
+      "isNegotiable": false,
+      "period": "monthly"
+    },
+    "experienceLevel": "Entry Level",
+    "educationLevel": "College Student",
+    "skills": ["Social Media", "Canva", "Analytics"],
+    "applicationDeadline": "2025-08-01T00:00:00Z",
+    "applicationUrl": "https://greenmind.vn/intern-apply",
+    "contactEmail": "hr@greenmind.vn",
+    "status": "active",
+    "isFeatured": false,
+    "views": 60,
+    "applications": 7,
+    "createdAt": "2025-06-12T14:00:00Z",
+    "updatedAt": "2025-06-17T08:00:00Z",
+    "publishedAt": "2025-06-13T10:00:00Z"
+  },
+  {
+    "title": "UI/UX Designer",
+    "company": "GlowUp Studio",
+    "recruiter": "664af3e9d4c8c7bfb914f6e4",
+    "description": "We're looking for a creative UI/UX designer to enhance our mobile app experience.",
+    "responsibilities": [
+      "Design wireframes and prototypes",
+      "Collaborate with developers and product team",
+      "Conduct user research"
+    ],
+    "requirements": [
+      "Experience with Figma or Adobe XD",
+      "Portfolio of previous design work"
+    ],
+    "benefits": ["Remote work", "Macbook provided", "Year-end bonus"],
+    "type": "Part-time",
+    "category": "Technology",
+    "location": "Hai Chau",
+    "isRemote": true,
+    "salary": {
+      "min": 800,
+      "max": 1200,
+      "currency": "USD",
+      "isNegotiable": true,
+      "period": "monthly"
+    },
+    "experienceLevel": "Mid Level",
+    "educationLevel": "Bachelor's Degree",
+    "skills": ["UI Design", "UX Research", "Figma"],
+    "applicationDeadline": "2025-08-20T00:00:00Z",
+    "applicationUrl": "https://glowup.design/careers",
+    "contactEmail": "jobs@glowup.design",
+    "status": "active",
+    "isFeatured": true,
+    "views": 98,
+    "applications": 15,
+    "createdAt": "2025-06-11T09:00:00Z",
+    "updatedAt": "2025-06-17T08:00:00Z",
+    "publishedAt": "2025-06-12T10:00:00Z"
+  },
+  {
+    "title": "Data Analyst",
+    "company": "InsightX",
+    "recruiter": "664af3e9d4c8c7bfb914f6e5",
+    "description": "Analyze and interpret data to support business decisions.",
+    "responsibilities": [
+      "Create dashboards and data visualizations",
+      "Work with business units to gather data needs",
+      "Perform data cleaning and preprocessing"
+    ],
+    "requirements": [
+      "Strong SQL and Excel skills",
+      "Experience with Power BI or Tableau"
+    ],
+    "benefits": ["Training budget", "Hybrid work", "Team outings"],
+    "type": "Full-time",
+    "category": "Technology",
+    "location": "Son Tra",
+    "isRemote": false,
+    "salary": {
+      "min": 1500,
+      "max": 2200,
+      "currency": "USD",
+      "isNegotiable": false,
+      "period": "monthly"
+    },
+    "experienceLevel": "Mid Level",
+    "educationLevel": "Bachelor's Degree",
+    "skills": ["SQL", "Tableau", "Data Analysis"],
+    "applicationDeadline": "2025-09-01T00:00:00Z",
+    "applicationUrl": "https://insightx.com/careers/data-analyst",
+    "contactEmail": "recruit@insightx.com",
+    "status": "active",
+    "isFeatured": false,
+    "views": 80,
+    "applications": 6,
+    "createdAt": "2025-06-10T13:30:00Z",
+    "updatedAt": "2025-06-17T08:00:00Z",
+    "publishedAt": "2025-06-14T10:00:00Z"
+  },
+  {
+    "title": "Sales Executive",
+    "company": "GlobalMart",
+    "recruiter": "664af3e9d4c8c7bfb914f6e6",
+    "description": "Drive sales and expand our customer base in the local region.",
+    "responsibilities": [
+      "Identify leads and convert to customers",
+      "Achieve monthly sales targets",
+      "Report sales metrics to manager"
+    ],
+    "requirements": [
+      "Excellent communication skills",
+      "Experience in B2B or B2C sales"
+    ],
+    "benefits": ["Commission bonus", "Company trips", "Phone allowance"],
+    "type": "Full-time",
+    "category": "Financial Services",
+    "location": "Thanh Khe",
+    "isRemote": false,
+    "salary": {
+      "min": 1000,
+      "max": 1800,
+      "currency": "USD",
+      "isNegotiable": true,
+      "period": "monthly"
+    },
+    "experienceLevel": "Entry Level",
+    "educationLevel": "Associate Degree",
+    "skills": ["Sales", "CRM", "Negotiation"],
+    "applicationDeadline": "2025-08-10T00:00:00Z",
+    "applicationUrl": "https://globalmart.vn/careers",
+    "contactEmail": "sales@globalmart.vn",
+    "status": "draft",
+    "isFeatured": false,
+    "views": 25,
+    "applications": 2,
+    "createdAt": "2025-06-13T10:00:00Z",
+    "updatedAt": "2025-06-17T08:00:00Z"
+  }
+]
