@@ -168,3 +168,5 @@ export async function sendWelcomeEmail(email: string, name: string) {
     includeLogo: true,
   });
 }
+
+
