@@ -127,10 +127,10 @@ export const jobService = {
     
     return (res.data.data as any[]).flatMap((j) =>
       j.id
-        ? j                                   // đã có id (nhờ virtual)
+        ? j                                 
         : j._id
-          ? { ...j, id: j._id.toString() }    // fallback nếu vì lý do gì _id vẫn còn
-          : []                                // loại bỏ bản ghi lỗi
+          ? { ...j, id: j._id.toString() }    
+          : []                               
     );
   } catch (error: any) {
     throw new Error(error?.response?.data?.error || "Failed to load latest jobs")
