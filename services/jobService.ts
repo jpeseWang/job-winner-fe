@@ -17,8 +17,12 @@ export const jobService = {
     })
 
     try {
+      try {
       const res = await axiosInstance.get(`/jobs?${params.toString()}`)
-      return res.data
+        return res.data
+    } catch (error: any) {
+      throw new Error(error?.response?.data?.error || "Failed to fetch jobs")
+    }
     } catch (error: any) {
       throw new Error(error?.response?.data?.error || "Failed to fetch jobs")
     }
@@ -95,15 +99,4 @@ export const jobService = {
       throw new Error(error?.response?.data?.error || "Failed to load filter metadata")
     }
   },
-
-  // Get filter metadata (categories, types, levels, etc.)
-  // async getFilterMetadata(): Promise<{
-  //   categories: { label: string; count: number }[]
-  //   types: { label: string; count: number }[]
-  //   experienceLevels: { label: string; count: number }[]
-  //   locations: string[]
-  // }> {
-  //   const response = await axiosInstance.get("/meta/job-filters")
-  //   return response.data
-  // },
 }
