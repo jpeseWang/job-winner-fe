@@ -32,9 +32,9 @@ export const authOptions: NextAuthOptions = {
         const user = await User.findOne({ email: credentials!.email.toLowerCase() })
 
         // so khớp role
-        if (user.role !== role) {
-          throw new Error("Wrong role selected")        // front-end sẽ nhận error
-        }
+        // if (user.role !== role) {
+        //   throw new Error("Wrong role selected")        // front-end sẽ nhận error
+        // }
 
         // 2) Nếu không có user hoặc user không có password (tài khoản OAuth), báo lỗi chung
         if (!user || !user.password) throw new Error("Invalid email or password")

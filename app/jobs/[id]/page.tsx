@@ -47,17 +47,17 @@ export default function JobDetailsPage({ params }: JobDetailsPageProps) {
   // Helper function to format salary
   const formatSalary = (salary: Job['salary']) => {
     console.log('Raw salary data:', salary); // Debug log
-    
+
     if (!salary) return "Not specified";
     if (salary.isNegotiable) return "Negotiable";
-    
+
     let salaryString = "";
     if (salary.min) salaryString += `${salary.min.toLocaleString()}`;
     if (salary.min && salary.max) salaryString += " - ";
     if (salary.max) salaryString += `${salary.max.toLocaleString()}`;
     if (salary.currency) salaryString += ` ${salary.currency}`;
     if (salary.period) salaryString += ` per ${salary.period}`;
-    
+
     console.log('Formatted salary:', salaryString); // Debug log
     return salaryString.trim() || "Not specified";
   }
@@ -124,12 +124,12 @@ export default function JobDetailsPage({ params }: JobDetailsPageProps) {
               <div className="flex items-center gap-2 text-sm">
                 <Clock className="h-4 w-4 text-gray-400" />
                 <span>
-                  {job.applicationDeadline 
+                  {job.applicationDeadline
                     ? `Apply by ${new Date(job.applicationDeadline).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}`
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}`
                     : 'No deadline specified'}
                 </span>
               </div>
@@ -172,7 +172,7 @@ export default function JobDetailsPage({ params }: JobDetailsPageProps) {
                 </ul>
               </div>
             )}
-            
+
             {job.skills && job.skills.length > 0 && (
               <div>
                 <h2 className="text-xl font-semibold mb-4">Professional Skills</h2>
@@ -323,7 +323,7 @@ export default function JobDetailsPage({ params }: JobDetailsPageProps) {
               {/* Map */}
               <div className="mt-4 h-[150px] w-full rounded-md overflow-hidden">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.241263499315!2d-122.4141656846827!3d37.77492977975927!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8085808f1a3e7b7b%3A0x3a9c9b1c1e0b3f7d!2sSan%20Francisco%2C%20CA%2C%20USA!5e0!3m2!1sen!2s!4v1634151234567!5m2!1sen!2s"
+                  src={`https://www.google.com/maps?q=${encodeURIComponent(job.location)}&output=embed`}
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}

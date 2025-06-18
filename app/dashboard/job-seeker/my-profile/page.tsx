@@ -19,6 +19,7 @@ import { Plus, Trash2, Upload, Save, User, MapPin, Mail, Phone, Briefcase, Gradu
 import { DEFAULT_AVATAR } from "@/constants"
 import { useAuth } from "@/hooks/use-auth"
 import { IUserProfile, IUser } from "@/types/interfaces/user"
+import { AvatarUpload } from "@/components/ui/avatar-upload"
 
 export default function MyProfilePage() {
   const router = useRouter()
@@ -271,7 +272,14 @@ export default function MyProfilePage() {
             <CardContent className="pt-6">
               <div className="flex flex-col items-center">
                 <div className="relative mb-4">
-                  <Image
+                  <AvatarUpload
+                    value={profile.profilePicture}
+                    onChange={(url) => setProfile((prev) => ({ ...prev, profilePicture: url || DEFAULT_AVATAR }))}
+                    size={100}
+                    name={profile.name}
+                    disabled={isLoading}
+                  />
+                  {/* <Image
                     src={profile.profilePicture || DEFAULT_AVATAR}
                     alt={profile.name}
                     width={100}
@@ -290,7 +298,9 @@ export default function MyProfilePage() {
                       accept="image/*"
                       onChange={handleProfilePictureUpload}
                     />
-                  </label>
+                  </label> */}
+
+
                 </div>
                 <h2 className="text-xl font-semibold">{profile.name || "Your Name"}</h2>
                 <p className="text-gray-500">{profile.title || "Your Title"}</p>
