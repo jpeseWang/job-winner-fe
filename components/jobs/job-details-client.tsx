@@ -21,6 +21,7 @@ import { useJob } from "@/hooks/useJobs";
 import { useToast } from "@/components/ui/use-toast";
 import Loading from "@/components/ui/loading";
 import { formatSalary } from "@/utils/formatters";
+import ContactForm from "@/components/contact/contact-form"
 
 interface JobDetailsClientProps {
   id: string;
@@ -356,8 +357,8 @@ export default function JobDetailsClient({ id }: JobDetailsClientProps) {
 
             {/* Contact Form */}
             <Card className="p-5">
-              <h3 className="text-lg font-semibold mb-4">Send Us Message</h3>
-              <JobContactForm jobId={job.id} />
+                <h3 className="text-lg font-semibold mb-4">Send Us Message</h3>
+                <ContactForm />
             </Card>
           </div>
         </div>
