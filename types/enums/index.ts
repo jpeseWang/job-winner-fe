@@ -67,16 +67,7 @@ export enum ExperienceLevel {
   MANAGER = "Manager",
 }
 
-export enum ETemplateCategory {
-  PROFESSIONAL = "professional",
-  CREATIVE = "creative",
-  SIMPLE = "simple",
-  MODERN = "modern",
-  ACADEMIC = "academic",
-  EXECUTIVE = "executive",
-}
-
-export enum SubscriptionPlan {
+export enum SubscriptionTier {
   FREE = "free",
   BASIC = "basic",
   PREMIUM = "premium",
