@@ -1,5 +1,6 @@
 // lib/email.ts
 import nodemailer from "nodemailer"
+import path from "path"
 import { loadHtmlTemplate } from '@/utils/loadHtmlTemplate'
 
 const canSend =
@@ -27,9 +28,28 @@ async function _send(options: {
   subject: string
   html: string
   text: string
+  includeLogo?: boolean
 }) {
   if (transporter) {
-    await transporter!.sendMail({ from: process.env.EMAIL_FROM, ...options })
+    const attachments = options.includeLogo
+      ? [{
+          filename: "logo.png",
+          path: path.resolve("public/logo/dribbble_logo.png"), 
+          cid: "jobwinnerlogo",
+        }]
+      : []
+
+    if (options.includeLogo) {
+      console.log("📦 Logo path resolved:", path.resolve("public/logo.png"))
+    }
+
+    await transporter!.sendMail({ 
+      from: process.env.EMAIL_FROM, 
+      to: options.to,
+      subject: options.subject,
+      html: options.html,
+      text: options.text,
+      attachments, })
   } else {
     // dev hoặc thiếu SMTP: chỉ log ra console
     /* eslint-disable no-console */
@@ -61,8 +81,8 @@ export async function sendContactEmail(
     to: adminEmail,
     subject: `📬 Liên hệ mới từ ${fullName}`,
     html,
-   text: `Liên hệ mới từ ${fullName} (${email}):\n\n${message}`
-,
+    text: `Liên hệ mới từ ${fullName} (${email}):\n\n${message}`,
+    includeLogo: true,
   })
 }
 // === Verify Contact FORM ===
@@ -84,11 +104,12 @@ export async function sendContactConfirmationEmail(
     subject: "Chúng tôi đã nhận được liên hệ của bạn",
     html,
     text: `Chào ${fullName},\n\nCảm ơn bạn đã liên hệ. Chúng tôi sẽ phản hồi sớm nhất.\n\nNội dung:\n${message}`,
+    includeLogo: true,
   })
 }
 
 
-// === VERIFY ===
+// === VERIFY EMAIL===
 export async function sendVerificationEmail(
   email: string,
   name: string,
@@ -107,6 +128,7 @@ export async function sendVerificationEmail(
     subject: 'Verify your JobWinner account',
     html,
     text: `Hi ${name || ''}, confirm your account: ${url}`,
+    includeLogo: true,
   })
 }
 
@@ -128,6 +150,7 @@ export async function sendPasswordResetEmail(
     subject: 'Reset your JobWinner password',
     html,
     text: `Hi ${name || ''}, reset your password: ${url}`,
+    includeLogo: true,
   })
 }
 
@@ -141,5 +164,8 @@ export async function sendWelcomeEmail(email: string, name: string) {
     subject: 'Welcome to Job Winner 🎉',
     html,
     text: `Hi ${name || ''}, welcome to Job Winner! Visit your dashboard: ${url}`,
+    includeLogo: true,
   });
 }
+
+
