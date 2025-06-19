@@ -12,14 +12,14 @@ const canSend =
 // tạo transporter chỉ khi đủ cấu hình
 const transporter = canSend
   ? nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT || 465),
-      secure: process.env.SMTP_SECURE !== "false", // mặc định true
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    })
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT || 465),
+    secure: process.env.SMTP_SECURE !== "false", // mặc định true
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  })
   : null
 
 // 👇 helper chung
@@ -33,23 +33,24 @@ async function _send(options: {
   if (transporter) {
     const attachments = options.includeLogo
       ? [{
-          filename: "logo.png",
-          path: path.resolve("public/logo/dribbble_logo.png"), 
-          cid: "jobwinnerlogo",
-        }]
+        filename: "logo.png",
+        path: path.resolve("public/logo/dribbble_logo.png"),
+        cid: "jobwinnerlogo",
+      }]
       : []
 
     if (options.includeLogo) {
       console.log("📦 Logo path resolved:", path.resolve("public/logo.png"))
     }
 
-    await transporter!.sendMail({ 
-      from: process.env.EMAIL_FROM, 
+    await transporter!.sendMail({
+      from: process.env.EMAIL_FROM,
       to: options.to,
       subject: options.subject,
       html: options.html,
       text: options.text,
-      attachments, })
+      attachments,
+    })
   } else {
     // dev hoặc thiếu SMTP: chỉ log ra console
     /* eslint-disable no-console */
@@ -100,7 +101,7 @@ export async function sendContactConfirmationEmail(
   })
 
   await _send({
-    to: email, 
+    to: email,
     subject: "Chúng tôi đã nhận được liên hệ của bạn",
     html,
     text: `Chào ${fullName},\n\nCảm ơn bạn đã liên hệ. Chúng tôi sẽ phản hồi sớm nhất.\n\nNội dung:\n${message}`,
@@ -156,8 +157,8 @@ export async function sendPasswordResetEmail(
 
 // === WELCOME ===
 export async function sendWelcomeEmail(email: string, name: string) {
-  const url = `${process.env.BASE_URL}/dashboard`;         
-  const html = loadHtmlTemplate('welcome', { name, url }); 
+  const url = `${process.env.BASE_URL}/dashboard`;
+  const html = loadHtmlTemplate('welcome', { name, url });
 
   await _send({
     to: email,
