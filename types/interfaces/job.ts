@@ -9,14 +9,6 @@ export interface Salary {
   period: "hourly" | "daily" | "weekly" | "monthly" | "yearly";
 }
 
-export interface Salary {
-  min?: number;
-  max?: number;
-  currency: string;
-  isNegotiable: boolean;
-  period: "hourly" | "daily" | "weekly" | "monthly" | "yearly";
-}
-
 export interface Job {
   id: string
   title: string
