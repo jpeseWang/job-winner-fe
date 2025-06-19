@@ -1,13 +1,17 @@
-/** @type {import('jest').Config} */
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'jest-environment-jsdom',
   collectCoverage: true,
-  collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts'],
-  coverageReporters: ['text', 'lcov'],
+  collectCoverageFrom: [
+    'components/**/*.{ts,tsx}',
+    'hooks/**/*.{ts,tsx}',
+    'services/**/*.{ts,tsx}',
+    '!**/*.d.ts',
+  ],
   coverageDirectory: 'coverage',
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'], // optional
+  coverageReporters: ['text', 'lcov'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
+    '^@/(.*)$': '<rootDir>/$1',
   },
 };

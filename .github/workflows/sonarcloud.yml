@@ -39,5 +39,5 @@ jobs:
             -Dsonar.organization=jpesewang
             -Dsonar.sources=src
             -Dsonar.tests=src
-            -Dsonar.test.inclusions=**/*.test.ts,**/*.test.tsx
+            -Dsonar.test.inclusions=_tests_/**/*.test.tsx
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
