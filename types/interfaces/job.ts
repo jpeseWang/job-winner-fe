@@ -40,7 +40,7 @@ export interface Job {
   postedDays: number
   applicationDeadline?: string
   isRemote?: boolean
-  experienceLevel?: string
+  experienceLevel: string
   educationLevel?: string
   featured?: boolean
   status?: JobStatus

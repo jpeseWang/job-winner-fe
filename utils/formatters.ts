@@ -1,3 +1,26 @@
+import type { Job } from "@/types/interfaces";
+
+export const formatNumberShort = (num: number): string => {
+  if (num >= 1e9) return (num / 1e9).toFixed(1).replace(/\.0$/, '') + 'b';
+  if (num >= 1e6) return (num / 1e6).toFixed(1).replace(/\.0$/, '') + 'm';
+  if (num >= 1e3) return (num / 1e3).toFixed(1).replace(/\.0$/, '') + 'k';
+  return num.toString();
+};
+
+export const formatSalary = (salary?: Job["salary"]): string => {
+  if (!salary || typeof salary !== "object") return "Not specified";
+  if (salary.isNegotiable) return "Negotiable";
+
+  let salaryString = "";
+  if (salary.min) salaryString += `${formatNumberShort(salary.min)}`;
+  if (salary.min && salary.max) salaryString += " - ";
+  if (salary.max) salaryString += `${formatNumberShort(salary.max)}`;
+  if (salary.currency) salaryString += ` ${salary.currency}`;
+  if (salary.period) salaryString += ` per ${salary.period}`;
+
+  return salaryString.trim() || "Not specified";
+};
+
 export const formatDate = (dateString: string): string => {
   const date = new Date(dateString)
   return new Intl.DateTimeFormat("en-US", {
