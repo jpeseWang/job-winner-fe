@@ -45,7 +45,11 @@ export async function GET(req: NextRequest) {
     }
 
     const [data, total] = await Promise.all([
-      Job.find(query).skip(skip).limit(+limit).sort(sortOption),
+      Job.find(query)
+        .skip(skip)
+        .limit(+limit)
+        .sort(sortOption)
+        .lean({ virtuals: true, getters: true }),                      
       Job.countDocuments(query),
     ])
 

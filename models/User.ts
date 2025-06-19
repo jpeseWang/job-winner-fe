@@ -1,18 +1,6 @@
 import mongoose, { type Document, Schema } from "mongoose"
 import bcrypt from "bcryptjs"
-
-export enum UserRole {
-  JOB_SEEKER = "job_seeker",
-  RECRUITER = "recruiter",
-  ADMIN = "admin",
-}
-
-export enum SubscriptionTier {
-  FREE = "free",
-  BASIC = "basic",
-  PREMIUM = "premium",
-  ENTERPRISE = "enterprise",
-}
+import { UserRole, SubscriptionTier } from "@/types/enums/index"
 
 export interface IUser extends Document {
   name: string

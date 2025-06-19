@@ -29,16 +29,24 @@ export default function RelatedJobs({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    console.log("useEffect triggered:", { currentJobId, category });
+    if (!currentJobId) return; 
+
     const fetchRelatedJobs = async () => {
+      console.log("Fetching related jobs with ID:", currentJobId);
+      
       try {
         const res = await jobService.getJobs({
           category: category ? [category] : undefined,
         });
-        const allJobs = res?.data || [];
+
+        const allJobs = Array.isArray(res) ? res : res?.data ?? []
 
         const filteredJobs = allJobs
-          .filter((job: Job) => job.id !== currentJobId)
+          .filter((job: Job) => job.id && job.id !== currentJobId)
           .slice(0, 4);
+
+        console.log("filteredJobs:", filteredJobs)
 
         setJobs(filteredJobs);
       } catch (error) {
@@ -47,9 +55,10 @@ export default function RelatedJobs({
         setIsLoading(false);
       }
     };
-
+  
     fetchRelatedJobs();
   }, [currentJobId, category]);
+
 
   if (isLoading) {
     return (
@@ -70,6 +79,14 @@ export default function RelatedJobs({
           </div>
         ))}
       </div>
+    );
+  }
+
+  if (jobs.length === 0) {
+    return (
+      <p className="text-gray-500 text-sm italic">
+        No related jobs found.
+      </p>
     );
   }
 

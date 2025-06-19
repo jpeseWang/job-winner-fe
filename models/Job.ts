@@ -1,4 +1,4 @@
-import mongoose, { type Document, Schema } from "mongoose"
+import mongoose, { type Document, Schema, Types } from "mongoose"
 import {
   JobType,
   JobStatus,
@@ -181,6 +181,29 @@ min: {
   },
   { timestamps: true },
 )
+
+JobSchema.virtual("id").get(function (this: IJob & { _id: Types.ObjectId }) {
+  // ép kiểu để TypeScript biết chắc _id là ObjectId
+  return this._id.toHexString();      // hoặc this._id.toString()
+});
+
+const transform = (_: unknown, ret: any) => {
+  ret.id = ret._id.toString(); // thêm id (string)
+  delete ret._id;              // ẩn _id
+  delete ret.__v;              // ẩn __v (nếu muốn)
+};
+
+JobSchema.set("toJSON", {
+  virtuals: true,
+  versionKey: false,
+  transform,
+});
+
+JobSchema.set("toObject", {
+  virtuals: true,
+  versionKey: false,
+  transform,
+});
 
 // Set publishedAt when job becomes active
 JobSchema.pre("save", function (next) {
