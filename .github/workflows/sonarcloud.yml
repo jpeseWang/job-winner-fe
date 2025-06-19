@@ -37,7 +37,5 @@ jobs:
           args: >
             -Dsonar.projectKey=jpesewang_job-winner-fe
             -Dsonar.organization=jpesewang
-            -Dsonar.sources=src
-            -Dsonar.tests=src
-            -Dsonar.test.inclusions=_tests_/**/*.test.tsx
+            -Dsonar.sources=.
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info

@@ -4,8 +4,8 @@ module.exports = {
   collectCoverage: true,
   collectCoverageFrom: [
     'components/**/*.{ts,tsx}',
-    'hooks/**/*.{ts,tsx}',
     'services/**/*.{ts,tsx}',
+    'hooks/**/*.{ts,tsx}',
     '!**/*.d.ts',
   ],
   coverageDirectory: 'coverage',
