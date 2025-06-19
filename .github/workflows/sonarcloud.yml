@@ -35,5 +35,5 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.projectKey=le-nhat-quang_job-winner-fe
-            -Dsonar.organization=le-nhat-quang
+            -Dsonar.projectKey=jpeseWang_job-winner-fe
+            -Dsonar.organization=jpesewang
