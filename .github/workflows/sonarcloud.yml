@@ -35,7 +35,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.projectKey=jpesewang_job-winner-fe
+            -Dsonar.projectKey=jpeseWang_job-winner-fe
             -Dsonar.organization=jpesewang
             -Dsonar.sources=.
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
