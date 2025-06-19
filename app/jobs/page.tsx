@@ -3,7 +3,7 @@
 import { useState } from "react"
 import JobCard from "@/components/job-card"
 import JobFilters from "@/components/job-filters"
-import type { JobFilters as JobFiltersType } from "@/types/interfaces/job" 
+import type { JobFilters as JobFiltersType } from "@/types/interfaces/job"
 import CompanyCard from "@/components/company-card"
 import { Button } from "@/components/ui/button"
 import { useJobs } from "@/hooks/useJobs"
@@ -31,7 +31,7 @@ export default function JobsPage() {
 
   const handleFilterChange = (newFilters: typeof filters) => {
     setFilters(newFilters)
-    goToPage(1) 
+    goToPage(1)
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
@@ -62,20 +62,20 @@ export default function JobsPage() {
 
                 <div className="flex items-center gap-2">
                   <span className="text-sm">Sort by:</span>
-                    <select
-                      value={sort}
-                      onChange={(e) => {
-                        setSort(e.target.value as JobFiltersType["sort"])
-                        goToPage(1)
-                        window.scrollTo({ top: 0, behavior: "smooth" })
-                      }}
-                      className="border rounded-md px-2 py-1 text-sm"
-                    >
-                      <option value="latest">Latest</option>
-                      <option value="oldest">Oldest</option>
-                      <option value="highestSalary">Highest Salary</option>
-                      <option value="lowestSalary">Lowest Salary</option>
-                    </select>
+                  <select
+                    value={sort}
+                    onChange={(e) => {
+                      setSort(e.target.value as JobFiltersType["sort"])
+                      goToPage(1)
+                      window.scrollTo({ top: 0, behavior: "smooth" })
+                    }}
+                    className="border rounded-md px-2 py-1 text-sm"
+                  >
+                    <option value="latest">Latest</option>
+                    <option value="oldest">Oldest</option>
+                    <option value="highestSalary">Highest Salary</option>
+                    <option value="lowestSalary">Lowest Salary</option>
+                  </select>
                 </div>
               </div>
 

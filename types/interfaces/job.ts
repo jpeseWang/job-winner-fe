@@ -4,7 +4,7 @@ export enum JobType {
   PART_TIME = "part_time",
   CONTRACT = "contract",
   FREELANCE = "freelance",
-}
+} s
 
 export enum JobStatus {
   ACTIVE = "active",
