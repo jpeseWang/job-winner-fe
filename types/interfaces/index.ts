@@ -1,14 +1,4 @@
-export enum UserRole {
-  ADMIN = "admin",
-  RECRUITER = "recruiter",
-  JOB_SEEKER = "job_seeker",
-}
-
-export enum UserStatus {
-  ACTIVE = "active",
-  INACTIVE = "inactive",
-  PENDING = "pending",
-}
+import type { UserRole, UserStatus } from "@/types/enums"
 
 export interface User {
   id: string
@@ -53,7 +43,7 @@ export interface SocialLinks {
 }
 
 // Job interfaces
-export type { JobType, JobStatus, Salary, Job, JobCategory, Company } from "./job";
+export type { Salary, Job, JobCategory, Company } from "./job";
 
 // Application interfaces
 export enum ApplicationStatus {

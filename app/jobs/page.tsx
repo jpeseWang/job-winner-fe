@@ -10,18 +10,23 @@ import { useJobs } from "@/hooks/useJobs"
 import { Loader2 } from "lucide-react"
 import type { Job } from "@/types/interfaces"
 import { formatSalary } from "@/utils/formatters";
+import { useSearchParams } from "next/navigation"
 
 export default function JobsPage() {
-  const [sort, setSort] = useState<JobFiltersType["sort"]>("latest")
+  const searchParams = useSearchParams()
 
-  const [filters, setFilters] = useState<JobFiltersType>({
-    keyword: "",
-    location: "",
-    category: [] as string[],
-    type: [] as string[],
-    experienceLevel: [] as string[],
+  const initialFilters: JobFiltersType = {
+    keyword: searchParams.get("keyword") || "",
+    location: searchParams.get("location") || "",
+    category: searchParams.get("category") ? [searchParams.get("category")!] : [],
+    type: [],
+    experienceLevel: [],
     sort: "latest",
-  })
+  }
+
+  const [filters, setFilters] = useState<JobFiltersType>(initialFilters)
+
+  const [sort, setSort] = useState<JobFiltersType["sort"]>("latest")
 
   const { jobs, total, isLoading, totalPages, currentPage, goToPage } = useJobs({
     ...filters,

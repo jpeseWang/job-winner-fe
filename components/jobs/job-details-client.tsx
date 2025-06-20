@@ -367,8 +367,11 @@ export default function JobDetailsClient({ id }: JobDetailsClientProps) {
       {/* Related Jobs */}
       <section className="container mx-auto px-4 md:px-6 py-12 border-t">
         <h2 className="text-2xl font-bold mb-6">Related Jobs</h2>
-        <RelatedJobs currentJobId={job.id} category={job.category} />
+        {job.id && (
+          <RelatedJobs currentJobId={job.id} category={job.category} />
+        )}
       </section>
     </main>
+    
   );
 }

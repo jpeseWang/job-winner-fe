@@ -17,8 +17,23 @@ export const jobService = {
     })
 
     try {
+      try {
       const res = await axiosInstance.get(`/jobs?${params.toString()}`)
-      return res.data
+      const fixedData = (res.data.data as any[]).map((j) =>
+        j.id
+          ? j
+          : j._id
+          ? { ...j, id: j._id.toString() }
+          : null
+      ).filter(Boolean)
+
+      return {
+        ...res.data,
+        data: fixedData
+      }
+    } catch (error: any) {
+      throw new Error(error?.response?.data?.error || "Failed to fetch jobs")
+    }
     } catch (error: any) {
       throw new Error(error?.response?.data?.error || "Failed to fetch jobs")
     }
@@ -27,7 +42,8 @@ export const jobService = {
   async getJobById(id: string): Promise<Job> {
     try {
       const res = await axiosInstance.get(`/jobs/${id}`)
-      return res.data
+      const job = res.data
+      return job.id ? job : { ...job, id: job._id?.toString?.() ?? "" }
     } catch (error: any) {
       if (error?.response?.status === 404) {
         throw new Error("Job not found")
@@ -96,14 +112,28 @@ export const jobService = {
     }
   },
 
-  // Get filter metadata (categories, types, levels, etc.)
-  // async getFilterMetadata(): Promise<{
-  //   categories: { label: string; count: number }[]
-  //   types: { label: string; count: number }[]
-  //   experienceLevels: { label: string; count: number }[]
-  //   locations: string[]
-  // }> {
-  //   const response = await axiosInstance.get("/meta/job-filters")
-  //   return response.data
-  // },
+  async getJobOverview(): Promise<{ jobCount: number; companyCount: number; candidateCount: number }> {
+    try {
+      const res = await axiosInstance.get("/meta/overview")
+      return res.data
+    } catch (error: any) {
+      throw new Error(error?.response?.data?.error || "Failed to fetch job overview")
+    }
+  },
+
+  async getLatestJobs(limit = 5) {
+  try {
+    const res = await axiosInstance.get(`/jobs?sort=latest&limit=${limit}`)
+    
+    return (res.data.data as any[]).flatMap((j) =>
+      j.id
+        ? j                                   // đã có id (nhờ virtual)
+        : j._id
+          ? { ...j, id: j._id.toString() }    // fallback nếu vì lý do gì _id vẫn còn
+          : []                                // loại bỏ bản ghi lỗi
+    );
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.error || "Failed to load latest jobs")
+  }
+}
 }

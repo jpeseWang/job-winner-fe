@@ -45,7 +45,10 @@ export enum JobCategory{
   TELECOMMUNICATIONS = "Telecommunications",
   HEALTH = "Health Medical",
   EDUCATION = "Education",
-  FINANCIAL = "Financial Services"
+  HOSPITALITY = "Hospitality",
+  MANUFACTURING = "Manufacturing",
+  ENGINEERING = "Engineering",
+  FINANCIAL = "Financial Services",
 }
 
 export enum JobLocation {
@@ -62,4 +65,11 @@ export enum ExperienceLevel {
   SENIOR = "Senior Level",
   LEAD = "Lead",
   MANAGER = "Manager",
+}
+
+export enum SubscriptionTier {
+  FREE = "free",
+  BASIC = "basic",
+  PREMIUM = "premium",
+  ENTERPRISE = "enterprise",
 }

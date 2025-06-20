@@ -45,7 +45,11 @@ export async function GET(req: NextRequest) {
     }
 
     const [data, total] = await Promise.all([
-      Job.find(query).skip(skip).limit(+limit).sort(sortOption),
+      Job.find(query)
+        .skip(skip)
+        .limit(+limit)
+        .sort(sortOption)
+        .lean({ virtuals: true, getters: true }),                      
       Job.countDocuments(query),
     ])
 
@@ -83,4 +87,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Failed to create job" }, { status: 500 })
   }
 }
-// temp update to re-push
