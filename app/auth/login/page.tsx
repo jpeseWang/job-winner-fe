@@ -29,7 +29,7 @@ export default function LoginPage() {
 
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [userType, setUserType] = useState<UserRole.JOB_SEEKER | UserRole.RECRUITER>(UserRole.JOB_SEEKER)
+  const [userType, setUserType] = useState<UserRole.JOB_SEEKER | UserRole.RECRUITER | UserRole.ADMIN>(UserRole.JOB_SEEKER)
   const [formData, setFormData] = useState({ email: "", password: "" })
 
   /** Giải mã và quy đổi lỗi về thông điệp thân thiện */
@@ -140,9 +140,9 @@ export default function LoginPage() {
 
           <Tabs
             defaultValue="job_seeker"
-            onValueChange={v => setUserType(v as UserRole.JOB_SEEKER | UserRole.RECRUITER)}
+            onValueChange={v => setUserType(v as UserRole.JOB_SEEKER | UserRole.RECRUITER | UserRole.ADMIN)}
           >
-            <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsList className="grid w-full grid-cols-3 mb-6">
               <TabsTrigger value="job_seeker" className="flex items-center gap-2">
                 <User className="h-4 w-4" />
                 Job Seeker
@@ -150,6 +150,10 @@ export default function LoginPage() {
               <TabsTrigger value="recruiter" className="flex items-center gap-2">
                 <Briefcase className="h-4 w-4" />
                 Recruiter
+              </TabsTrigger>
+              <TabsTrigger value="admin" className="flex items-center gap-2">
+                <User className="h-4 w-4" />
+                Admin
               </TabsTrigger>
             </TabsList>
 

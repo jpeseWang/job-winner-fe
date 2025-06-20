@@ -25,7 +25,7 @@ export const authOptions: NextAuthOptions = {
         const { email, password, role } = credentials as {
           email: string
           password: string
-          role: UserRole.JOB_SEEKER | UserRole.RECRUITER
+          role: UserRole.JOB_SEEKER | UserRole.ADMIN | UserRole.RECRUITER 
         }
         // 1) Kết nối DB & tìm user theo email
         await dbConnect()
@@ -88,6 +88,7 @@ export const authOptions: NextAuthOptions = {
     },
     async jwt({ token, user }) {
       if (user) {
+<<<<<<< HEAD
         token.role = user.role;
         token.id = user.id;
         token.email = user.email;
@@ -102,6 +103,24 @@ export const authOptions: NextAuthOptions = {
       session.user.email = token.email;
       session.user.name = token.name;
       return session
+=======
+        token.id = user.id;
+        token.email = user.email;
+        token.name = user.name;
+        token.role = user.role;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      console.log("Session callback:", { session, token });
+      if (token.id) {
+        session.user.id = token.id;
+        session.user.email = token.email;
+        session.user.name = token.name;
+        session.user.role = token.role;
+      }
+      return session;
+>>>>>>> 19127ec (manage-blog)
     },
   },
   pages: {
