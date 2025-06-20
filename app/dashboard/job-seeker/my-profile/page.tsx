@@ -12,7 +12,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
-import { useToast } from "@/hooks/use-toast"
+// import { useToast } from "@/hooks/use-toast"
+import toast from "react-hot-toast"
 import { userService } from "@/services"
 import { validateProfile } from "@/utils/validators"
 import { Plus, Trash2, Upload, Save, User, MapPin, Mail, Phone, Briefcase, GraduationCap, Award } from "lucide-react"
@@ -22,8 +23,6 @@ import { IUserProfile, IUser } from "@/types/interfaces/user"
 import { AvatarUpload } from "@/components/ui/avatar-upload"
 
 export default function MyProfilePage() {
-  const router = useRouter()
-  const { toast } = useToast()
   const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState("personal")
@@ -80,11 +79,7 @@ export default function MyProfilePage() {
         }
       } catch (error) {
         console.error("Error fetching profile:", error)
-        toast({
-          title: "Error",
-          description: "Failed to load profile data. Please try again.",
-          variant: "destructive",
-        })
+        toast.error("Failed to load profile data. Please try again.")
       } finally {
         setIsLoading(false)
       }
@@ -238,28 +233,25 @@ export default function MyProfilePage() {
 
       if (errors) {
         console.error("Validation errors:", errors)
-        toast({
-          title: "Validation Error",
-          description: errors[0]?.message || "Please check your information and try again.",
-          variant: "destructive",
-        })
+        toast.error(errors[0]?.message || "Please check your information and try again.")
         setIsLoading(false)
         return
       }
 
       const userId = user?.id || ""
       await userService.updateUserProfile(userId, profile)
-
-      toast({
-        title: "Profile Updated",
-        description: "Your profile has been updated successfully.",
-      })
+      toast.success("Profile updated successfully!")
+      // toast({
+      //   title: "Profile Updated",
+      //   description: "Your profile has been updated successfully.",
+      // })
     } catch (error) {
-      toast({
-        title: "Update Failed",
-        description: "There was an error updating your profile. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to update profile. Please try again.")
+      // toast({
+      //   title: "Update Failed",
+      //   description: "There was an error updating your profile. Please try again.",
+      //   variant: "destructive",
+      // })
     } finally {
       setIsLoading(false)
     }
