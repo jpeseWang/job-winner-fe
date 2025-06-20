@@ -43,7 +43,6 @@ export default async function ApplyJobPage({ params }: ApplyJobPageProps) {
             hideButton={true}
           />
         </div>
-
         {/* Application Form */}
         <JobApplicationForm job={job} />
       </div>
