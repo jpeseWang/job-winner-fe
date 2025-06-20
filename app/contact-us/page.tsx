@@ -1,6 +1,6 @@
-import { Phone, Mail, Clock, MapPin } from "lucide-react"
-import ContactForm from "@/components/contact/contact-form"
-import CompanyLogos from "@/components/contact/company-logos"
+import { Phone, Mail, Clock, MapPin } from "lucide-react";
+import ContactForm from "@/components/contact/contact-form";
+import CompanyLogos from "@/components/contact/company-logos";
 
 export default function ContactUsPage() {
   return (
@@ -18,10 +18,13 @@ export default function ContactUsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             {/* Left Column - Contact Info */}
             <div>
-              <h2 className="text-3xl font-bold mb-2">You Will Grow, You Will Succeed. We Promise That</h2>
+              <h2 className="text-3xl font-bold mb-2">
+                You Will Grow, You Will Succeed. We Promise That
+              </h2>
               <p className="text-gray-600 mb-8">
-                Pellentesque arcu facilisis nunc mi pham. Dignissim mattis in lectus tincidunt tincidunt ultrices. Diam
-                convallis morbi pellentesque adipiscing.
+                Pellentesque arcu facilisis nunc mi pham. Dignissim mattis in
+                lectus tincidunt tincidunt ultrices. Diam convallis morbi
+                pellentesque adipiscing.
               </p>
 
               <div className="space-y-8">
@@ -43,7 +46,7 @@ export default function ContactUsPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg">Send us email</h3>
-                    <p className="text-gray-600">kramulous@sbcglobal.net</p>
+                    <p className="text-gray-600"></p>
                   </div>
                 </div>
 
@@ -65,7 +68,10 @@ export default function ContactUsPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg">Office</h3>
-                    <p className="text-gray-600">19 North Road Piscataway, NY 08854</p>
+                    <p className="text-gray-600">
+                      Tầng 5, Tòa nhà FutureTech, 123 Đường Cách Mạng, Quận 3,
+                      TP. Hồ Chí Minh, Việt Nam
+                    </p>
                   </div>
                 </div>
               </div>
@@ -74,7 +80,9 @@ export default function ContactUsPage() {
             {/* Right Column - Contact Form */}
             <div className="bg-gray-50 p-6 rounded-lg">
               <h3 className="text-xl font-semibold mb-4">Contact Info</h3>
-              <p className="text-gray-500 mb-6">Nibh dis faucibus prom lacus tristique</p>
+              <p className="text-gray-500 mb-6">
+                Nibh dis faucibus prom lacus tristique
+              </p>
 
               <ContactForm />
             </div>
@@ -106,5 +114,5 @@ export default function ContactUsPage() {
         </div>
       </section>
     </main>
-  )
+  );
 }
