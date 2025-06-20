@@ -1,56 +1,48 @@
 import axiosInstance from "@/lib/axios"
+import axiosServer from "@/lib/axiosServer";
 import type { Job, PaginatedResponse } from "@/types/interfaces"
 import type { JobStatus } from "@/types/enums"
 import type { JobFilters } from "@/types/interfaces/job"
 
 export const jobService = {
   async getJobs(filters: JobFilters = {}) {
-    const params = new URLSearchParams()
+  const params = new URLSearchParams();
 
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value === undefined || value === null || value === "") return
-      if (Array.isArray(value) && value.length > 0) {
-        params.append(key, value.join(","))
-      } else if (!Array.isArray(value)) {
-        params.append(key, String(value))
-      }
-    })
+  Object.entries(filters).forEach(([key, value]) => {
+    if (!value || (Array.isArray(value) && value.length === 0)) return;
+    params.append(key, Array.isArray(value) ? value.join(",") : String(value));
+  });
 
-    try {
-      try {
-      const res = await axiosInstance.get(`/jobs?${params.toString()}`)
-      const fixedData = (res.data.data as any[]).map((j) =>
-        j.id
-          ? j
-          : j._id
-          ? { ...j, id: j._id.toString() }
-          : null
-      ).filter(Boolean)
+  try {
+    const res = await axiosInstance.get(`/jobs?${params.toString()}`);
+    const fixedData = (res.data.data as any[]).map((j) =>
+      j.id ? j : j._id ? { ...j, id: j._id.toString() } : null
+    ).filter(Boolean);
 
-      return {
-        ...res.data,
-        data: fixedData
-      }
-    } catch (error: any) {
-      throw new Error(error?.response?.data?.error || "Failed to fetch jobs")
+    return { ...res.data, data: fixedData };
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.error || "Failed to fetch jobs");
+  }
+},
+
+  async getJobById(id: string, server = false): Promise<Job> {
+  try {
+    if (server) {
+      const res = await axiosServer.get(`${process.env.INTERNAL_API_URL}/jobs/${id}`);
+      const job = res.data;
+      return job.id ? job : { ...job, id: job._id?.toString?.() ?? "" };
+    } else {
+      const res = await axiosInstance.get(`/jobs/${id}`);
+      const job = res.data;
+      return job.id ? job : { ...job, id: job._id?.toString?.() ?? "" };
     }
-    } catch (error: any) {
-      throw new Error(error?.response?.data?.error || "Failed to fetch jobs")
+  } catch (error: any) {
+    if (error?.response?.status === 404) {
+      throw new Error("Job not found");
     }
-  },
-
-  async getJobById(id: string): Promise<Job> {
-    try {
-      const res = await axiosInstance.get(`/jobs/${id}`)
-      const job = res.data
-      return job.id ? job : { ...job, id: job._id?.toString?.() ?? "" }
-    } catch (error: any) {
-      if (error?.response?.status === 404) {
-        throw new Error("Job not found")
-      }
-      throw new Error(error?.response?.data?.error || "Failed to fetch job")
-    }
-  },
+    throw new Error(error?.response?.data?.error || "Failed to fetch job");
+  }
+},
 
   async createJob(jobData: Partial<Job>): Promise<Job> {
     try {

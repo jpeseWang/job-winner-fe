@@ -19,15 +19,6 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "No file provided" }, { status: 400 })
         }
 
-        // Validate file type
-        const acceptedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"]
-        if (!acceptedTypes.includes(file.type)) {
-            return NextResponse.json(
-                { error: "Invalid file type. Only JPEG, PNG, WebP, and GIF are allowed." },
-                { status: 400 },
-            )
-        }
-
         // Validate file size (10MB max)
         const maxSize = 10 * 1024 * 1024 // 10MB
         if (file.size > maxSize) {
@@ -41,10 +32,11 @@ export async function POST(request: NextRequest) {
         // Upload to Cloudinary
         const result = await uploadToCloudinary(buffer, {
             folder: `job-marketplace/${folder}`,
-            resource_type: "image",
+            resource_type: "auto",
             transformation: [{ quality: "auto" }, { fetch_format: "auto" }],
             tags: [session.user?.id || "anonymous", folder],
         })
+
 
         return NextResponse.json(result)
     } catch (error) {
