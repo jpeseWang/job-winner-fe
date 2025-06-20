@@ -227,7 +227,7 @@ export default function ManageTemplatesPage() {
 
           {filteredTemplates.length === 0 && (
             <div className="text-center py-8 text-gray-500">No templates found matching your criteria.</div>
-          )}
+          )}  
         </CardContent>
       </Card>
 
