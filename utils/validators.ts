@@ -62,14 +62,13 @@ export const userSchema = z.object({
 })
 
 // Profile validation schema
-export const profileSchema = z.object({
+const baseProfileSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters").max(100, "Title cannot exceed 100 characters"),
   location: z
     .string()
     .min(2, "Location must be at least 2 characters")
     .max(100, "Location cannot exceed 100 characters"),
   skills: z.array(z.string()).min(1, "At least one skill is required"),
-  experience: z.string().min(1, "Experience is required"),
   education: z.array(
     z.object({
       degree: z.string().min(1, "Degree is required"),
@@ -81,6 +80,8 @@ export const profileSchema = z.object({
   contactEmail: z.string().email("Invalid email address"),
   isPublic: z.boolean(),
 })
+
+export const profileSchema = baseProfileSchema.partial()
 
 // Validate job data
 export const validateJob = (data: any) => {
