@@ -21,6 +21,7 @@ import { DEFAULT_AVATAR } from "@/constants"
 import { useAuth } from "@/hooks/use-auth"
 import { IUserProfile, IUser } from "@/types/interfaces/user"
 import { AvatarUpload } from "@/components/ui/avatar-upload"
+import { ImageUpload, type UploadedImage } from "@/components/ui/image-upload"
 
 export default function MyProfilePage() {
   const { user } = useAuth()
@@ -215,18 +216,6 @@ export default function MyProfilePage() {
     }
   }
 
-  const handleResumeUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      // In a real app, you would upload the file to a server
-      // For now, we'll just set the file name
-      setProfile((prev) => ({
-        ...prev,
-        resumeUrl: file.name,
-      }))
-    }
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -307,29 +296,34 @@ export default function MyProfilePage() {
 
                 <div className="space-y-4">
                   <h3 className="font-medium">Resume</h3>
-                  {profile.resumeUrl ? (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm truncate">{profile.resumeUrl}</span>
-                      <Button variant="ghost" size="sm">
-                        <Trash2 className="h-4 w-4 text-red-500" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <label htmlFor="resume-upload" className="flex items-center gap-2 text-teal-500 cursor-pointer">
-                      <Upload className="h-4 w-4" />
-                      <span>Upload Resume</span>
-                      <input
-                        type="file"
-                        id="resume-upload"
-                        className="hidden"
-                        accept=".pdf,.doc,.docx"
-                        onChange={handleResumeUpload}
-                      />
-                    </label>
-                  )}
-
-                  <Separator className="my-6" />
-
+                  <ImageUpload
+                    value={
+                      profile.resumeUrl
+                        ? {
+                            id: "resume",
+                            url: profile.resumeUrl,
+                            publicId: "resume",
+                            name: profile.resumeUrl.split("/").pop() || "resume",
+                            size: 0,
+                          }
+                        : undefined
+                    }
+                    onChange={(uploaded) => {
+                      const file = Array.isArray(uploaded) ? uploaded[0] : uploaded;
+                      setProfile((prev) => ({
+                        ...prev,
+                        resumeUrl: file?.url || "",
+                      }))
+                    }}
+                    multiple={false}
+                    acceptedTypes={[
+                      "image/jpeg", "image/png", "image/webp", "image/gif",
+                      "application/pdf", "applicatibon/msword",
+                      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    ]}
+                    folder="resumes"
+                    placeholder="Click to upload your resume (PDF, DOC, DOCX)"
+                  />
                 </div>
 
                 {user?.role === "job_seeker" && (

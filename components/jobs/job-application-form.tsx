@@ -618,14 +618,14 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
                 <p>
                   <strong>Skills:</strong> {watchedFields.skills?.join(", ")}
                 </p>
-                <p className="flex items-center gap-2">
+                <div className="flex items-center gap-2 text-sm">
                   <strong>Resume:</strong>
                   {watchedFields.resumeUrl ? (
                     <Badge className="bg-green-100 text-green-800">✓ Uploaded</Badge>
                   ) : (
                     <Badge variant="secondary">Not uploaded</Badge>
                   )}
-                </p>
+                </div>
               </div>
             </div>
           </div>
