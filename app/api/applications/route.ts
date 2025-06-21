@@ -1,10 +1,43 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
+import connectDB from "@/lib/db"
+import Application from "@/models/Application"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 import dbConnect from "@/lib/db"
 import Application from "@/models/Application"
 import { z } from "zod"
 
+const applicationSchema = z.object({
+  jobId: z.string(),
+  jobTitle: z.string(),
+  company: z.string(),
+  firstName: z.string().min(2),
+  lastName: z.string().min(2),
+  email: z.string().email(),
+  phone: z.string().min(10),
+  location: z.string().min(2),
+  currentPosition: z.string().optional(),
+  experience: z.string(),
+  expectedSalary: z.string().optional(),
+  availableFrom: z.string().optional(),
+  education: z.string(),
+  skills: z.array(z.string()),
+  resumeUrl: z.string(),
+  coverLetter: z.string().min(50),
+  portfolioUrls: z.array(z.string()).optional(),
+  linkedinUrl: z.string().optional(),
+  githubUrl: z.string().optional(),
+  websiteUrl: z.string().optional(),
+  remoteWork: z.boolean().optional(),
+  relocation: z.boolean().optional(),
+  workAuthorization: z.boolean(),
+  agreeToTerms: z.boolean(),
+  appliedDate: z.string(),
+})
+
+// GET /api/applications - Get user's applications
 const applicationSchema = z.object({
   jobId: z.string(),
   jobTitle: z.string(),
@@ -41,7 +74,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    await dbConnect()
+    await connectDB()
 
     const { searchParams } = new URL(request.url)
     const page = Number.parseInt(searchParams.get("page") || "1")
@@ -88,7 +121,7 @@ export async function POST(request: Request) {
     const body = await request.json()
     const validatedData = applicationSchema.parse(body)
 
-    await dbConnect()
+    await connectDB()
 
     // Check if user already applied for this job
     const existingApplication = await Application.findOne({

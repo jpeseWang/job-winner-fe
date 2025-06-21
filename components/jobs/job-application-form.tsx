@@ -18,6 +18,7 @@ import { toast } from "@/components/ui/use-toast"
 import { ImageUpload } from "@/components/ui/image-upload"
 import { FileText, User, Mail, Phone, MapPin, Briefcase, CheckCircle, ArrowLeft, ArrowRight, Send } from "lucide-react"
 import type { Job } from "@/types/interfaces"
+import { applicationService } from "@/services/applicationService";
 
 const applicationSchema = z.object({
   // Personal Information
@@ -31,14 +32,26 @@ const applicationSchema = z.object({
   currentPosition: z.string().optional(),
   experience: z.string().min(1, "Please select your experience level"),
   expectedSalary: z.string().optional(),
-  availableFrom: z.string().optional(),
+  availableFrom: z
+    .string()
+    .min(1, "Please select your available start date")
+    .refine((val) => {
+      const selected = new Date(val)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      return selected >= today
+    }, {
+      message: "Start date cannot be in the past",
+    }),
 
   // Education
   education: z.string().min(1, "Please enter your education background"),
   skills: z.array(z.string()).min(1, "Please add at least one skill"),
 
   // Application Materials
-  resumeUrl: z.string().min(1, "Please upload your resume"),
+  resumeUrl: z.string({
+    required_error: "Please upload your resume"
+  }).min(1, "Please upload your resume"),
   coverLetter: z.string().min(50, "Cover letter must be at least 50 characters"),
   portfolioUrls: z.array(z.string()).optional(),
 
@@ -165,17 +178,40 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
     }
   }
 
-  const nextStep = () => {
-    if (validateStep(currentStep)) {
-      setCurrentStep((prev) => Math.min(prev + 1, totalSteps))
+  const nextStep = async () => {
+    let fieldsToValidate: (keyof ApplicationFormData)[] = []
+
+    if (currentStep === 1) {
+      fieldsToValidate = ["firstName", "lastName", "email", "phone", "location"]
+    } else if (currentStep === 2) {
+      fieldsToValidate = ["experience", "education", "skills", "availableFrom"]
+    } else if (currentStep === 3) {
+      fieldsToValidate = ["resumeUrl", "coverLetter"]
+    } else if (currentStep === 4) {
+      fieldsToValidate = ["workAuthorization", "agreeToTerms"]
+    }
+
+    const isValid = await form.trigger(fieldsToValidate)
+    console.log(form.formState.errors.resumeUrl)
+
+    if (isValid) {
+      setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
     } else {
+      const firstErrorField = Object.keys(form.formState.errors)[0];
+      const errorElement = document.querySelector(`[name="${firstErrorField}"]`) as HTMLElement;
+
+      if (errorElement) {
+        errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+        errorElement.focus();
+      }
+
       toast({
         title: "Please complete all required fields",
-        description: "Fill in all required information before proceeding to the next step.",
+        description: "Some required information is missing or incorrect.",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   const prevStep = () => {
     setCurrentStep((prev) => Math.max(prev - 1, 1))
@@ -193,26 +229,13 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
         appliedDate: new Date().toISOString(),
       }
 
-      const response = await fetch("/api/applications", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(applicationData),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to submit application")
-      }
-
-      const result = await response.json()
+      const result = await applicationService.submitApplication(applicationData);
 
       toast({
         title: "Application submitted successfully!",
         description: "We'll review your application and get back to you soon.",
       })
 
-      // Redirect to success page or job details
       router.push(`/jobs/${job.id}/application-success`)
     } catch (error) {
       console.error("Error submitting application:", error)
@@ -239,7 +262,7 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="firstName">First Name *</Label>
-                <Input id="firstName" {...form.register("firstName")} placeholder="Enter your first name" />
+                <Input id="firstName" {...form.register("firstName")} placeholder="Enter your first name" readOnly />
                 {form.formState.errors.firstName && (
                   <p className="text-sm text-red-600 mt-1">{form.formState.errors.firstName.message}</p>
                 )}
@@ -247,7 +270,7 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
 
               <div>
                 <Label htmlFor="lastName">Last Name *</Label>
-                <Input id="lastName" {...form.register("lastName")} placeholder="Enter your last name" />
+                <Input id="lastName" {...form.register("lastName")} placeholder="Enter your last name" readOnly />
                 {form.formState.errors.lastName && (
                   <p className="text-sm text-red-600 mt-1">{form.formState.errors.lastName.message}</p>
                 )}
@@ -264,6 +287,7 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
                   {...form.register("email")}
                   placeholder="your.email@example.com"
                   className="pl-10"
+                  readOnly
                 />
               </div>
               {form.formState.errors.email && (
@@ -279,7 +303,7 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
                   id="phone"
                   type="tel"
                   {...form.register("phone")}
-                  placeholder="+1 (555) 123-4567"
+                  placeholder="(+84) 123-456-7890"
                   className="pl-10"
                 />
               </div>
@@ -398,7 +422,15 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
 
               <div>
                 <Label htmlFor="availableFrom">Available From</Label>
-                <Input id="availableFrom" type="date" {...form.register("availableFrom")} />
+                <Input
+                  id="availableFrom"
+                  type="date"
+                  {...form.register("availableFrom")}
+                  min={new Date().toISOString().split("T")[0]}
+                />
+                {form.formState.errors.availableFrom && (
+                  <p className="text-sm text-red-600 mt-1">{form.formState.errors.availableFrom.message}</p>
+                )}
               </div>
             </div>
           </div>
@@ -415,12 +447,25 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
             <div>
               <Label>Resume/CV *</Label>
               <ImageUpload
-                value={watchedFields.resumeUrl ? [watchedFields.resumeUrl] : []}
-                onChange={(urls) => setValue("resumeUrl", urls[0] || "")}
+                value={watchedFields.resumeUrl ? {
+                  id: "1",
+                  url: watchedFields.resumeUrl,
+                  publicId: "resume",
+                  name: "resume.pdf",
+                  size: 0
+                } : undefined}
+                onChange={(file) => {
+                  const uploaded = Array.isArray(file) ? file[0] : file;
+                  setValue("resumeUrl", uploaded?.url || "");
+                }}
                 multiple={false}
-                accept=".pdf,.doc,.docx"
+                acceptedTypes={[
+                  "image/jpeg", "image/png", "image/webp", "image/gif",
+                  "application/pdf", "application/msword",
+                  "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                ]}
                 folder="resumes"
-                placeholder="Upload your resume (PDF, DOC, DOCX)"
+                placeholder="Upload your resume or image (PDF, DOC, DOCX, JPG, PNG)"
               />
               {form.formState.errors.resumeUrl && (
                 <p className="text-sm text-red-600 mt-1">{form.formState.errors.resumeUrl.message}</p>
@@ -573,8 +618,13 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
                 <p>
                   <strong>Skills:</strong> {watchedFields.skills?.join(", ")}
                 </p>
-                <p>
-                  <strong>Resume:</strong> {watchedFields.resumeUrl ? "✓ Uploaded" : "Not uploaded"}
+                <p className="flex items-center gap-2">
+                  <strong>Resume:</strong>
+                  {watchedFields.resumeUrl ? (
+                    <Badge className="bg-green-100 text-green-800">✓ Uploaded</Badge>
+                  ) : (
+                    <Badge variant="secondary">Not uploaded</Badge>
+                  )}
                 </p>
               </div>
             </div>
@@ -598,11 +648,21 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
         <Progress value={progress} className="h-2" />
       </div>
 
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form onSubmit={(e) => e.preventDefault()}>
         {renderStepContent()}
 
         <div className="flex justify-between mt-8 pt-6 border-t">
-          <Button type="button" variant="outline" onClick={prevStep} disabled={currentStep === 1}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              if (currentStep === 1) {
+                router.push(`/jobs/${job.id}`);
+              } else {
+                prevStep();
+              }
+            }}
+          >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Previous
           </Button>
@@ -613,7 +673,11 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           ) : (
-            <Button type="submit" disabled={isSubmitting}>
+            <Button
+              type="button"
+              disabled={isSubmitting}
+              onClick={() => form.handleSubmit(onSubmit)()}
+            >
               {isSubmitting ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>

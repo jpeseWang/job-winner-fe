@@ -31,12 +31,10 @@ const ProfileSchema = new Schema<IProfile>(
     },
     title: {
       type: String,
-
       maxlength: [100, "Title cannot be more than 100 characters"],
     },
     bio: {
       type: String,
-
       maxlength: [1000, "Bio cannot be more than 1000 characters"],
     },
     location: {
