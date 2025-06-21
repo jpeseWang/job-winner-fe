@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import toast from "react-hot-toast"
 
 export default function AdminCompanyManagerPage() {
   const [companies, setCompanies] = useState<any[]>([])
@@ -27,7 +28,7 @@ export default function AdminCompanyManagerPage() {
       method: "PATCH",
     })
     if (res.ok) {
-      alert("Approved successfully!")
+      toast.success("Approved successfully!")
       setCompanies(prev => prev.filter(c => c._id !== id))
     }
   }
@@ -37,7 +38,7 @@ export default function AdminCompanyManagerPage() {
   )
 
   return (
-    <div className="max-w-4xl mx-auto mt-10 space-y-6">
+    <div className="max-w-4xl mx-auto my-10 space-y-6">
       <h1 className="text-3xl font-bold">Company List</h1>
 
       {/* Tabs */}

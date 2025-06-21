@@ -27,8 +27,6 @@ export default function MyProfilePage() {
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState("personal")
   const router = useRouter()
-
-  const [myCompany, setMyCompany] = useState<any>(null)
   const [profile, setProfile] = useState<IUserProfile>({
     user: {
       id: user?.id || "",
@@ -81,14 +79,7 @@ export default function MyProfilePage() {
           }))
         }
 
-        // Fetch user's company
-        const companyRes = await fetch(`/api/my-company?userId=${userId}`)
-        if (companyRes.ok) {
-          const company = await companyRes.json()
-          setMyCompany(company || null)
-        } else {
-          setMyCompany(null)
-        }
+
 
       } catch (error) {
         console.error("Error fetching data:", error)
@@ -254,17 +245,10 @@ export default function MyProfilePage() {
       const userId = user?.id || ""
       await userService.updateUserProfile(userId, profile)
       toast.success("Profile updated successfully!")
-      // toast({
-      //   title: "Profile Updated",
-      //   description: "Your profile has been updated successfully.",
-      // })
+
     } catch (error) {
       toast.error("Failed to update profile. Please try again.")
-      // toast({
-      //   title: "Update Failed",
-      //   description: "There was an error updating your profile. Please try again.",
-      //   variant: "destructive",
-      // })
+
     } finally {
       setIsLoading(false)
     }
@@ -352,32 +336,7 @@ export default function MyProfilePage() {
                   <div className="space-y-4">
                     <h3 className="font-medium text-gray-800">Công ty của bạn</h3>
 
-                    {myCompany && !myCompany.isVerified && (
-                      <div className="flex items-center gap-2 text-yellow-600 text-sm font-medium">
-                        <Briefcase className="h-4 w-4" />
-                        Đang chờ xác minh công ty...
-                      </div>
-                    )}
 
-                    {myCompany && myCompany.isVerified && (
-                      <a
-                        href=""
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md transition"
-                      >
-                        <Briefcase className="h-4 w-4" />
-                        My Company
-                      </a>
-                    )}
-
-                    {!myCompany && (
-                      <button
-                        onClick={() => router.push("/register-company")} // TODO: bạn tạo route này sau
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition"
-                      >
-                        <Briefcase className="h-4 w-4" />
-                        Đăng ký mở công ty
-                      </button>
-                    )}
 
                     <Separator className="my-6" />
                   </div>

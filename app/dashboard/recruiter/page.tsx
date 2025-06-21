@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ApplicationsTab from "@/components/dashboard/recruiter/applications-tab"
 import CandidatesTab from "@/components/dashboard/recruiter/candidates-tab"
 import AnalyticsTab from "@/components/dashboard/recruiter/analytics-tab"
+import { useAuth } from "@/hooks/use-auth"
 
 interface Job {
   _id: string
@@ -28,7 +29,9 @@ interface Job {
 
 export default function RecruiterDashboard() {
   const { toast } = useToast()
+  const { user } = useAuth()
   const [jobs, setJobs] = useState<Job[]>([])
+  const [myCompany, setMyCompany] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({
     totalJobs: 0,
@@ -37,32 +40,40 @@ export default function RecruiterDashboard() {
   })
 
   useEffect(() => {
-    const fetchJobs = async () => {
+    const fetchJobsAndCompany = async () => {
       try {
-        const response = await fetch("/api/jobs")
-        if (!response.ok) {
-          throw new Error("Failed to fetch jobs")
-        }
-        const result = await response.json()
-        console.log('API Response:', result) // Debug log
-        
-        // Get jobs from the data property
-        const jobsArray = result.data || []
-        console.log('Jobs array:', jobsArray) // Debug log
-        
+        const userId = user?.id
+        if (!userId) throw new Error("User ID is missing")
+
+        setLoading(true)
+
+        // Fetch jobs and company in parallel
+        const [jobsRes, companyRes] = await Promise.all([
+          fetch("/api/jobs"),
+          fetch(`/api/my-company?userId=${userId}`)
+        ])
+
+        // Handle jobs
+        if (!jobsRes.ok) throw new Error("Failed to fetch jobs")
+        const jobData = await jobsRes.json()
+        const jobsArray = jobData.data || []
         setJobs(jobsArray)
-        
-        // Calculate stats with null checks
-        setStats({
-          totalJobs: jobsArray?.length || 0,
-          activeJobs: jobsArray?.filter((job: Job) => job?.status === "active")?.length || 0,
-          totalApplications: jobsArray?.reduce((sum: number, job: Job) => sum + (job?.applications || 0), 0) || 0
-        })
+
+        // Calculate stats
+        const totalJobs = jobsArray.length
+        const activeJobs = jobsArray.filter((job: Job) => job.status === "active").length
+        const totalApplications = jobsArray.reduce((sum: number, job: any) => sum + (job.applications || 0), 0)
+
+        setStats({ totalJobs, activeJobs, totalApplications })
+
+        // Handle company
+        setMyCompany(companyRes.ok ? await companyRes.json() : null)
+
       } catch (error) {
-        console.error("Error fetching jobs:", error)
+        console.error("Error fetching jobs/company:", error)
         toast({
           title: "Error",
-          description: "Failed to load jobs",
+          description: "Failed to load jobs or company data",
           variant: "destructive",
         })
       } finally {
@@ -70,19 +81,12 @@ export default function RecruiterDashboard() {
       }
     }
 
-    fetchJobs()
-  }, [toast])
+    fetchJobsAndCompany()
+  }, [toast, user?.id])
+
 
   return (
     <main className="flex-1 space-y-4 p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Recruiter Dashboard</h2>
-        <div className="flex items-center space-x-2">
-          <Button asChild>
-            <Link href="/dashboard/recruiter/jobs/new">Post New Job</Link>
-          </Button>
-        </div>
-      </div>
 
       {/* Stats Overview */}
       <div className="grid gap-4 md:grid-cols-3">
