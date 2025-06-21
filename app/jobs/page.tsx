@@ -11,6 +11,7 @@ import { Loader2 } from "lucide-react"
 import type { Job } from "@/types/interfaces"
 import { formatSalary } from "@/utils/formatters";
 import { useSearchParams } from "next/navigation"
+import { DEFAULT_AVATAR } from "@/constants"
 
 export default function JobsPage() {
   const searchParams = useSearchParams()
@@ -109,7 +110,7 @@ export default function JobsPage() {
                           experienceLevel={job.experienceLevel}
                           salary={salaryString}
                           postedDays={job.postedDays || 0}
-                          logo={job.companyLogo || "/placeholder.svg?height=40&width=40"}
+                          logo={job.companyLogo || DEFAULT_AVATAR}
                         />
                       )
                     })}

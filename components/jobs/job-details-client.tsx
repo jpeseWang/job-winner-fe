@@ -22,6 +22,7 @@ import { useToast } from "@/components/ui/use-toast";
 import Loading from "@/components/ui/loading";
 import { formatSalary } from "@/utils/formatters";
 import ContactForm from "@/components/contact/contact-form"
+import { DEFAULT_AVATAR } from "@/constants";
 
 interface JobDetailsClientProps {
   id: string;
@@ -73,7 +74,7 @@ export default function JobDetailsClient({ id }: JobDetailsClientProps) {
         <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
           <div className="flex-shrink-0">
             <Image
-              src={job.companyLogo || "/placeholder.svg"}
+              src={job.companyLogo || DEFAULT_AVATAR}
               alt={job.company}
               width={60}
               height={60}
@@ -114,12 +115,12 @@ export default function JobDetailsClient({ id }: JobDetailsClientProps) {
                 <span>
                   {job.applicationDeadline
                     ? `Apply by ${new Date(
-                        job.applicationDeadline
-                      ).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}`
+                      job.applicationDeadline
+                    ).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}`
                     : "No deadline specified"}
                 </span>
               </div>
@@ -358,8 +359,8 @@ export default function JobDetailsClient({ id }: JobDetailsClientProps) {
 
             {/* Contact Form */}
             <Card className="p-5">
-                <h3 className="text-lg font-semibold mb-4">Send Us Message</h3>
-                <ContactForm />
+              <h3 className="text-lg font-semibold mb-4">Send Us Message</h3>
+              <ContactForm />
             </Card>
           </div>
         </div>
@@ -373,6 +374,6 @@ export default function JobDetailsClient({ id }: JobDetailsClientProps) {
         )}
       </section>
     </main>
-    
+
   );
 }

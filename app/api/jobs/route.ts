@@ -3,6 +3,7 @@ import { z } from "zod"
 import Job from "@/models/Job"
 import dbConnect from "@/lib/db"
 import { validateJob } from "@/utils/validators"
+import { Types } from "mongoose";
 
 export async function GET(req: NextRequest) {
   try {
@@ -49,7 +50,7 @@ export async function GET(req: NextRequest) {
         .skip(skip)
         .limit(+limit)
         .sort(sortOption)
-        .lean({ virtuals: true, getters: true }),                      
+        .lean(),
       Job.countDocuments(query),
     ])
 
@@ -67,8 +68,9 @@ export async function GET(req: NextRequest) {
 export async function POST(request: Request) {
   try {
     await dbConnect()
-    const body = await request.json()
+    const body = await request.json();
 
+    console.log("Creating job with body:", body)
     const { data: validatedData, errors } = validateJob(body)
     if (errors) {
       return NextResponse.json({ error: errors }, { status: 400 })

@@ -1,8 +1,9 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -10,21 +11,30 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { Loader2, Plus, Trash2 } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Loader2, Plus, Trash2, Building2, AlertCircle } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { JobLocation, JobCategory, JobType, ExperienceLevel } from "@/types/enums"
+import { useCompanyById } from "@/hooks/useCompany"
+import toast from "react-hot-toast"
 
 export default function NewJobPage() {
   const router = useRouter()
-  const { toast } = useToast()
+  const { data: session } = useSession()
+  // const { toast } = useToast()
+  const { company, isLoading: companyLoading, isError: companyError, hasCompany } = useCompanyById(session?.user?.id || "")
+
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [requirements, setRequirements] = useState<string[]>([""])
   const [benefits, setBenefits] = useState<string[]>([""])
   const [responsibilities, setResponsibilities] = useState<string[]>([""])
   const [skills, setSkills] = useState<string[]>([""])
+
   const [formData, setFormData] = useState({
     title: "",
     company: "",
+    companyId: "",
     location: "",
     type: "Full-time",
     category: "",
@@ -34,7 +44,21 @@ export default function NewJobPage() {
     applicationUrl: "",
     featured: false,
     experienceLevel: "Mid Level",
+    companyLogo: "",
   })
+
+  // Auto-populate company data when company is loaded
+  useEffect(() => {
+    if (company && !formData.company) {
+      setFormData((prev) => ({
+        ...prev,
+        company: company.name,
+        companyId: company._id,
+        companyLogo: company.logo || "",
+        contactEmail: session?.user?.email || "",
+      }))
+    }
+  }, [company, session, formData.company])
 
   const handleAddRequirement = () => {
     setRequirements([...requirements, ""])
@@ -102,11 +126,11 @@ export default function NewJobPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
+    setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData(prev => ({ ...prev, [name]: value }))
+    setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -115,31 +139,31 @@ export default function NewJobPage() {
 
     try {
       // Parse salary range from string (e.g., "80000-100000")
-      let transformedSalary = undefined;
+      let transformedSalary = undefined
       if (formData.salary) {
-        const [minStr, maxStr] = formData.salary.split('-').map(s => s.trim().replace(/[^0-9]/g, ''));
+        const [minStr, maxStr] = formData.salary.split("-").map((s) => s.trim().replace(/[^0-9]/g, ""))
         transformedSalary = {
-          min: minStr ? parseInt(minStr, 10) : undefined,
-          max: maxStr ? parseInt(maxStr, 10) : undefined,
+          min: minStr ? Number.parseInt(minStr, 10) : undefined,
+          max: maxStr ? Number.parseInt(maxStr, 10) : undefined,
           currency: "USD",
           isNegotiable: false,
           period: "yearly",
-        };
+        }
       }
 
       const jobData = {
         ...formData,
-        requirements: requirements.filter(req => req.trim() !== ""),
-        benefits: benefits.filter(benefit => benefit.trim() !== ""),
-        responsibilities: responsibilities.filter(resp => resp.trim() !== ""),
-        skills: skills.filter(skill => skill.trim() !== ""),
+        requirements: requirements.filter((req) => req.trim() !== ""),
+        benefits: benefits.filter((benefit) => benefit.trim() !== ""),
+        responsibilities: responsibilities.filter((resp) => resp.trim() !== ""),
+        skills: skills.filter((skill) => skill.trim() !== ""),
         salary: transformedSalary,
         status: "active",
         postedDate: new Date().toISOString(),
-        recruiter: "60d0fe4f5f1c2c0015b3c8f8",
+        recruiter: session?.user?.id || "",
       }
 
-      console.log('Submitting job data:', jobData)
+      console.log("Submitting job data:", jobData)
 
       const response = await fetch("/api/jobs", {
         method: "POST",
@@ -150,41 +174,86 @@ export default function NewJobPage() {
       })
 
       const data = await response.json()
-      console.log('Response:', data)
+      console.log("Response:", data)
 
       if (!response.ok) {
-        console.error('API Error Response:', data);
+        console.error("API Error Response:", data)
+        toast.error("Failed to create job. Please check the form and try again.")
         let errorMessage = "Failed to create job"
         if (data.error) {
           if (Array.isArray(data.error) && data.error.length > 0) {
             errorMessage = data.error.map((err: any) => err.message).join(", ")
-          } else if (typeof data.error === 'string') {
+          } else if (typeof data.error === "string") {
             errorMessage = data.error
           }
         }
         throw new Error(errorMessage)
       }
 
-      toast({
-        title: "Success",
-        description: "Job posted successfully!",
-      })
+      toast.success("Job posted successfully!"
+      )
       router.push("/dashboard/recruiter?tab=jobs")
     } catch (error) {
       console.error("Error posting job:", error)
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to post job. Please try again.",
-        variant: "destructive",
-      })
+      toast.error(error instanceof Error ? error.message : "Failed to post job. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
   }
+  console.log("formData:", formData)
+  // Show loading state while fetching company
+  if (companyLoading) {
+    return (
+      <main className="max-w-4xl mx-auto py-8 px-4">
+        <div className="space-y-6">
+          <Skeleton className="h-8 w-64" />
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+              <Skeleton className="h-4 w-96" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <Skeleton className="h-32 w-full" />
+            </CardContent>
+          </Card>
+        </div>
+      </main>
+    )
+  }
+
+  // Show error if no company found
+  if (companyError || !hasCompany) {
+    return (
+      <main className="max-w-4xl mx-auto py-8 px-4">
+        <h1 className="text-2xl font-bold mb-6">Post a New Job</h1>
+        <Alert className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            You need to register your company before posting jobs.
+            <Button variant="link" className="p-0 ml-1 h-auto" onClick={() => router.push("/register-company")}>
+              Register your company here
+            </Button>
+          </AlertDescription>
+        </Alert>
+      </main>
+    )
+  }
 
   return (
     <main className="max-w-4xl mx-auto py-8 px-4">
-      <h1 className="text-2xl font-bold mb-6">Post a New Job</h1>
+      <div className="flex items-center gap-3 mb-6">
+        <Building2 className="h-8 w-8 text-blue-600" />
+        <div>
+          <h1 className="text-2xl font-bold">Post a New Job</h1>
+          <p className="text-sm text-muted-foreground">
+            Posting as <span className="font-medium">{company?.name}</span>
+          </p>
+        </div>
+      </div>
 
       <form onSubmit={handleSubmit}>
         <div className="space-y-6">
@@ -216,17 +285,17 @@ export default function NewJobPage() {
                     value={formData.company}
                     onChange={handleInputChange}
                     required
+                    disabled
+                    className="bg-muted"
                   />
+                  <p className="text-xs text-muted-foreground">Auto-filled from your company profile</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="location">Location</Label>
-                  <Select
-                    value={formData.location}
-                    onValueChange={(value) => handleSelectChange("location", value)}
-                  >
+                  <Select value={formData.location} onValueChange={(value) => handleSelectChange("location", value)}>
                     <SelectTrigger id="location">
                       <SelectValue placeholder="Select job location" />
                     </SelectTrigger>
@@ -242,10 +311,7 @@ export default function NewJobPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="type">Job Type</Label>
-                  <Select
-                    value={formData.type}
-                    onValueChange={(value) => handleSelectChange("type", value)}
-                  >
+                  <Select value={formData.type} onValueChange={(value) => handleSelectChange("type", value)}>
                     <SelectTrigger id="type">
                       <SelectValue placeholder="Select job type" />
                     </SelectTrigger>
@@ -263,10 +329,7 @@ export default function NewJobPage() {
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="category">Job Category</Label>
-                  <Select
-                    value={formData.category}
-                    onValueChange={(value) => handleSelectChange("category", value)}
-                  >
+                  <Select value={formData.category} onValueChange={(value) => handleSelectChange("category", value)}>
                     <SelectTrigger id="category">
                       <SelectValue placeholder="Select job category" />
                     </SelectTrigger>
@@ -336,22 +399,13 @@ export default function NewJobPage() {
                       required
                     />
                     {responsibilities.length > 1 && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleRemoveResponsibility(index)}
-                      >
+                      <Button variant="ghost" size="icon" onClick={() => handleRemoveResponsibility(index)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     )}
                   </div>
                 ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleAddResponsibility}
-                >
+                <Button type="button" variant="outline" className="w-full" onClick={handleAddResponsibility}>
                   <Plus className="h-4 w-4 mr-2" /> Add Responsibility
                 </Button>
               </div>
@@ -368,22 +422,13 @@ export default function NewJobPage() {
                       required
                     />
                     {requirements.length > 1 && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleRemoveRequirement(index)}
-                      >
+                      <Button variant="ghost" size="icon" onClick={() => handleRemoveRequirement(index)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     )}
                   </div>
                 ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleAddRequirement}
-                >
+                <Button type="button" variant="outline" className="w-full" onClick={handleAddRequirement}>
                   <Plus className="h-4 w-4 mr-2" /> Add Requirement
                 </Button>
               </div>
@@ -400,22 +445,13 @@ export default function NewJobPage() {
                       required
                     />
                     {skills.length > 1 && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleRemoveSkill(index)}
-                      >
+                      <Button variant="ghost" size="icon" onClick={() => handleRemoveSkill(index)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     )}
                   </div>
                 ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleAddSkill}
-                >
+                <Button type="button" variant="outline" className="w-full" onClick={handleAddSkill}>
                   <Plus className="h-4 w-4 mr-2" /> Add Skill
                 </Button>
               </div>
@@ -431,22 +467,13 @@ export default function NewJobPage() {
                       onChange={(e) => handleBenefitChange(index, e.target.value)}
                     />
                     {benefits.length > 1 && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleRemoveBenefit(index)}
-                      >
+                      <Button variant="ghost" size="icon" onClick={() => handleRemoveBenefit(index)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     )}
                   </div>
                 ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleAddBenefit}
-                >
+                <Button type="button" variant="outline" className="w-full" onClick={handleAddBenefit}>
                   <Plus className="h-4 w-4 mr-2" /> Add Benefit
                 </Button>
               </div>
@@ -463,6 +490,7 @@ export default function NewJobPage() {
                     onChange={handleInputChange}
                     required
                   />
+                  <p className="text-xs text-muted-foreground">Pre-filled with your account email</p>
                 </div>
 
                 <div className="space-y-2">
@@ -482,7 +510,7 @@ export default function NewJobPage() {
                 <Switch
                   id="featured"
                   checked={formData.featured}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, featured: checked }))}
+                  onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, featured: checked }))}
                 />
                 <Label htmlFor="featured">Feature this job (highlighted in search results)</Label>
               </div>

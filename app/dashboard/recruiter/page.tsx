@@ -13,6 +13,8 @@ import ApplicationsTab from "@/components/dashboard/recruiter/applications-tab"
 import CandidatesTab from "@/components/dashboard/recruiter/candidates-tab"
 import AnalyticsTab from "@/components/dashboard/recruiter/analytics-tab"
 import { useAuth } from "@/hooks/use-auth"
+import { companyService } from "@/services/companyService"
+import { jobService } from "@/services"
 
 interface Job {
   _id: string
@@ -40,23 +42,11 @@ export default function RecruiterDashboard() {
   })
 
   useEffect(() => {
-    const fetchJobsAndCompany = async () => {
+    const fetchJobs = async () => {
       try {
-        const userId = user?.id
-        if (!userId) throw new Error("User ID is missing")
-
         setLoading(true)
-
-        // Fetch jobs and company in parallel
-        const [jobsRes, companyRes] = await Promise.all([
-          fetch("/api/jobs"),
-          fetch(`/api/my-company?userId=${userId}`)
-        ])
-
-        // Handle jobs
-        if (!jobsRes.ok) throw new Error("Failed to fetch jobs")
-        const jobData = await jobsRes.json()
-        const jobsArray = jobData.data || []
+        const jobData = await jobService.getJobs()
+        const jobsArray = jobData?.data || []
         setJobs(jobsArray)
 
         // Calculate stats
@@ -66,8 +56,7 @@ export default function RecruiterDashboard() {
 
         setStats({ totalJobs, activeJobs, totalApplications })
 
-        // Handle company
-        setMyCompany(companyRes.ok ? await companyRes.json() : null)
+
 
       } catch (error) {
         console.error("Error fetching jobs/company:", error)
@@ -81,7 +70,7 @@ export default function RecruiterDashboard() {
       }
     }
 
-    fetchJobsAndCompany()
+    fetchJobs()
   }, [toast, user?.id])
 
 

@@ -10,6 +10,7 @@ import {
 export interface IJob extends Document {
   title: string
   company: string
+  companyId: Types.ObjectId
   recruiter: string
   description: string
   responsibilities: string[]
@@ -40,6 +41,7 @@ export interface IJob extends Document {
   createdAt: Date
   updatedAt: Date
   publishedAt?: Date
+  companyLogo: string
 }
 
 const JobSchema = new Schema<IJob>(
@@ -54,6 +56,11 @@ const JobSchema = new Schema<IJob>(
       type: String,
       required: [true, "Please provide a company name"],
       trim: true,
+    },
+    companyId: {
+      type: Schema.Types.ObjectId,
+      ref: "Company",
+      required: [true, "Please provide a company ID"]
     },
     recruiter: {
       type: String,
@@ -103,7 +110,7 @@ const JobSchema = new Schema<IJob>(
       default: false,
     },
     salary: {
-min: {
+      min: {
         type: Number,
       },
       max: {
@@ -143,6 +150,7 @@ min: {
     },
     applicationUrl: {
       type: String,
+      required: false,
       trim: true,
     },
     contactEmail: {
@@ -170,6 +178,10 @@ min: {
     applications: {
       type: Number,
       default: 0,
+    },
+    companyLogo: {
+      type: String,
+      default: "https://sportleaders.club/uploads/company-logo/0-default.png"
     },
     publishedAt: {
       type: Date,

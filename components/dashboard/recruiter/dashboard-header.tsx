@@ -6,22 +6,26 @@ import { Button } from "@/components/ui/button"
 import { Briefcase } from "lucide-react"
 import { toast } from "@/components/ui/use-toast"
 import { useSession } from "next-auth/react"
+import { companyService } from "@/services/companyService"
+import { usePathname } from "next/navigation"
+import { useAuth } from "@/hooks/use-auth"
 
 export default function RecruiterDashboardHeader() {
-  const { data: session } = useSession()
+  const { user } = useAuth()
   const [myCompany, setMyCompany] = useState<any>(null)
-
+  const pathname = usePathname()
+  const isCreatingJob = pathname.includes("/dashboard/recruiter/jobs/new")
+  const userId = user?.id
   useEffect(() => {
     const fetchMyCompany = async () => {
       try {
-        const userId = session?.user?.id
+
         if (!userId) return
 
-        const res = await fetch(`/api/my-company?userId=${userId}`)
-        if (!res.ok) throw new Error("Failed to fetch company")
+        const res = await companyService.getCompanyById(userId)
 
-        const data = await res.json()
-        setMyCompany(data)
+
+        setMyCompany(res)
       } catch (err) {
         console.error(err)
         toast({
@@ -33,13 +37,17 @@ export default function RecruiterDashboardHeader() {
     }
 
     fetchMyCompany()
-  }, [session?.user?.id])
+  }, [userId])
 
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between space-y-4 md:space-y-0">
         <h2 className="text-3xl font-bold tracking-tight">Recruiter Dashboard</h2>
         <div className="flex flex-wrap gap-2">
+          {isCreatingJob && <Button asChild className="bg-blue-600 hover:bg-blue-700">
+            <Link href="/dashboard/recruiter">Back to Dashboard</Link>
+          </Button>}
+
           <Button asChild>
             <Link href="/dashboard/recruiter/jobs/new">Post New Job</Link>
           </Button>

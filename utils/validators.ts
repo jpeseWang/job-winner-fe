@@ -40,6 +40,8 @@ export const jobSchema = z.object({
   applications: z.number().default(0).optional(),
   publishedAt: z.string().optional(),
   updatedAt: z.string().optional(),
+  companyId: z.string().min(1, "Company ID is required"),
+  companyLogo: z.string().url("Invalid URL").optional(),
 })
 
 // Application validation schema
