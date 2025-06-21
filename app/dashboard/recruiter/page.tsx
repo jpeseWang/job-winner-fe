@@ -30,6 +30,7 @@ export default function RecruiterDashboard() {
   const { toast } = useToast()
   const [jobs, setJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState(true)
+  const [showAllJobs, setShowAllJobs] = useState(false)
   const [stats, setStats] = useState({
     totalJobs: 0,
     activeJobs: 0,
@@ -72,6 +73,9 @@ export default function RecruiterDashboard() {
 
     fetchJobs()
   }, [toast])
+
+  // Get jobs to display based on showAllJobs state
+  const displayJobs = showAllJobs ? jobs : jobs.slice(0, 10)
 
   return (
     <main className="flex-1 space-y-4 p-8 pt-6">
@@ -136,9 +140,14 @@ export default function RecruiterDashboard() {
         <TabsContent value="jobs">
           <Card>
             <CardHeader>
-              <CardTitle>Recent Job Postings</CardTitle>
+              <CardTitle>
+                {showAllJobs ? "All Job Postings" : "Recent Job Postings"}
+              </CardTitle>
               <CardDescription>
-                Your most recent job listings and their performance
+                {showAllJobs 
+                  ? "All your job listings and their performance" 
+                  : "Your most recent job listings and their performance"
+                }
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -152,7 +161,7 @@ export default function RecruiterDashboard() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {jobs.slice(0, 10).map((job) => (
+                  {displayJobs.map((job) => (
                     <div
                       key={job._id}
                       className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
@@ -185,8 +194,11 @@ export default function RecruiterDashboard() {
                   ))}
                   {jobs.length > 10 && (
                     <div className="text-center">
-                      <Button variant="link" asChild>
-                        <Link href="/dashboard/recruiter/jobs">View All Jobs</Link>
+                      <Button 
+                        variant="link" 
+                        onClick={() => setShowAllJobs(!showAllJobs)}
+                      >
+                        {showAllJobs ? "Show Recent Jobs" : "View All Jobs"}
                       </Button>
                     </div>
                   )}
