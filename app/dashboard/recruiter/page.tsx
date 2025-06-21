@@ -9,7 +9,7 @@ import { Loader2, Briefcase, Users, Eye } from "lucide-react"
 import { format } from "date-fns"
 import Link from "next/link"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import ApplicationsTab from "@/components/dashboard/recruiter/applications-tab"
+import RecruiterApplicationsTab from "@/components/dashboard/recruiter/applications-tab"
 import CandidatesTab from "@/components/dashboard/recruiter/candidates-tab"
 import AnalyticsTab from "@/components/dashboard/recruiter/analytics-tab"
 import { useAuth } from "@/hooks/use-auth"
@@ -190,19 +190,7 @@ export default function RecruiterDashboard() {
         </TabsContent>
 
         <TabsContent value="applications">
-          <Card>
-            <CardHeader>
-              <CardTitle>Applications</CardTitle>
-              <CardDescription>
-                View and manage job applications
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                Applications content will be displayed here
-              </div>
-            </CardContent>
-          </Card>
+          <RecruiterApplicationsTab />
         </TabsContent>
 
         <TabsContent value="candidates">
