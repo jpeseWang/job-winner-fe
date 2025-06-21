@@ -373,5 +373,6 @@ export default function JobDetailsClient({ id }: JobDetailsClientProps) {
         )}
       </section>
     </main>
+    
   );
 }
