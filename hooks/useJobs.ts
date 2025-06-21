@@ -16,22 +16,14 @@ export function useJobs(filters: JobFilters = {}, options: UseJobsOptions = {}) 
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(ITEMS_PER_PAGE)
 
-  // Create a unique key for SWR based on all filter parameters
   const queryParams = new URLSearchParams()
 
   if (filters.keyword) queryParams.append("keyword", filters.keyword)
   if (filters.location) queryParams.append("location", filters.location)
-
   if (filters.sort) queryParams.append("sort", filters.sort)
-
-  if (filters.category?.length)
-    queryParams.append("category", filters.category.join(","))
-
-  if (filters.type?.length)
-    queryParams.append("type", filters.type.join(","))
-
-  if (filters.experienceLevel?.length)
-    queryParams.append("experienceLevel", filters.experienceLevel.join(","))
+  if (filters.category?.length) queryParams.append("category", filters.category.join(","))
+  if (filters.type?.length) queryParams.append("type", filters.type.join(","))
+  if (filters.experienceLevel?.length) queryParams.append("experienceLevel", filters.experienceLevel.join(","))
 
   queryParams.append("page", page.toString())
   queryParams.append("limit", limit.toString())

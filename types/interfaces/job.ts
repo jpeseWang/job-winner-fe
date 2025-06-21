@@ -1,16 +1,5 @@
 // Job interfaces
-export enum JobType {
-  FULL_TIME = "full_time",
-  PART_TIME = "part_time",
-  CONTRACT = "contract",
-  FREELANCE = "freelance",
-} s
-
-export enum JobStatus {
-  ACTIVE = "active",
-  EXPIRED = "expired",
-  PENDING = "pending",
-}
+import { JobType, JobStatus } from "@/types/enums/index";
 
 export interface Salary {
   min?: number;

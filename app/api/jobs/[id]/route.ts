@@ -15,11 +15,9 @@ export async function GET(request: Request) {
     const id = getIdFromRequest(request)
     if (!id) return NextResponse.json({ error: "Invalid ID" }, { status: 400 })
 
-    const job = await Job.findById(id)
-    if (!job) return NextResponse.json({ error: "Job not found" }, { status: 404 })
-
-    const { _id, ...jobData } = job.toJSON()
-    return NextResponse.json({ ...jobData, id: _id.toString() })
+    const job = await Job.findById(id).lean({ virtuals: true, getters: true });
+    if (!job) return NextResponse.json({ error: "Job not found" }, { status: 404 });
+    return NextResponse.json(job);
   } catch (error) {
     console.error('Error fetching job:', error)
     return NextResponse.json({ error: 'Failed to fetch job' }, { status: 500 })
