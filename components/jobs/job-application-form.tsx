@@ -184,7 +184,7 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
     if (currentStep === 1) {
       fieldsToValidate = ["firstName", "lastName", "email", "phone", "location"]
     } else if (currentStep === 2) {
-      fieldsToValidate = ["experience", "education", "skills","availableFrom"]
+      fieldsToValidate = ["experience", "education", "skills", "availableFrom"]
     } else if (currentStep === 3) {
       fieldsToValidate = ["resumeUrl", "coverLetter"]
     } else if (currentStep === 4) {
@@ -447,12 +447,12 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
             <div>
               <Label>Resume/CV *</Label>
               <ImageUpload
-                  value={watchedFields.resumeUrl ? { 
-                  id: "1", 
-                  url: watchedFields.resumeUrl, 
-                  publicId: "resume", 
-                  name: "resume.pdf", 
-                  size: 0 
+                value={watchedFields.resumeUrl ? {
+                  id: "1",
+                  url: watchedFields.resumeUrl,
+                  publicId: "resume",
+                  name: "resume.pdf",
+                  size: 0
                 } : undefined}
                 onChange={(file) => {
                   const uploaded = Array.isArray(file) ? file[0] : file;
@@ -653,7 +653,7 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
 
         <div className="flex justify-between mt-8 pt-6 border-t">
           <Button
-            type="button" 
+            type="button"
             variant="outline"
             onClick={() => {
               if (currentStep === 1) {
