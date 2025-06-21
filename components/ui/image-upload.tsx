@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress"
 import { useToast } from "@/components/ui/use-toast"
 import { Upload, X, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { imageService } from "@/services/imageService";
 
 export interface UploadedImage {
     id: string
@@ -37,7 +38,11 @@ export function ImageUpload({
     multiple = false,
     maxFiles = 5,
     maxSize = 10,
-    acceptedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"],
+    acceptedTypes = [
+    "image/jpeg", "image/png", "image/webp", "image/gif",
+    "application/pdf", "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  ],
     folder = "general",
     className,
     disabled = false,
@@ -56,13 +61,20 @@ export function ImageUpload({
             if (disabled) return
 
             const fileArray = Array.from(files)
+            const fallbackExtensions = [".pdf", ".doc", ".docx", ".rtf", ".odt", ".txt"]
 
-            // Validate file types
-            const invalidFiles = fileArray.filter((file) => !acceptedTypes.includes(file.type))
+             // Check type validity using acceptedTypes or fallback by file extension
+            const invalidFiles = fileArray.filter((file) => {
+                console.log("MIME type detected:", file.name, file.type)
+                const isValidType = acceptedTypes.includes(file.type)
+                const hasValidExtension = fallbackExtensions.some((ext) => file.name.toLowerCase().endsWith(ext))
+                return !(isValidType || hasValidExtension)
+            })
+
             if (invalidFiles.length > 0) {
                 toast({
                     title: "Invalid file type",
-                    description: `Please select only ${acceptedTypes.join(", ")} files.`,
+                    description: `Some files are not allowed: ${invalidFiles.map(f => f.name).join(", ")}`,
                     variant: "destructive",
                 })
                 return
@@ -126,7 +138,7 @@ export function ImageUpload({
                 })
 
                 const uploadedImages = await Promise.all(uploadPromises)
-
+        
                 if (multiple) {
                     const newImages = [...currentImages, ...uploadedImages]
                     onChange(newImages)
@@ -159,13 +171,7 @@ export function ImageUpload({
 
             try {
                 // Delete from Cloudinary
-                await fetch("/api/upload/delete", {
-                    method: "DELETE",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ publicId: imageToRemove.publicId }),
-                })
+                await imageService.deleteImage(imageToRemove.publicId);
 
                 if (multiple) {
                     const newImages = currentImages.filter((img) => img.id !== imageToRemove.id)
@@ -272,7 +278,7 @@ export function ImageUpload({
             {/* Preview Images */}
             {currentImages.length > 0 && (
                 <div className="space-y-2">
-                    <h4 className="text-sm font-medium text-gray-900">Uploaded Images ({currentImages.length})</h4>
+                    <h4 className="text-sm font-medium text-gray-900">Uploaded Resume ({currentImages.length})</h4>
                     <div
                         className={cn(
                             "grid gap-4",
@@ -283,13 +289,20 @@ export function ImageUpload({
                             <div key={image.id} className="relative group">
                                 <Card className="overflow-hidden">
                                     <div className="aspect-square relative">
-                                        <Image
-                                            src={image.url || "/placeholder.svg"}
-                                            alt={image.name}
-                                            fill
-                                            className="object-cover"
-                                            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                                        />
+                                        {image.url.match(/\.(jpg|jpeg|png|webp|gif)$/i) ? (
+                                            <Image
+                                                src={image.url || "/placeholder.svg"}
+                                                alt={image.name}
+                                                fill
+                                                className="object-cover"
+                                                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                                            />
+                                            ) : (
+                                            <div className="flex items-center justify-center h-full px-2 text-xs text-gray-600 text-center">
+                                                <p className="break-words">{image.name}</p>
+                                            </div>
+                                            )
+                                        }
                                         {!disabled && (
                                             <Button
                                                 variant="destructive"

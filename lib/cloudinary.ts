@@ -35,14 +35,23 @@ export async function uploadToCloudinary(
     options: UploadOptions = {},
 ): Promise<CloudinaryUploadResult> {
     try {
-        const defaultOptions = {
+        const baseOptions = {
             folder: "job-marketplace",
-            resource_type: "auto" as const,
-            quality: "auto",
-            fetch_format: "auto",
+            resource_type: options.resource_type || "auto",
         }
 
-        const uploadOptions = { ...defaultOptions, ...options }
+        const imageOnlyOptions = baseOptions.resource_type === "image"
+            ? {
+                quality: "auto",
+                fetch_format: "auto",
+            }
+            : {}
+
+        const uploadOptions = {
+            ...baseOptions,
+            ...imageOnlyOptions,
+            ...options,
+        }
 
         let result;
         if (typeof file === "string") {

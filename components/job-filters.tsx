@@ -44,6 +44,7 @@ export default function JobFilters({ onChange }: Props) {
         console.error("Failed to load filter metadata:", err)
       }
     }
+
     fetchFilters()
   }, [])
 

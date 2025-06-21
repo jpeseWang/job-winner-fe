@@ -28,6 +28,7 @@ interface JobDetailsClientProps {
 }
 
 export default function JobDetailsClient({ id }: JobDetailsClientProps) {
+
   const { toast } = useToast();
   const { job, isLoading, error } = useJob(id);
 
@@ -83,9 +84,9 @@ export default function JobDetailsClient({ id }: JobDetailsClientProps) {
             <h1 className="text-2xl font-bold">{job.title}</h1>
             <p className="text-gray-600">{job.company}</p>
           </div>
-          <div className="mt-4 md:mt-0">
+          <Link href={`/jobs/${job.id}/apply`}>
             <Button className="bg-teal-500 hover:bg-teal-600">Apply Job</Button>
-          </div>
+          </Link>
         </div>
       </section>
 

@@ -14,6 +14,7 @@ interface JobCardProps {
   salary: string
   postedDays: number
   logo: string
+  hideButton?: boolean
 }
 
 export default function JobCard({
@@ -27,6 +28,7 @@ export default function JobCard({
   salary,
   postedDays,
   logo,
+  hideButton
 }: JobCardProps) {
   return (
     <div className="border rounded-lg p-4 hover:shadow-md transition">
@@ -75,11 +77,13 @@ export default function JobCard({
             </div>
         </div>
 
-        <div className="flex-shrink-0">
-          <Button size="sm" className="bg-teal-500 hover:bg-teal-600" asChild>
-            <Link href={`/jobs/${id}`}>View Job</Link>
-          </Button>
-        </div>
+        {!hideButton && (
+          <div className="flex-shrink-0">
+            <Button size="sm" className="bg-teal-500 hover:bg-teal-600" asChild>
+              <Link href={`/jobs/${id}`}>View Job</Link>
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   )
