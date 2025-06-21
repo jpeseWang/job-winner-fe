@@ -447,12 +447,12 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
             <div>
               <Label>Resume/CV *</Label>
               <ImageUpload
-                value={watchedFields.resumeUrl ? {
-                  id: "1",
-                  url: watchedFields.resumeUrl,
-                  publicId: "resume",
-                  name: "resume.pdf",
-                  size: 0
+                  value={watchedFields.resumeUrl ? { 
+                  id: "1", 
+                  url: watchedFields.resumeUrl, 
+                  publicId: "resume", 
+                  name: "resume.pdf", 
+                  size: 0 
                 } : undefined}
                 onChange={(file) => {
                   const uploaded = Array.isArray(file) ? file[0] : file;
@@ -680,7 +680,7 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
             >
               {isSubmitting ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-s2 border-white mr-2"></div>
                   Submitting...
                 </>
               ) : (
