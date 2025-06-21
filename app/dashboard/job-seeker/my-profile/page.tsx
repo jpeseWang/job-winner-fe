@@ -26,7 +26,9 @@ export default function MyProfilePage() {
   const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState("personal")
+  const router = useRouter()
 
+  const [myCompany, setMyCompany] = useState<any>(null)
   const [profile, setProfile] = useState<IUserProfile>({
     user: {
       id: user?.id || "",
@@ -58,7 +60,7 @@ export default function MyProfilePage() {
   })
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchProfileAndCompany = async () => {
       try {
         setIsLoading(true)
 
@@ -66,8 +68,9 @@ export default function MyProfilePage() {
         if (!userId) {
           throw new Error("User ID is missing")
         }
-        const userProfile = await userService.getUserProfile(userId)
 
+        // Fetch user profile
+        const userProfile = await userService.getUserProfile(userId)
         if (userProfile) {
           setProfile((prev) => ({
             ...prev,
@@ -77,15 +80,25 @@ export default function MyProfilePage() {
             contactEmail: userProfile.user?.email || prev.contactEmail,
           }))
         }
+
+        // Fetch user's company
+        const companyRes = await fetch(`/api/my-company?userId=${userId}`)
+        if (companyRes.ok) {
+          const company = await companyRes.json()
+          setMyCompany(company || null)
+        } else {
+          setMyCompany(null)
+        }
+
       } catch (error) {
-        console.error("Error fetching profile:", error)
-        toast.error("Failed to load profile data. Please try again.")
+        console.error("Error fetching data:", error)
+        toast.error("Failed to load profile or company data.")
       } finally {
         setIsLoading(false)
       }
     }
 
-    fetchProfile()
+    fetchProfileAndCompany()
   }, [toast, user])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -330,7 +343,46 @@ export default function MyProfilePage() {
                       />
                     </label>
                   )}
+
+                  <Separator className="my-6" />
+
                 </div>
+
+                {user?.role === "job_seeker" && (
+                  <div className="space-y-4">
+                    <h3 className="font-medium text-gray-800">Công ty của bạn</h3>
+
+                    {myCompany && !myCompany.isVerified && (
+                      <div className="flex items-center gap-2 text-yellow-600 text-sm font-medium">
+                        <Briefcase className="h-4 w-4" />
+                        Đang chờ xác minh công ty...
+                      </div>
+                    )}
+
+                    {myCompany && myCompany.isVerified && (
+                      <a
+                        href=""
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md transition"
+                      >
+                        <Briefcase className="h-4 w-4" />
+                        My Company
+                      </a>
+                    )}
+
+                    {!myCompany && (
+                      <button
+                        onClick={() => router.push("/register-company")} // TODO: bạn tạo route này sau
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition"
+                      >
+                        <Briefcase className="h-4 w-4" />
+                        Đăng ký mở công ty
+                      </button>
+                    )}
+
+                    <Separator className="my-6" />
+                  </div>
+                )}
+
               </CardContent>
             </Card>
           </div>
