@@ -1,7 +1,10 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { UserRole } from "@/types/enums";
+
 import JobApplicationForm from "@/components/jobs/job-application-form";
 import { jobService } from "@/services/jobService";
-import { Card } from "@/components/ui/card";
 import JobCard from "@/components/job-card"
 import { formatSalary } from "@/utils/formatters"
 
@@ -12,8 +15,13 @@ interface ApplyJobPageProps {
 }
 
 export default async function ApplyJobPage({ params }: ApplyJobPageProps) {
-  const job = await jobService.getJobById(params.id, true);
+  const session = await getServerSession(authOptions);
 
+  if (!session) {
+    redirect("/auth/login?unauthorized=1");
+  }
+
+  const job = await jobService.getJobById(params.id, true);
   if (!job) notFound();
 
   return (

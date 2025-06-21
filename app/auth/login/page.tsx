@@ -25,6 +25,8 @@ export default function LoginPage() {
   const searchParams = useSearchParams()
   const { toast } = useToast()
 
+  const unauthorized = searchParams.get("unauthorized")
+
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [userType, setUserType] = useState<UserRole.JOB_SEEKER | UserRole.RECRUITER>(UserRole.JOB_SEEKER)
@@ -121,6 +123,14 @@ export default function LoginPage() {
         </CardHeader>
 
         <CardContent>
+          {unauthorized === "1" && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                You must be logged in as a <strong>Job Seeker</strong> to apply for a job.
+              </AlertDescription>
+            </Alert>
+          )}
           {errorMessage && (
             <Alert variant="destructive" className="mb-6">
               <AlertCircle className="h-4 w-4" />
