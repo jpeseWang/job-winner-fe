@@ -6,7 +6,7 @@ import AdminStatisticsTab from "@/components/dashboard/admin/statistics-tab"
 import AdminSettingsTab from "@/components/dashboard/admin/settings-tab"
 import AdminTemplatesTab from "@/components/dashboard/admin/templates-tab"
 import AdminReportsTab from "@/components/dashboard/admin/reports-tab"
-
+import AdminBlogTab from "@/components/dashboard/admin/blog-tab"
 export default function AdminDashboardPage() {
   return (
     <main className="min-h-screen bg-gray-50">
@@ -14,12 +14,13 @@ export default function AdminDashboardPage() {
 
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <Tabs defaultValue="statistics" className="w-full">
-          <TabsList className="grid grid-cols-6 mb-8">
+          <TabsList className="grid grid-cols-7 mb-8">
             <TabsTrigger value="statistics">Statistics</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="jobs">Jobs</TabsTrigger>
             <TabsTrigger value="templates">Templates</TabsTrigger>
             <TabsTrigger value="reports">Reports</TabsTrigger>
+            <TabsTrigger value="blogs">Blogs</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
@@ -42,6 +43,10 @@ export default function AdminDashboardPage() {
           <TabsContent value="reports">
             <AdminReportsTab />
           </TabsContent>
+
+          <TabsContent value="blogs">
+            <AdminBlogTab />
+          </TabsContent> 
 
           <TabsContent value="settings">
             <AdminSettingsTab />
