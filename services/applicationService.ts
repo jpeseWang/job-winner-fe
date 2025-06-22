@@ -61,4 +61,25 @@ export const applicationService = {
       throw new Error(error?.response?.data?.error || "Failed to fetch job applications");
     }
   },
+
+  async getApplicationsByRecruiter(filters: {
+    status?: ApplicationStatus
+    jobId?: string
+    page?: number
+    limit?: number
+  } = {}) {
+    try {
+      const params = new URLSearchParams()
+      if (filters.status) params.append("status", filters.status)
+      if (filters.jobId) params.append("jobId", filters.jobId)
+      if (filters.page) params.append("page", filters.page.toString())
+      if (filters.limit) params.append("limit", filters.limit.toString())
+
+      const res = await axiosInstance.get(`/applications/by-recruiter?${params.toString()}`)
+      return res.data
+    } catch (err) {
+      console.error("Failed to fetch recruiter applications:", err)
+      return []
+    }
+  }
 };

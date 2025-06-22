@@ -77,8 +77,8 @@ export default function ApplicationSuccessPage() {
         <div className="mt-8 pt-6 border-t text-sm text-gray-500">
           <p>
             Need help? Contact our support team at{" "}
-            <a href="mailto:support@jobmarket.com" className="text-blue-600 hover:underline">
-              support@jobmarket.com
+            <a href="mailto:jobwinnerr@gmail.com" className="text-blue-600 hover:underline">
+              jobwinnerr@gmail.com
             </a>
           </p>
         </div>
