@@ -142,18 +142,6 @@ export default function LoginPage() {
             defaultValue="job_seeker"
             onValueChange={v => setUserType(v as UserRole.JOB_SEEKER | UserRole.RECRUITER)}
           >
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="job_seeker" className="flex items-center gap-2">
-                <User className="h-4 w-4" />
-                Job Seeker
-              </TabsTrigger>
-              <TabsTrigger value="recruiter" className="flex items-center gap-2">
-                <Briefcase className="h-4 w-4" />
-                Recruiter
-              </TabsTrigger>
-        
-            </TabsList>
-
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
