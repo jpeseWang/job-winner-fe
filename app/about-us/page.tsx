@@ -28,11 +28,12 @@ export default function AboutUsPage() {
       {/* Introduction Section */}
       <section className="py-16">
         <div className="container mx-auto px-4 md:px-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div>
-              <h2 className="text-3xl font-bold mb-6">
-                Your Career, Upgraded with AI
-              </h2>
+          <h2 className="text-3xl font-bold mb-6">
+            Your Career, Upgraded with AI
+          </h2>
+
+          <div className="md:flex md:gap-12 items-start">
+            <div className="md:w-1/2">
               <p className="text-gray-600 mb-6">
                 JobWinner is a modern job matching platform designed to connect
                 job seekers with the best opportunities tailored to their skills
@@ -42,26 +43,35 @@ export default function AboutUsPage() {
                 talent effortlessly. Whether you're starting your career or
                 scaling your team, JobWinner makes hiring and job hunting
                 simpler and more effective.
+                <br />
+                <br />
+                In addition, JobWinner continues to evolve with AI-powered
+                tools, supporting various industries and helping employers
+                connect with top-tier talent globally. Our platform bridges the
+                gap between ambition and opportunity.
               </p>
             </div>
-            <div>
+            <div className="md:w-1/2">
               <p className="text-gray-600 mb-6">
                 JobMarket is a dynamic online marketplace where employers and
                 job seekers meet in real-time. It offers a transparent,
                 decentralized space to post openings, apply for roles, and
                 manage applications — all in one place. Built for flexibility
                 and accessibility, JobMarket empowers freelancers, full-timers,
-                and recruiters to connect with precision and purpose. The AI CV
-                Generator is your intelligent assistant for creating
+                and recruiters to connect with precision and purpose.With
+                intelligent matching and real-time updates, JobMarket
+                streamlines the hiring process for both sides of the market.
+                <br />
+                <br />
+                The AI CV Generator is your intelligent assistant for creating
                 professional, customized resumes in minutes. Powered by AI, it
                 analyzes your background, skills, and job goals to generate
-                beautifully designed CVs tailored to your industry. Whether
-                you're applying for your first job or making a career move, the
-                AI CV Generator helps you stand out with ease and confidence.
+                beautifully designed CVs tailored to your industry.
               </p>
             </div>
           </div>
-          <div className="mt-8">
+          {/* Hình ảnh */}
+          <div className="mt-12">
             <div className="relative rounded-lg overflow-hidden max-w-[1200px] mx-auto h-[500px]">
               <Image
                 src="/about-us.webp"
@@ -361,9 +371,9 @@ export default function AboutUsPage() {
                 We're Only Working With The Best
               </h2>
               <p className="text-gray-600 mb-8">
-                Ultrices porta dolor mattis in tempor sit tempus et. Ultrices
-                porta dolor mattis in tempor sit tempus et. Ultrices porta dolor
-                mattis in tempor sit tempus et.
+                We collaborate with top employers and professionals to ensure
+                the best opportunities and results for everyone. Whether you're
+                hiring or job-seeking, quality is our standard.
               </p>
 
               <div className="grid grid-cols-2 gap-6">
