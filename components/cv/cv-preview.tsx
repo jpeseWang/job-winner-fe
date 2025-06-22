@@ -36,7 +36,16 @@ export default function CVPreview({ data, generatedCV, template }: CVPreviewProp
     .filter((skill: string) => skill)
 
   // Group experience fields into job entries
-  const experiences = []
+  interface Experience {
+    jobTitle: string
+    company: string
+    location: string
+    startDate: string
+    endDate: string
+    description: string
+  }
+
+  const experiences: Experience[] = []
   if (experienceSection) {
     const fieldCount = experienceSection.fields.length
     const jobCount = fieldCount / 6
@@ -92,9 +101,9 @@ export default function CVPreview({ data, generatedCV, template }: CVPreviewProp
       // Handle initials for templates that use them
       const initials = name
         ? name
-            .split(" ")
-            .map((n) => n[0])
-            .join("")
+          .split(" ")
+          .map((n: any) => n[0])
+          .join("")
         : "JD"
       html = html.replace(/{{initials}}/g, initials)
 
@@ -131,7 +140,7 @@ export default function CVPreview({ data, generatedCV, template }: CVPreviewProp
         const skillTemplate = html.match(/{{#each skills}}([\s\S]*?){{\/each}}/)?.[1] || ""
 
         if (skillTemplate) {
-          skills.forEach((skill) => {
+          skills.forEach((skill: any) => {
             skillsHTML += skillTemplate.replace(/{{this}}/g, skill)
           })
 

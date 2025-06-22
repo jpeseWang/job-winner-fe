@@ -75,7 +75,6 @@ const baseProfileSchema = z.object({
     z.object({
       degree: z.string().min(1, "Degree is required"),
       institution: z.string().min(1, "Institution is required"),
-      year: z.string().min(1, "Year is required"),
     }),
   ),
   bio: z.string().min(10, "Bio must be at least 10 characters"),

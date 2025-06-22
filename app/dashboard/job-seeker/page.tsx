@@ -399,7 +399,7 @@ export default function JobSeekerDashboard() {
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 <Button asChild className="w-full justify-start" variant="outline">
-                                    <Link href="/generate-cv">
+                                    <Link href="/dashboard/job-seeker/generate-cv">
                                         <FileText className="mr-2 h-4 w-4" />
                                         Create New CV
                                     </Link>

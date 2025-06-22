@@ -117,7 +117,7 @@ export default function CVLibraryPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">My CV Library</h1>
         <Button asChild className="flex items-center gap-2">
-          <Link href="/generate-cv">
+          <Link href="/dashboard/job-seeker/generate-cv">
             <Plus className="h-4 w-4" /> Create New CV
           </Link>
         </Button>
@@ -161,7 +161,7 @@ export default function CVLibraryPage() {
           <h3 className="text-lg font-medium mb-2">No CVs found</h3>
           <p className="text-gray-500 mb-6">You haven't created any CVs yet or none match your search.</p>
           <Button asChild>
-            <Link href="/generate-cv">Create Your First CV</Link>
+            <Link href="/dashboard/job-seeker/generate-cv">Create Your First CV</Link>
           </Button>
         </div>
       ) : (
@@ -190,7 +190,7 @@ export default function CVLibraryPage() {
                   <Download className="h-4 w-4" />
                 </Button>
                 <Button variant="outline" size="icon" asChild title="Edit CV">
-                  <Link href={`/generate-cv?id=${cv.id}`}>
+                  <Link href={`/dashboard/job-seeker/generate-cv?id=${cv.id}`}>
                     <Edit className="h-4 w-4" />
                   </Link>
                 </Button>
