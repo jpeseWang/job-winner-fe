@@ -44,7 +44,7 @@ export default function GenerateCVPage() {
   const [aiPrompt, setAiPrompt] = useState("")
   const [selectedTemplate, setSelectedTemplate] = useState<CVTemplate | null>(null)
   const [isGeneratingField, setIsGeneratingField] = useState<string | null>(null)
-  const cvRef = useRef(null);
+  const cvRef = useRef<HTMLDivElement>(null);
   const [sections, setSections] = useState<FormSection[]>([
     {
       id: "personal",
@@ -328,19 +328,34 @@ export default function GenerateCVPage() {
     const fullName = user?.name || "Unnamed";
     const fileName = `${sanitizeFilename(fullName)} - CV - by JobWinner.pdf`;
 
+    const element = cvRef.current as HTMLDivElement;
+    const originalHeight = element.style.height;
+    const scrollHeight = element.scrollHeight;
+    element.style.height = `${element.scrollHeight}px`;
+    console.log("scrollHeight", element.style.height);
+
     const opt = {
       margin: 0,
       filename: fileName,
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      html2canvas: {
+        scale: 2,
+        scrollY: 0,
+        useCORS: true,
+      },
+      jsPDF: {
+        unit: 'px',
+        format: [element.offsetWidth, scrollHeight],
+        orientation: 'portrait',
+      },
     };
     html2pdf()
       .set(opt)
-      .from(cvRef.current)
+      .from(element)
       .save()
       .then(() => {
         toast("Your CV is being downloaded as a PDF.");
+        element.style.height = originalHeight;
       })
       .catch((err: any) => {
         toast.error("Something went wrong while generating the PDF.");
