@@ -19,6 +19,9 @@ import { ImageUpload } from "@/components/ui/image-upload"
 import { FileText, User, Mail, Phone, MapPin, Briefcase, CheckCircle, ArrowLeft, ArrowRight, Send } from "lucide-react"
 import type { Job } from "@/types/interfaces"
 import { applicationService } from "@/services/applicationService";
+import { notificationService } from "@/services/notificationService"
+import { useEffect } from "react"
+import { userService } from "@/services/userService"
 
 const applicationSchema = z.object({
   // Personal Information
@@ -53,12 +56,12 @@ const applicationSchema = z.object({
     required_error: "Please upload your resume"
   }).min(1, "Please upload your resume"),
   coverLetter: z.string().min(50, "Cover letter must be at least 50 characters"),
-  portfolioUrls: z.array(z.string()).optional(),
+  portfolioUrl: z.string().optional(),
 
   // Additional Information
   linkedinUrl: z.string().optional(),
   githubUrl: z.string().optional(),
-  websiteUrl: z.string().optional(),
+  twitterUrl: z.string().optional(),
 
   // Preferences
   remoteWork: z.boolean().optional(),
@@ -106,7 +109,7 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [skillInput, setSkillInput] = useState("")
-  const [portfolioInput, setPortfolioInput] = useState("")
+  // const [portfolioInput, setPortfolioInput] = useState("")
 
   const form = useForm<ApplicationFormData>({
     resolver: zodResolver(applicationSchema),
@@ -115,13 +118,48 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
       lastName: session?.user?.name?.split(" ")[1] || "",
       email: session?.user?.email || "",
       skills: [],
-      portfolioUrls: [],
       remoteWork: false,
       relocation: false,
       workAuthorization: false,
       agreeToTerms: false,
     },
   })
+
+  useEffect(() => {
+  async function loadProfile() {
+    try {
+      const profile = await userService.getMyProfile()
+
+      const [firstName, ...rest] = (profile.name || session?.user?.name || "").split(" ")
+      const lastName = rest.join(" ")
+
+      form.reset({
+        firstName: firstName || session?.user?.name?.split(" ")[0] || "",
+        lastName: lastName || session?.user?.name?.split(" ")[1] || "",
+        email: profile.contactEmail || profile.email || session?.user?.email || "",
+        phone: profile.phone || "",
+        location: profile.location || "",
+        currentPosition: profile.title || "",
+        experience: "",
+        education: profile.education?.[0]?.degree || "",
+        skills: profile.skills || [],
+        resumeUrl: profile.resumeUrl || "",
+        portfolioUrl: profile.socialLinks?.portfolio || "",
+        linkedinUrl: profile.socialLinks?.linkedin || "",
+        githubUrl: profile.socialLinks?.github || "",
+        twitterUrl: profile.socialLinks?.twitter || "",
+        remoteWork: false,
+        relocation: false,
+        workAuthorization: false,
+        agreeToTerms: false,
+      })
+    } catch (error) {
+      console.error("Failed to load profile:", error)
+    }
+  }
+
+  loadProfile()
+}, [form])
 
   const { watch, setValue, getValues } = form
   const watchedFields = watch()
@@ -145,21 +183,21 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
     )
   }
 
-  const addPortfolioUrl = () => {
-    if (portfolioInput.trim()) {
-      const currentUrls = watchedFields.portfolioUrls || []
-      setValue("portfolioUrls", [...currentUrls, portfolioInput.trim()])
-      setPortfolioInput("")
-    }
-  }
+  // const addPortfolioUrl = () => {
+  //   if (portfolioInput.trim()) {
+  //     const currentUrls = watchedFields.portfolioUrls || []
+  //     setValue("portfolioUrls", [...currentUrls, portfolioInput.trim()])
+  //     setPortfolioInput("")
+  //   }
+  // }
 
-  const removePortfolioUrl = (urlToRemove: string) => {
-    const currentUrls = watchedFields.portfolioUrls || []
-    setValue(
-      "portfolioUrls",
-      currentUrls.filter((url) => url !== urlToRemove),
-    )
-  }
+  // const removePortfolioUrl = (urlToRemove: string) => {
+  //   const currentUrls = watchedFields.portfolioUrls || []
+  //   setValue(
+  //     "portfolioUrls",
+  //     currentUrls.filter((url) => url !== urlToRemove),
+  //   )
+  // }
 
   const validateStep = (step: number): boolean => {
     const values = getValues()
@@ -230,6 +268,16 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
       }
 
       const result = await applicationService.submitApplication(applicationData);
+
+      try {
+        await notificationService.notifyRecruiter({ 
+          applicantName: `${data.firstName} ${data.lastName}`,
+          applicantEmail: data.email,
+          jobId: job.id,
+        })
+      } catch (err) {
+        console.warn("Gửi email cho recruiter thất bại nhưng ứng tuyển vẫn thành công", err)
+      }
 
       toast({
         title: "Application submitted successfully!",
@@ -490,29 +538,14 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
             </div>
 
             <div>
-              <Label>Portfolio Links (Optional)</Label>
+              <Label htmlFor="portfolioUrl">Portfolio Links (Optional)</Label>
               <div className="flex gap-2 mb-2">
                 <Input
-                  value={portfolioInput}
-                  onChange={(e) => setPortfolioInput(e.target.value)}
-                  placeholder="https://your-portfolio.com"
+                  id="portfolioUrl"
                   type="url"
+                  {...form.register("portfolioUrl")}
+                  placeholder="https://your-portfolio.com"
                 />
-                <Button type="button" onClick={addPortfolioUrl} variant="outline">
-                  Add
-                </Button>
-              </div>
-              <div className="space-y-2">
-                {watchedFields.portfolioUrls?.map((url, index) => (
-                  <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                    <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                      {url}
-                    </a>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => removePortfolioUrl(url)}>
-                      ×
-                    </Button>
-                  </div>
-                ))}
               </div>
             </div>
 
@@ -538,11 +571,11 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
               </div>
 
               <div>
-                <Label htmlFor="websiteUrl">Personal Website</Label>
+                <Label htmlFor="twitterUrl">Twitter Profile</Label>
                 <Input
-                  id="websiteUrl"
+                  id="twitterUrl"
                   type="url"
-                  {...form.register("websiteUrl")}
+                  {...form.register("twitterUrl")}
                   placeholder="https://yourwebsite.com"
                 />
               </div>
@@ -680,7 +713,7 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
             >
               {isSubmitting ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-s2 border-white mr-2"></div>
+                  <CheckCircle className="h-4 w-4 mr-2 text-white" />
                   Submitting...
                 </>
               ) : (

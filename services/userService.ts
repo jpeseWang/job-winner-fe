@@ -87,4 +87,10 @@ export const userService = {
       return null
     }
   },
+
+  // Get current user's profile using token/session
+  async getMyProfile(): Promise<IUserProfile> {
+    const response = await axiosInstance.get("/users/profile")
+    return response.data
+  },
 }

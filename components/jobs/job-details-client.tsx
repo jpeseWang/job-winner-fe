@@ -29,7 +29,6 @@ interface JobDetailsClientProps {
 }
 
 export default function JobDetailsClient({ id }: JobDetailsClientProps) {
-
   const { toast } = useToast();
   const { job, isLoading, error } = useJob(id);
 
@@ -374,5 +373,6 @@ export default function JobDetailsClient({ id }: JobDetailsClientProps) {
         )}
       </section>
     </main>
+    
   );
 }

@@ -40,7 +40,7 @@ async function _send(options: {
       : []
 
     if (options.includeLogo) {
-      console.log("📦 Logo path resolved:", path.resolve("public/logo2.jpg "))
+      console.log("📦 Logo path resolved:", path.resolve("public/logo2.jpg"))
     }
 
     await transporter!.sendMail({
@@ -167,6 +167,40 @@ export async function sendWelcomeEmail(email: string, name: string) {
     text: `Hi ${name || ''}, welcome to Job Winner! Visit your dashboard: ${url}`,
     includeLogo: true,
   });
+}
+
+// === JOB APPLICATION NOTIFICATION ===
+export async function sendRecruiterNotificationEmail({
+  recruiterEmail,
+  recruiterName,
+  applicantName,
+  applicantEmail,
+  jobTitle,
+  company,
+}: {
+  recruiterEmail: string
+  recruiterName: string
+  applicantName: string
+  applicantEmail: string
+  jobTitle: string
+  company: string
+}) {
+  const html = loadHtmlTemplate("notify-recruiter", {
+    name: recruiterName || "Recruiter",
+    applicantName,
+    applicantEmail,
+    jobTitle,
+    company,
+    dashboardUrl: `${process.env.BASE_URL}/dashboard/recruiter`,
+  })
+
+  await _send({
+    to: recruiterEmail,
+    subject: `📨 Ứng viên mới cho công việc: ${jobTitle}`,
+    html,
+    text: `${applicantName} vừa nộp đơn cho công việc ${jobTitle}. Email: ${applicantEmail}`,
+    includeLogo: true,
+  })
 }
 
 

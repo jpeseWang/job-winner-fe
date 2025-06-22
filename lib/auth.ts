@@ -6,6 +6,7 @@ import { MongoClient } from "mongodb"
 import dbConnect from "@/lib/db"
 import User from "@/models/User"
 import { UserRole } from "@/types/enums"
+import { getServerSession } from "next-auth/next" 
 
 const client = new MongoClient(process.env.MONGODB_URI!)
 const clientPromise = Promise.resolve(client)
@@ -138,4 +139,14 @@ export const authOptions: NextAuthOptions = {
     },
   },
   debug: process.env.NODE_ENV === "development",
+}
+
+export async function getAuthUser(): Promise<{ id: string } | null> {
+  const session = await getServerSession(authOptions)
+
+  if (!session?.user?.id) {
+    return null
+  }
+
+  return { id: session.user.id }
 }

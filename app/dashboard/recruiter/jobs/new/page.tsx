@@ -234,7 +234,7 @@ export default function NewJobPage() {
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             You need to register your company before posting jobs.
-            <Button variant="link" className="p-0 ml-1 h-auto" onClick={() => router.push("/register-company")}>
+            <Button variant="link" className="p-0 ml-1 h-auto" onClick={() => router.push("/dashboard/recruiter/register-company")}>
               Register your company here
             </Button>
           </AlertDescription>
