@@ -14,7 +14,7 @@ const templates: CVTemplate[] = [
     id: "modern-1",
     name: "Modern Professional",
     category: "professional",
-    thumbnail: "/placeholder.svg?height=200&width=150",
+    thumbnail: "https://res.cloudinary.com/da0uq57dc/image/upload/v1750566942/Screenshot_2025-06-22_at_11.32.16_pou1f3.png",
     htmlTemplate: `
       <div class="cv-template modern-professional">
         <header>
@@ -68,7 +68,7 @@ const templates: CVTemplate[] = [
     id: "classic-1",
     name: "Classic Elegant",
     category: "traditional",
-    thumbnail: "/placeholder.svg?height=200&width=150",
+    thumbnail: "https://res.cloudinary.com/da0uq57dc/image/upload/v1750566942/Screenshot_2025-06-22_at_11.32.51_dggmqg.png",
     htmlTemplate: `
       <div class="cv-template classic-elegant">
         <header class="text-center">
@@ -112,7 +112,7 @@ const templates: CVTemplate[] = [
     id: "creative-1",
     name: "Creative Design",
     category: "creative",
-    thumbnail: "/placeholder.svg?height=200&width=150",
+    thumbnail: "https://res.cloudinary.com/da0uq57dc/image/upload/v1750566942/Screenshot_2025-06-22_at_11.33.10_sr28xb.png",
     htmlTemplate: `
       <div class="cv-template creative-design">
         <div class="sidebar">
@@ -174,7 +174,7 @@ const templates: CVTemplate[] = [
     id: "minimal-1",
     name: "Minimal Clean",
     category: "minimal",
-    thumbnail: "/placeholder.svg?height=200&width=150",
+    thumbnail: "https://res.cloudinary.com/da0uq57dc/image/upload/v1750566942/Screenshot_2025-06-22_at_11.33.55_hmaygz.png",
     htmlTemplate: `
       <div class="cv-template minimal-clean">
         <header>
@@ -225,7 +225,7 @@ const templates: CVTemplate[] = [
     id: "tech-1",
     name: "Tech Professional",
     category: "professional",
-    thumbnail: "/placeholder.svg?height=200&width=150",
+    thumbnail: "https://res.cloudinary.com/da0uq57dc/image/upload/v1750566942/Screenshot_2025-06-22_at_11.34.17_bkfi9i.png",
     htmlTemplate: `
       <div class="cv-template tech-professional">
         <header>
@@ -281,7 +281,7 @@ const templates: CVTemplate[] = [
     id: "executive-1",
     name: "Executive Resume",
     category: "professional",
-    thumbnail: "/placeholder.svg?height=200&width=150",
+    thumbnail: "https://res.cloudinary.com/da0uq57dc/image/upload/v1750566942/Screenshot_2025-06-22_at_11.34.17_bkfi9i.png",
     htmlTemplate: `
       <div class="cv-template executive-resume">
         <header>
@@ -386,9 +386,8 @@ export default function CVTemplateLibrary({ onSelectTemplate, selectedTemplateId
               {filteredTemplates.map((template) => (
                 <Card
                   key={template.id}
-                  className={`overflow-hidden cursor-pointer transition-all ${
-                    selectedTemplateId === template.id ? "ring-2 ring-primary ring-offset-2" : "hover:shadow-md"
-                  }`}
+                  className={`overflow-hidden cursor-pointer transition-all ${selectedTemplateId === template.id ? "ring-2 ring-primary ring-offset-2" : "hover:shadow-md"
+                    }`}
                   onClick={() => onSelectTemplate(template)}
                 >
                   <div className="relative">

@@ -3,8 +3,6 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,7 +10,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
-// import { useToast } from "@/hooks/use-toast"
 import toast from "react-hot-toast"
 import { userService } from "@/services"
 import { validateProfile } from "@/utils/validators"
@@ -26,7 +23,6 @@ export default function MyProfilePage() {
   const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState("personal")
-  const router = useRouter()
   const [profile, setProfile] = useState<IUserProfile>({
     user: {
       id: user?.id || "",
@@ -199,27 +195,11 @@ export default function MyProfilePage() {
     })
   }
 
-  const handleProfilePictureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      // In a real app, you would upload the file to a server
-      // For now, we'll just create a local URL
-      const reader = new FileReader()
-      reader.onload = () => {
-        setProfile((prev) => ({
-          ...prev,
-          profilePicture: reader.result as string,
-        }))
-      }
-      reader.readAsDataURL(file)
-    }
-  }
+
 
   const handleResumeUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      // In a real app, you would upload the file to a server
-      // For now, we'll just set the file name
       setProfile((prev) => ({
         ...prev,
         resumeUrl: file.name,
@@ -327,20 +307,7 @@ export default function MyProfilePage() {
                       />
                     </label>
                   )}
-
-                  <Separator className="my-6" />
-
                 </div>
-
-                {user?.role === "job_seeker" && (
-                  <div className="space-y-4">
-                    <h3 className="font-medium text-gray-800">Công ty của bạn</h3>
-
-
-
-                    <Separator className="my-6" />
-                  </div>
-                )}
 
               </CardContent>
             </Card>
@@ -542,7 +509,14 @@ export default function MyProfilePage() {
                                 <Input
                                   id={`exp-start-${index}`}
                                   type="month"
-                                  value={exp.startDate instanceof Date ? exp.startDate.toISOString().slice(0, 7) : exp.startDate}
+                                  value={
+                                    typeof exp.startDate === "string"
+                                      ? (exp.startDate as string).slice(0, 7)
+                                      : exp.startDate instanceof Date
+                                        ? exp.startDate.toISOString().slice(0, 7)
+                                        : ""
+                                  }
+
                                   onChange={(e) => handleExperienceChange(index, "startDate", e.target.value)}
                                 />
                               </div>
@@ -551,7 +525,13 @@ export default function MyProfilePage() {
                                 <Input
                                   id={`exp-end-${index}`}
                                   type="month"
-                                  value={exp.endDate instanceof Date ? exp.endDate.toISOString().slice(0, 7) : exp.endDate}
+                                  value={
+                                    typeof exp.endDate === "string"
+                                      ? (exp.endDate as string).slice(0, 7)
+                                      : exp.endDate instanceof Date
+                                        ? exp.endDate.toISOString().slice(0, 7)
+                                        : ""
+                                  }
                                   onChange={(e) => handleExperienceChange(index, "endDate", e.target.value)}
                                   placeholder="Present"
                                 />
@@ -632,7 +612,14 @@ export default function MyProfilePage() {
                                 <Input
                                   id={`edu-start-${index}`}
                                   type="month"
-                                  value={edu.startDate instanceof Date ? edu.startDate.toISOString().slice(0, 7) : edu.startDate}
+                                  value={
+                                    typeof edu.startDate === "string"
+                                      ? (edu.startDate as string).slice(0, 7)
+                                      : edu.startDate instanceof Date
+                                        ? edu.startDate.toISOString().slice(0, 7)
+                                        : ""
+                                  }
+                                  // value={edu.startDate instanceof Date ? edu.startDate.toISOString().slice(0, 7) : edu.startDate}
                                   onChange={(e) => handleEducationChange(index, "startDate", e.target.value)}
                                 />
                               </div>
@@ -641,7 +628,13 @@ export default function MyProfilePage() {
                                 <Input
                                   id={`edu-end-${index}`}
                                   type="month"
-                                  value={edu.endDate instanceof Date ? edu.endDate.toISOString().slice(0, 7) : edu.endDate}
+                                  value={
+                                    typeof edu.endDate === "string"
+                                      ? (edu.endDate as string).slice(0, 7)
+                                      : edu.endDate instanceof Date
+                                        ? edu.endDate.toISOString().slice(0, 7)
+                                        : ""
+                                  }
                                   onChange={(e) => handleEducationChange(index, "endDate", e.target.value)}
                                 />
                               </div>
@@ -653,6 +646,7 @@ export default function MyProfilePage() {
 
                     <Button
                       variant="outline"
+                      type="button"
                       onClick={addEducation}
                       className="w-full flex items-center justify-center gap-2"
                     >
@@ -694,7 +688,6 @@ export default function MyProfilePage() {
               </CardContent>
               <CardFooter className="flex justify-end">
                 <Button
-                  // onClick={()=>{console.log("Save Profile")}}
                   type="submit"
                   disabled={isLoading} className="flex items-center gap-2">
                   <Save className="h-4 w-4" />
