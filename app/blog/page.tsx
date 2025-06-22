@@ -1,67 +1,30 @@
-import Image from "next/image"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Search } from "lucide-react"
-import BlogCard from "@/components/about/blog-card"
+// app/blog/page.tsx
+"use client";
+
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+import BlogCard from "@/components/about/blog-card";
+import { useToast } from "@/hooks/use-toast";
+
+interface Post {
+  _id: string;
+  title: string;
+  excerpt: string;
+  status: string;
+  featuredImage: string;
+  slug: string;
+  publishedAt?: string;
+  category?: string;
+}
 
 export default function BlogPage() {
-  const featuredPosts = [
-    {
-      title: "Revitalizing Workplace Morale: Innovative Tactics for Boosting Employee Engagement in 2024",
-      excerpt:
-        "Discover effective strategies to enhance workplace culture and improve employee satisfaction in the modern work environment.",
-      date: "10 March 2024",
-      category: "News",
-      image: "/placeholder.svg?height=400&width=800",
-      slug: "revitalizing-workplace-morale",
-    },
-    {
-      title: "How To Avoid The Top Six Most Common Job Interview Mistakes",
-      excerpt:
-        "Learn how to navigate job interviews successfully by avoiding these common pitfalls that can cost you the position.",
-      date: "05 March 2024",
-      category: "Tips",
-      image: "/placeholder.svg?height=400&width=800",
-      slug: "common-interview-mistakes",
-    },
-    {
-      title: "The Future of Remote Work: Trends to Watch in 2024",
-      excerpt:
-        "Explore the evolving landscape of remote work and the key trends that will shape how we work in the coming year.",
-      date: "28 February 2024",
-      category: "Trends",
-      image: "/placeholder.svg?height=400&width=800",
-      slug: "future-of-remote-work",
-    },
-    {
-      title: "Building a Personal Brand That Gets You Noticed by Recruiters",
-      excerpt:
-        "Discover how to create a compelling personal brand that will make you stand out in a competitive job market.",
-      date: "20 February 2024",
-      category: "Career",
-      image: "/placeholder.svg?height=400&width=800",
-      slug: "personal-branding-for-job-seekers",
-    },
-    {
-      title: "Salary Negotiation: How to Get the Compensation You Deserve",
-      excerpt:
-        "Master the art of salary negotiation with these proven strategies to ensure you're fairly compensated for your skills and experience.",
-      date: "15 February 2024",
-      category: "Advice",
-      image: "/placeholder.svg?height=400&width=800",
-      slug: "salary-negotiation-strategies",
-    },
-    {
-      title: "AI in Recruitment: How Technology is Changing the Hiring Process",
-      excerpt:
-        "Explore how artificial intelligence is transforming recruitment and what it means for job seekers and employers alike.",
-      date: "10 February 2024",
-      category: "Technology",
-      image: "/placeholder.svg?height=400&width=800",
-      slug: "ai-in-recruitment",
-    },
-  ]
+  const { toast } = useToast();
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
   const categories = [
     "All",
@@ -71,111 +34,188 @@ export default function BlogPage() {
     "Resume Writing",
     "Job Search",
     "Workplace Culture",
-  ]
+  ];
+
+  useEffect(() => {
+    async function fetchPosts() {
+      try {
+        setIsLoading(true);
+        const res = await fetch("/api/blogs");
+        if (!res.ok) throw new Error("Failed to fetch blogs");
+        const data = await res.json();
+        setPosts(data.filter((post: Post) => post.status === "published"));
+      } catch (error) {
+        toast({
+          title: "Lỗi",
+          description: "Không tải được bài viết",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchPosts();
+  }, [toast]);
+
+  const filteredPosts = posts.filter(
+    (post) =>
+      selectedCategory === "All" || post.category === selectedCategory
+  );
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-teal-500" />
+      </div>
+    );
+  }
 
   return (
-    <main className="flex flex-col min-h-screen">
+    <main className="flex flex-col min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="bg-black text-white py-16">
-        <div className="container mx-auto text-center">
-          <h1 className="text-4xl font-bold mb-4">Career Insights & Advice</h1>
-          <p className="max-w-2xl mx-auto text-gray-300">
-            Expert tips, industry trends, and career guidance to help you succeed in your professional journey.
+      <section className="relative bg-gradient-to-r from-teal-600 to-teal-800 text-white py-24">
+        <div className="container mx-auto px-4 text-center animate-in fade-in-50 duration-500">
+          <h1 className="text-5xl font-bold mb-6 tracking-tight">
+            Hành Trang Sự Nghiệp
+          </h1>
+          <p className="max-w-2xl mx-auto text-xl text-teal-100">
+            Khám phá mẹo hay, xu hướng ngành nghề, và hướng dẫn để chinh phục công việc mơ ước.
           </p>
         </div>
+        <div className="absolute inset-0 bg-black/20" />
       </section>
 
-      {/* Search and Categories */}
-      <section className="py-8 bg-gray-50">
+      {/* Categories */}
+      <section className="py-8 bg-white shadow-sm">
         <div className="container mx-auto px-4 md:px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="relative w-full md:w-96">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-              <Input placeholder="Search articles..." className="pl-10" />
-            </div>
-            <div className="flex flex-wrap gap-2 justify-center md:justify-end">
-              {categories.map((category, index) => (
-                <Button
-                  key={index}
-                  variant={index === 0 ? "default" : "outline"}
-                  size="sm"
-                  className={index === 0 ? "bg-teal-500 hover:bg-teal-600" : ""}
-                >
-                  {category}
-                </Button>
-              ))}
-            </div>
+          <div className="flex flex-wrap gap-2 justify-center">
+            {categories.map((category) => (
+              <Button
+                key={category}
+                variant={selectedCategory === category ? "default" : "outline"}
+                size="sm"
+                className={
+                  selectedCategory === category
+                    ? "bg-teal-500 hover:bg-teal-600 text-white"
+                    : "border-gray-300 hover:bg-teal-50"
+                }
+                onClick={() => setSelectedCategory(category)}
+              >
+                {category}
+              </Button>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Featured Post */}
-      <section className="py-12">
-        <div className="container mx-auto px-4 md:px-6">
-          <div className="bg-white rounded-lg overflow-hidden shadow-md">
-            <div className="grid grid-cols-1 md:grid-cols-2">
-              <div className="relative h-64 md:h-auto">
-                <Image src="/placeholder.svg?height=600&width=800" alt="Featured post" fill className="object-cover" />
-                <div className="absolute top-4 left-4">
-                  <span className="bg-teal-500 text-white text-xs px-2 py-1 rounded">Featured</span>
+      {filteredPosts[0] && (
+        <section className="py-16 bg-gray-50">
+          <div className="container mx-auto px-4 md:px-6">
+            <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <div className="grid grid-cols-1 md:grid-cols-2">
+                <div className="relative h-80 md:h-auto group">
+                  <Image
+                    src={filteredPosts[0].featuredImage || "/placeholder.svg"}
+                    alt={filteredPosts[0].title}
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    priority
+                  />
+                  <div className="absolute top-4 left-4">
+                    <span className="bg-teal-500 text-white text-sm px-3 py-1 rounded-full font-semibold">
+                      Nổi bật
+                    </span>
+                  </div>
                 </div>
-              </div>
-              <div className="p-8">
-                <div className="text-gray-500 text-sm mb-2">15 March 2024</div>
-                <h2 className="text-2xl font-bold mb-4">
-                  The Great Resignation: What It Means for Job Seekers in 2024
-                </h2>
-                <p className="text-gray-600 mb-6">
-                  The pandemic-induced "Great Resignation" continues to reshape the job market. Learn how this ongoing
-                  trend affects your job search and how you can leverage it to find better opportunities.
-                </p>
-                <Link href="/blog/great-resignation-2024">
-                  <Button className="bg-teal-500 hover:bg-teal-600">Read Full Article</Button>
-                </Link>
+                <div className="p-8 flex flex-col justify-center">
+                  <div className="text-gray-500 text-sm mb-3">
+                    {filteredPosts[0].publishedAt
+                      ? new Date(filteredPosts[0].publishedAt).toLocaleDateString("vi-VN")
+                      : "N/A"}
+                  </div>
+                  <h2 className="text-3xl font-bold mb-4 line-clamp-2">
+                    {filteredPosts[0].title}
+                  </h2>
+                  <p className="text-gray-600 mb-6 line-clamp-3">
+                    {filteredPosts[0].excerpt}
+                  </p>
+                  <Link href={`/blog/${filteredPosts[0]._id}`} target="_blank">
+                    <Button className="bg-teal-500 hover:bg-teal-600 w-fit">
+                      Đọc bài viết
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Blog Posts Grid */}
-      <section className="py-12 bg-gray-50">
+      <section className="py-16">
         <div className="container mx-auto px-4 md:px-6">
-          <h2 className="text-2xl font-bold mb-8">Latest Articles</h2>
+          <h2 className="text-3xl font-bold mb-10">Bài viết mới nhất</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredPosts.map((post, index) => (
+            {filteredPosts.map((post) => (
               <BlogCard
-                key={index}
+                key={post._id}
                 title={post.title}
                 excerpt={post.excerpt}
-                date={post.date}
-                category={post.category}
-                image={post.image}
-                slug={post.slug}
+                date={
+                  post.publishedAt
+                    ? new Date(post.publishedAt).toLocaleDateString("vi-VN")
+                    : "N/A"
+                }
+                category={post.category || "General"}
+                image={post.featuredImage || "/placeholder.svg"}
+                id={post._id} // Thay slug bằng id
+                target="_blank"
               />
             ))}
           </div>
+          {filteredPosts.length === 0 && (
+            <p className="text-center text-gray-600 mt-8">
+              Không tìm thấy bài viết nào.
+            </p>
+          )}
           <div className="flex justify-center mt-12">
-            <Button variant="outline" size="lg">
-              Load More Articles
+            <Button
+              variant="outline"
+              size="lg"
+              className="border-teal-500 text-teal-600 hover:bg-teal-50"
+            >
+              Tải thêm bài viết
             </Button>
           </div>
         </div>
       </section>
 
       {/* Newsletter */}
-      <section className="py-16 bg-teal-500 text-white">
+      <section className="py-16 bg-teal-600 text-white">
         <div className="container mx-auto px-4 md:px-6 text-center">
-          <h2 className="text-2xl font-bold mb-4">Subscribe to Our Newsletter</h2>
-          <p className="max-w-2xl mx-auto mb-8">
-            Get the latest career advice, industry insights, and job search tips delivered straight to your inbox.
+          <h2 className="text-3xl font-bold mb-4">Đăng ký nhận tin</h2>
+          <p className="max-w-2xl mx-auto mb-8 text-teal-100">
+            Nhận mẹo sự nghiệp, tin tức ngành, và hướng dẫn tìm việc mới nhất qua email.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-            <Input placeholder="Your email address" className="bg-white text-black" />
-            <Button className="bg-black hover:bg-gray-800 text-white">Subscribe</Button>
-          </div>
+          <form
+            className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto"
+            onSubmit={(e) => {
+              e.preventDefault();
+              toast({
+                title: "Thành công",
+                description: "Đã đăng ký nhận tin!",
+              });
+            }}
+          >
+          
+            <Button className="bg-black hover:bg-gray-800 text-white">
+              Đăng ký
+            </Button>
+          </form>
         </div>
       </section>
     </main>
-  )
+  );
 }

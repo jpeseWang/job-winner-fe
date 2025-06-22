@@ -25,7 +25,7 @@ export const authOptions: NextAuthOptions = {
         const { email, password, role } = credentials as {
           email: string
           password: string
-          role: UserRole.JOB_SEEKER | UserRole.RECRUITER 
+          role: UserRole.JOB_SEEKER | UserRole.ADMIN | UserRole.RECRUITER
         }
         // 1) Kết nối DB & tìm user theo email
         await dbConnect()
