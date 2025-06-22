@@ -22,7 +22,7 @@ const applicationSchema = z.object({
   skills: z.array(z.string()),
   resumeUrl: z.string(),
   coverLetter: z.string().min(50),
-  portfolioUrls: z.array(z.string()).optional(),
+  portfolioUrl: z.string().optional(),
   linkedinUrl: z.string().optional(),
   githubUrl: z.string().optional(),
   websiteUrl: z.string().optional(),
