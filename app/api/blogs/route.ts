@@ -1,3 +1,4 @@
+// app/api/blogs/route.ts
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/route";
@@ -24,20 +25,16 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
-    console.log("POST /api/blogs session:", JSON.stringify(session, null, 2));
-
     if (!session || !session.user || !session.user.id) {
       return NextResponse.json({ error: "Unauthorized: Please log in" }, { status: 401 });
     }
-    
+
     if (session.user.role !== UserRole.ADMIN) {
       return NextResponse.json({ error: "Access denied. Admins only." }, { status: 403 });
     }
 
     await dbConnect();
     const data = await request.json();
-    console.log("POST /api/blogs data:", JSON.stringify(data, null, 2));
-
     const { title, slug, status, excerpt, content, featuredImage, categories, tags } = data;
 
     if (!title || !slug || !status || !content || !excerpt) {
@@ -73,6 +70,6 @@ export async function POST(request: Request) {
     return NextResponse.json(populatedBlog, { status: 201 });
   } catch (error) {
     console.error("POST /api/blogs error:", error);
-    return NextResponse.json({ error: `Failed to create blog: ${error.message || "Unknown error"}` }, { status: 500 });
+    return NextResponse.json({ error: `Failed to create blog: ${(error as Error).message || "Unknown error"}` }, { status: 500 });
   }
 }

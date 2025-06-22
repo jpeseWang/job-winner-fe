@@ -11,6 +11,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { IoIosCheckmarkCircle } from "react-icons/io";
+import DOMPurify from "dompurify";
+import {FaUser, FaClock, FaEye, FaEllipsisV, FaEdit, FaTrash, FaHeart, FaComment,FaTimes  } from "react-icons/fa";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
@@ -119,7 +123,6 @@ export default function AdminBlogsPage() {
     }
     fetchPosts();
   }, [session, toast]);
-git checkout dev
   // Lọc bài viết
   const filteredPosts = posts.filter((post) =>
     post.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -553,128 +556,330 @@ const handleSubmit = async (e: React.FormEvent, isEdit: boolean) => {
         </Dialog>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredPosts.map((post) => (
-          <Card key={post._id} className="overflow-hidden">
-            <div className="relative h-48 bg-gray-100">
-              <Image
-                src={post.featuredImage || "/placeholder.svg"}
-                alt={post.title}
-                fill
-                className="object-cover"
-              />
-            </div>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">{post.title}</CardTitle>
-              <CardDescription>
-                Status: {post.status.charAt(0).toUpperCase() + post.status.slice(1)}<br />
-                Author: {post.author?.name || "Unknown"}<br />
-                Categories: {post.categories?.join(", ") || "None"}<br />
-                Tags: {post.tags?.join(", ") || "None"}<br />
-                Views: {post.views} | Likes: {post.likes}
-              </CardDescription>
-            </CardHeader>
-            <CardFooter className="flex justify-between pt-2">
-              <Button variant="outline" size="sm" onClick={() => handlePreviewPost(post)}>
-                <Eye className="h-4 w-4 mr-2" />
-                Preview
-              </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => router.push(`/blog/${post.slug}`)}>
-                    <Eye className="h-4 w-4 mr-2" />
-                    View
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleEditPost(post)}>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="text-red-600"
-                    onClick={() => handleDeletePost(post._id)}
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </CardFooter>
-          </Card>
-        ))}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+  {filteredPosts.map((post) => (
+    <Card
+      key={post._id}
+      className="group relative overflow-hidden rounded-xl shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-white"
+    >
+      {/* Image Section with Overlay */}
+      <div className="relative h-48 overflow-hidden">
+        <Image
+          src={post.featuredImage || "/placeholder.svg"}
+          alt={post.title}
+          fill
+          className="object-cover transition-transform duration-300 group-hover:scale-105"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          priority={false}
+          onError={(e) => {
+            e.currentTarget.src = "/placeholder.svg";
+          }}
+        />
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        {/* Status Badge */}
+        <Badge
+          className={`
+            absolute top-3 right-3 px-2 py-1 text-xs font-semibold
+            ${
+              post.status === "published"
+                ? "bg-green-500 hover:bg-green-600"
+                : post.status === "draft"
+                ? "bg-yellow-500 hover:bg-yellow-600"
+                : "bg-gray-500 hover:bg-gray-600"
+            }
+          `}
+        >
+          {post.status.charAt(0).toUpperCase() + post.status.slice(1)}
+        </Badge>
       </div>
+
+      {/* Content Section */}
+      <CardHeader className="p-4">
+        <CardTitle className="text-lg font-bold line-clamp-2 leading-tight">
+          {post.title}
+        </CardTitle>
+        <CardDescription className="text-sm text-gray-600 line-clamp-3 prose">
+          <div className="space-y-1">
+            <p>
+              <span className="font-medium">Author:</span>{" "}
+              {post.author?.name || "Unknown"}
+            </p>
+            <p>
+              <span className="font-medium">Categories:</span>{" "}
+              {post.categories?.join(", ") || "None"}
+            </p>
+            <div>
+              <span className="font-medium">Tags:</span>{" "}
+              {post.tags?.map((tag) => (
+                <Badge
+                  key={tag}
+                  variant="secondary"
+                  className="mr-1 text-xs bg-gray-200 hover:bg-gray-300"
+                >
+                  {tag}
+                </Badge>
+              )) || "None"}
+            </div>
+            <div className="flex items-center gap-4 text-sm">
+              <span className="flex items-center gap-1">
+                <FaEye className="h-4 w-4 text-gray-500" />
+                {post.views}
+              </span>
+              <span className="flex items-center gap-1">
+                <FaHeart className="h-4 w-4 text-red-500" />
+                {post.likes}
+              </span>
+            </div>
+          </div>
+        </CardDescription>
+      </CardHeader>
+
+      {/* Footer Section */}
+      <CardFooter className="p-4 pt-0 flex justify-between items-center">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handlePreviewPost(post)}
+          className="border-teal-500 text-teal-600 hover:bg-teal-50 transition-colors duration-200"
+        >
+          <FaEye className="h-4 w-4 mr-2" />
+          Preview
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-gray-600 hover:text-teal-600 transition-colors duration-200"
+            >
+              <FaEllipsisV className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="rounded-md shadow-lg">
+            <DropdownMenuItem
+              onClick={() => router.push(`/blog/${post.slug}`)}
+              className="flex items-center gap-2 px-3 py-2 hover:bg-teal-50 cursor-pointer"
+            >
+              <FaEye className="h-4 w-4" />
+              View
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleEditPost(post)}
+              className="flex items-center gap-2 px-3 py-2 hover:bg-teal-50 cursor-pointer"
+            >
+              <FaEdit className="h-4 w-4" />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleDeletePost(post._id)}
+              className="flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 cursor-pointer"
+            >
+              <FaTrash className="h-4 w-4" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </CardFooter>
+    </Card>
+  ))}
+</div>
 
       {/* Preview Dialog */}
       {/* Preview Dialog */}
-      <Dialog open={isPreviewDialogOpen} onOpenChange={setIsPreviewDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
-          <DialogHeader>
-            <DialogTitle>{selectedPost ? selectedPost.title : "Preview"} Preview</DialogTitle>
-          </DialogHeader>
-          {selectedPost ? (
-            <div className="bg-white p-6 border rounded-md">
-              {selectedPost.featuredImage && (
-                <div className="relative h-48 mb-4">
-                  <Image
-                    src={selectedPost.featuredImage || "/placeholder.svg"}
-                    alt={selectedPost.title}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              )}
-              <h1 className="text-2xl font-bold mb-2">{selectedPost.title}</h1>
-              <p className="text-gray-600 mb-4">{selectedPost.excerpt}</p>
-              <div className="prose">{selectedPost.content}</div>
-              <div className="mt-4 text-sm text-gray-500">
-                <p>Status: {selectedPost.status.charAt(0).toUpperCase() + selectedPost.status.slice(1)}</p>
-                <p>Author: {selectedPost.author?.name || "Unknown"}</p>
-                <p>Categories: {selectedPost.categories?.join(", ") || "None"}</p>
-                <p>Tags: {selectedPost.tags?.join(", ") || "None"}</p>
-                <p>
-                  Published: {selectedPost.publishedAt ? new Date(selectedPost.publishedAt).toLocaleDateString() : "N/A"}
-                </p>
-                <p>Views: {selectedPost.views} | Likes: {selectedPost.likes}</p>
-                {selectedPost.comments?.length > 0 && (
-                  <div className="mt-4">
-                    <h3 className="font-semibold">Comments:</h3>
-                    {selectedPost.comments.map((comment, index) => (
-                      <div key={index} className="mt-2 border-t pt-2">
-                        <p className="font-medium">{comment.user.name}</p>
-                        <p>{comment.content}</p>
-                        <p className="text-xs">
-                          {new Date(comment.createdAt).toLocaleString()} | {comment.isApproved ? "Approved" : "Pending"}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+     <Dialog open={isPreviewDialogOpen} onOpenChange={setIsPreviewDialogOpen}>
+  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-xl bg-white shadow-2xl p-0 animate-in fade-in-50 slide-in-from-bottom-10 duration-300">
+    <DialogHeader className="p-6 pb-4 border-b border-gray-200">
+      <DialogTitle className="text-3xl font-bold text-gray-900 tracking-tight">
+        {selectedPost ? selectedPost.title : "Preview"}
+      </DialogTitle>
+    </DialogHeader>
+    {selectedPost ? (
+      <div className="p-6 space-y-8">
+        {/* Featured Image */}
+        {selectedPost.featuredImage && (
+          <div className="relative h-72 w-full rounded-xl overflow-hidden group">
+            <Image
+              src={selectedPost.featuredImage || "/placeholder.svg"}
+              alt={selectedPost.title}
+              fill
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              sizes="(max-width: 640px) 100vw, 800px"
+              priority={false}
+              onError={(e) => {
+                e.currentTarget.src = "/placeholder.svg";
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            {/* Status Badge */}
+            <Badge
+              className={`
+                absolute top-4 right-4 px-3 py-1 text-sm font-semibold
+                ${
+                  selectedPost.status === "published"
+                    ? "bg-green-500 hover:bg-green-600"
+                    : selectedPost.status === "draft"
+                    ? "bg-yellow-500 hover:bg-yellow-600"
+                    : "bg-gray-500 hover:bg-gray-600"
+                }
+              `}
+            >
+              {selectedPost.status.charAt(0).toUpperCase() + selectedPost.status.slice(1)}
+            </Badge>
+          </div>
+        )}
+
+        {/* Article Content */}
+        <div className="space-y-6">
+          {/* Title */}
+          <h1 className="text-4xl font-bold text-gray-900 leading-tight tracking-tight">
+            {selectedPost.title}
+          </h1>
+
+          {/* Meta Information */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:gap-6 text-sm text-gray-600 border-b border-gray-200 pb-4">
+            <div className="flex items-center gap-2">
+              <FaUser className="h-4 w-4 text-gray-500" />
+              <span>{selectedPost.author?.name || "Unknown"}</span>
             </div>
-          ) : (
-            <p>No blog selected for preview.</p>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsPreviewDialogOpen(false)}>
-              Close
-            </Button>
-            {selectedPost && (
-              <Button
-                onClick={() => {
-                  setIsPreviewDialogOpen(false);
-                  handleEditPost(selectedPost);
-                }}
-              >
-                Edit Blog
-              </Button>
+            <div className="flex items-center gap-2">
+              <FaClock className="h-4 w-4 text-gray-500" />
+              <span>
+                {selectedPost.publishedAt
+                  ? new Date(selectedPost.publishedAt).toLocaleDateString()
+                  : "N/A"}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <FaEye className="h-4 w-4 text-gray-500" />
+              <span>{selectedPost.views} Lượt xem</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <FaHeart className="h-4 w-4 text-red-500" />
+              <span>{selectedPost.likes} Lượt thích</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <IoIosCheckmarkCircle className="h-4 w-4 text-gray-500" />
+              <span>
+                {selectedPost.status.charAt(0).toUpperCase() + selectedPost.status.slice(1)}
+              </span>
+            </div>
+          </div>
+
+          {/* Categories and Tags */}
+          <div className="flex flex-col gap-3">
+            {selectedPost.categories?.length > 0 && (
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-sm font-semibold text-gray-700">Danh mục:</span>
+                {selectedPost.categories.map((cat) => (
+                  <Badge
+                    key={cat}
+                    variant="secondary"
+                    className="bg-teal-100 text-teal-800 hover:bg-teal-200 transition-colors duration-200"
+                  >
+                    {cat}
+                  </Badge>
+                ))}
+              </div>
             )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            {selectedPost.tags?.length > 0 && (
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-sm font-semibold text-gray-700">Thẻ:</span>
+                {selectedPost.tags.map((tag) => (
+                  <Badge
+                    key={tag}
+                    variant="outline"
+                    className="border-gray-300 text-gray-600 hover:bg-gray-100 transition-colors duration-200"
+                  >
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Excerpt */}
+          <div className="border-l-4 border-teal-200 pl-4 py-2 bg-teal-50/50 rounded-r-md">
+            <p className="text-lg text-gray-700 italic leading-relaxed">
+              {selectedPost.excerpt}
+            </p>
+          </div>
+
+          {/* Main Content */}
+          <div
+            className="prose prose-teal prose-lg max-w-none leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedPost.content) }}
+          />
+        </div>
+
+        {/* Comments Section */}
+        {selectedPost.comments?.length > 0 && (
+          <div className="mt-10 border-t pt-8 border-gray-200">
+            <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+              <FaComment className="h-5 w-5 text-teal-600" />
+              Bình luận ({selectedPost.comments.length})
+            </h3>
+            <div className="mt-6 space-y-6">
+              {selectedPost.comments.map((comment, index) => (
+                <div
+                  key={index}
+                  className="border-l-4 border-teal-200 pl-4 py-3 bg-gray-50 rounded-r-md transition-all duration-200 hover:bg-gray-100"
+                >
+                  <div className="flex items-center gap-3 text-sm text-gray-600">
+                    <div className="h-8 w-8 rounded-full bg-teal-100 flex items-center justify-center">
+                      <FaUser className="h-4 w-4 text-teal-600" />
+                    </div>
+                    <span className="font-medium">{comment.user.name}</span>
+                    <span>•</span>
+                    <FaClock className="h-4 w-4 text-gray-500" />
+                    <span>{new Date(comment.createdAt).toLocaleString()}</span>
+                    <Badge
+                      variant={comment.isApproved ? "secondary" : "outline"}
+                      className={
+                        comment.isApproved
+                          ? "bg-green-100 text-green-800 hover:bg-green-200"
+                          : "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+                      }
+                    >
+                      {comment.isApproved ? "Đã duyệt" : "Chờ duyệt"}
+                    </Badge>
+                  </div>
+                  <p className="mt-2 text-gray-700 text-base">{comment.content}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    ) : (
+      <div className="p-6">
+        <p className="text-gray-600 text-base">Không có bài viết nào được chọn để xem trước.</p>
+      </div>
+    )}
+    <DialogFooter className="p-6 pt-4 border-t border-gray-200 flex justify-end gap-3">
+      <Button
+        variant="outline"
+        onClick={() => setIsPreviewDialogOpen(false)}
+        className="border-gray-300 text-gray-700 hover:bg-gray-100 hover:scale-105 transition-all duration-200"
+      >
+        <FaTimes className="h-4 w-4 mr-2" />
+        Đóng
+      </Button>
+      {selectedPost && (
+        <Button
+          onClick={() => {
+            setIsPreviewDialogOpen(false);
+            handleEditPost(selectedPost);
+          }}
+          className="bg-teal-600 hover:bg-teal-700 text-white hover:scale-105 transition-all duration-200"
+        >
+          <FaEdit className="h-4 w-4 mr-2" />
+          Sửa bài viết
+        </Button>
+      )}
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

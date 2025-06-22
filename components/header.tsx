@@ -74,6 +74,14 @@ export default function Header() {
                   Contact Us
                 </Link>
               </li>
+               <li>
+                <Link
+                  href="/blog"
+                  className={`hover:text-teal-400 transition ${pathname === "/blogs" ? "text-teal-400" : ""}`}
+                >
+                  Blog
+                </Link>
+              </li>
             </ul>
           </nav>
         </div>
