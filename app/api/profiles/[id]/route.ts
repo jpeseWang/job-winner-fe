@@ -4,9 +4,10 @@ import User from "@/models/User";
 import dbConnect from "@/lib/db";
 import { UserRole } from "@/types/enums";
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
     try {
-        const userId = await params.id;
+        const params = await context.params;
+        const userId = params.id;
         await dbConnect()
 
         let profile = await Profile.findOne({ user: userId }).populate("user", "name email role");
@@ -34,9 +35,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
     try {
-        const userId = await params.id;
+        const params = await context.params;
+        const userId = params.id;
         const profileData = await request.json();
         await dbConnect();
 

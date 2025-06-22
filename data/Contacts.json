@@ -1,0 +1,32 @@
+[
+  {
+    "fullName": "Nguyen Thi Mai",
+    "email": "mai.nguyen@example.com",
+    "message": "Hi, I’m interested in your job posting and would like to know more about the requirements.",
+    "createdAt": "2025-06-17T08:23:00Z"
+  },
+  {
+    "fullName": "Tran Van Binh",
+    "email": "binh.tran92@gmail.com",
+    "message": "Hello! I’m having trouble submitting my application. Can you assist?",
+    "createdAt": "2025-06-16T10:45:00Z"
+  },
+  {
+    "fullName": "Le Hoang Anh",
+    "email": "hoanganh.le@outlook.com",
+    "message": "I love your platform. Do you have internship opportunities for students?",
+    "createdAt": "2025-06-15T14:12:00Z"
+  },
+  {
+    "fullName": "Pham Minh Chau",
+    "email": "chau.minh@edu.vn",
+    "message": "Can you help me reset my password? I haven’t received any reset email.",
+    "createdAt": "2025-06-14T18:00:00Z"
+  },
+  {
+    "fullName": "Dang Quoc Tuan",
+    "email": "tuan.dang.dev@gmail.com",
+    "message": "Hi, I have some feedback regarding the user experience on mobile. Who should I contact?",
+    "createdAt": "2025-06-13T09:30:00Z"
+  }
+]

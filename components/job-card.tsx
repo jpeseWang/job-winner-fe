@@ -1,6 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
-import { MapPin, Clock, Briefcase, DollarSign } from "lucide-react"
+import { MapPin, Clock, Briefcase, DollarSign, Tags, BarChart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface JobCardProps {
@@ -9,10 +9,12 @@ interface JobCardProps {
   company: string
   location: string
   type: string
+  category: string
+  experienceLevel: string
   salary: string
   postedDays: number
   logo: string
-  detailed?: boolean
+  hideButton?: boolean
 }
 
 export default function JobCard({
@@ -21,10 +23,12 @@ export default function JobCard({
   company,
   location,
   type,
+  category,
+  experienceLevel,
   salary,
   postedDays,
   logo,
-  detailed = false,
+  hideButton
 }: JobCardProps) {
   return (
     <div className="border rounded-lg p-4 hover:shadow-md transition">
@@ -44,15 +48,23 @@ export default function JobCard({
             </div>
           </div>
 
-          {detailed && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-4">
+              <div className="flex items-center gap-1 text-sm text-gray-600">
+                <Tags className="h-4 w-4 text-gray-400" />
+                <span>{category}</span>
+              </div>
+              
+              <div className="flex items-center gap-1 text-sm text-gray-600">
+                <Briefcase className="h-4 w-4 text-gray-400" />
+                <span>{type}</span>
+              </div>
               <div className="flex items-center gap-1 text-sm text-gray-600">
                 <MapPin className="h-4 w-4 text-gray-400" />
                 <span>{location}</span>
               </div>
               <div className="flex items-center gap-1 text-sm text-gray-600">
-                <Briefcase className="h-4 w-4 text-gray-400" />
-                <span>{type}</span>
+                <BarChart className="h-4 w-4 text-gray-400" />
+                <span>{experienceLevel}</span>
               </div>
               <div className="flex items-center gap-1 text-sm text-gray-600">
                 <DollarSign className="h-4 w-4 text-gray-400" />
@@ -63,31 +75,15 @@ export default function JobCard({
                 <span>Apply by {new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}</span>
               </div>
             </div>
-          )}
-
-          {!detailed && (
-            <div className="flex flex-wrap gap-4 mt-3">
-              <div className="flex items-center gap-1 text-sm text-gray-600">
-                <MapPin className="h-4 w-4 text-gray-400" />
-                <span>{location}</span>
-              </div>
-              <div className="flex items-center gap-1 text-sm text-gray-600">
-                <Briefcase className="h-4 w-4 text-gray-400" />
-                <span>{type}</span>
-              </div>
-              <div className="flex items-center gap-1 text-sm text-gray-600">
-                <DollarSign className="h-4 w-4 text-gray-400" />
-                <span>{salary}</span>
-              </div>
-            </div>
-          )}
         </div>
 
-        <div className="flex-shrink-0">
-          <Button size="sm" className="bg-teal-500 hover:bg-teal-600" asChild>
-            <Link href={`/jobs/${id}`}>View Job</Link>
-          </Button>
-        </div>
+        {!hideButton && (
+          <div className="flex-shrink-0">
+            <Button size="sm" className="bg-teal-500 hover:bg-teal-600" asChild>
+              <Link href={`/jobs/${id}`}>View Job</Link>
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   )

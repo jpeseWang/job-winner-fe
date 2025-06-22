@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "jest --coverage"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.9.1",
@@ -32,10 +33,12 @@
     "axios": "^1.6.2",
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.0",
+    "cloudinary": "^2.7.0",
     "clsx": "^2.0.0",
     "crypto": "^1.0.1",
     "date-fns": "^2.30.0",
     "handlebars": "^4.7.8",
+    "html2pdf.js": "^0.9.0",
     "js-cookie": "^3.0.5",
     "lodash": "^4.17.21",
     "lucide-react": "^0.294.0",
@@ -43,15 +46,18 @@
     "mongoose": "^8.0.3",
     "next": "^15.3.3",
     "next-auth": "^4.24.5",
+    "next-swagger-doc": "^0.4.0",
     "next-themes": "^0.4.6",
     "nodemailer": "^6.10.1",
     "react": "^18",
     "react-dom": "^18",
     "react-hook-form": "^7.48.2",
+    "react-hot-toast": "^2.5.2",
     "react-icons": "^5.5.0",
     "recharts": "^2.15.3",
     "sonner": "^2.0.5",
     "sooner": "^1.1.4",
+    "swagger-ui-react": "^5.18.2",
     "swr": "^2.2.4",
     "tailwind-merge": "^2.1.0",
     "tailwindcss-animate": "^1.0.7",
@@ -59,7 +65,10 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
     "@types/bcryptjs": "^2.4.6",
+    "@types/jest": "^30.0.0",
     "@types/js-cookie": "^3.0.6",
     "@types/lodash": "^4.17.17",
     "@types/node": "^20",
@@ -67,11 +76,15 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/recharts": "^1.8.29",
+    "@types/swagger-ui-react": "^4.18.3",
     "autoprefixer": "^10.0.1",
     "eslint": "^8",
     "eslint-config-next": "14.0.4",
+    "jest": "^30.0.1",
+    "jest-environment-jsdom": "^30.0.1",
     "postcss": "^8",
     "tailwindcss": "^3.3.0",
+    "ts-jest": "^29.4.0",
     "typescript": "^5"
   }
 }

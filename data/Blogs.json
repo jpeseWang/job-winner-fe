@@ -1,0 +1,65 @@
+[
+  {
+    "title": "Mastering TypeScript for Scalable Applications",
+    "slug": "mastering-typescript-scalable-apps",
+    "content": "In this blog, we'll walk through advanced TypeScript concepts and how to leverage them in large-scale applications...",
+    "excerpt": "Unlock the power of TypeScript in building robust and scalable applications. From types to generics, we cover it all.",
+    "author": "666fa6e53759bce8a7f1c209",
+    "featuredImage": "https://cdn.example.com/images/typescript-guide.png",
+    "categories": ["Programming", "TypeScript"],
+    "tags": ["typescript", "javascript", "webdev"],
+    "status": "published",
+    "publishedAt": "2025-06-15T10:00:00Z",
+    "views": 542,
+    "likes": 87,
+    "comments": [
+      {
+        "user": "666fa6e53759bce8a7f1c210",
+        "content": "Great article! Helped me a lot with understanding generics.",
+        "createdAt": "2025-06-15T12:23:00Z",
+        "isApproved": true
+      }
+    ],
+    "createdAt": "2025-06-14T15:30:00Z",
+    "updatedAt": "2025-06-15T10:00:00Z"
+  },
+  {
+    "title": "Why MongoDB is Still Relevant in 2025",
+    "slug": "mongodb-relevance-2025",
+    "content": "MongoDB has stood the test of time in the NoSQL ecosystem. Let’s explore why developers continue to prefer it...",
+    "excerpt": "Explore MongoDB’s evolution and continued dominance in NoSQL solutions in this in-depth blog post.",
+    "author": "666fa6e53759bce8a7f1c209",
+    "featuredImage": "https://cdn.example.com/images/mongodb-trends.png",
+    "categories": ["Databases"],
+    "tags": ["mongodb", "database", "nosql"],
+    "status": "published",
+    "publishedAt": "2025-06-12T09:45:00Z",
+    "views": 391,
+    "likes": 54,
+    "comments": [],
+    "createdAt": "2025-06-11T16:00:00Z",
+    "updatedAt": "2025-06-12T09:45:00Z"
+  },
+  {
+    "title": "How to Get Started with Node.js and Express",
+    "slug": "getting-started-nodejs-express",
+    "content": "Node.js is a popular choice for building backend applications. This guide will walk you through setting up a simple Express server...",
+    "excerpt": "Learn how to build a RESTful API using Node.js and Express in this beginner-friendly tutorial.",
+    "author": "666fa6e53759bce8a7f1c209",
+    "categories": ["Programming", "Backend"],
+    "tags": ["nodejs", "express", "api"],
+    "status": "draft",
+    "views": 128,
+    "likes": 12,
+    "comments": [
+      {
+        "user": "666fa6e53759bce8a7f1c211",
+        "content": "Looking forward to the completed version!",
+        "createdAt": "2025-06-17T08:10:00Z",
+        "isApproved": false
+      }
+    ],
+    "createdAt": "2025-06-16T19:50:00Z",
+    "updatedAt": "2025-06-17T08:10:00Z"
+  }
+]

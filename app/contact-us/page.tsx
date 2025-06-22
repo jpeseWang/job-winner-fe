@@ -1,6 +1,6 @@
-import { Phone, Mail, Clock, MapPin } from "lucide-react"
-import ContactForm from "@/components/contact/contact-form"
-import CompanyLogos from "@/components/contact/company-logos"
+import { Phone, Mail, Clock, MapPin } from "lucide-react";
+import ContactForm from "@/components/contact/contact-form";
+import CompanyLogos from "@/components/contact/company-logos";
 
 export default function ContactUsPage() {
   return (
@@ -18,10 +18,12 @@ export default function ContactUsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             {/* Left Column - Contact Info */}
             <div>
-              <h2 className="text-3xl font-bold mb-2">You Will Grow, You Will Succeed. We Promise That</h2>
+              <h2 className="text-3xl font-bold mb-2">
+                You Will Grow, You Will Succeed. We Promise That
+              </h2>
               <p className="text-gray-600 mb-8">
-                Pellentesque arcu facilisis nunc mi pham. Dignissim mattis in lectus tincidunt tincidunt ultrices. Diam
-                convallis morbi pellentesque adipiscing.
+                We are committed to helping you grow sustainably with
+                comprehensive, tailored, and effective solutions.
               </p>
 
               <div className="space-y-8">
@@ -32,7 +34,7 @@ export default function ContactUsPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg">Call for inquiry</h3>
-                    <p className="text-gray-600">+257 388-6895</p>
+                    <p className="text-gray-600">(+84)0788676059</p>
                   </div>
                 </div>
 
@@ -43,7 +45,7 @@ export default function ContactUsPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg">Send us email</h3>
-                    <p className="text-gray-600">kramulous@sbcglobal.net</p>
+                    <p className="text-gray-600">jobwinnerr@gmail.com</p>
                   </div>
                 </div>
 
@@ -65,7 +67,9 @@ export default function ContactUsPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg">Office</h3>
-                    <p className="text-gray-600">19 North Road Piscataway, NY 08854</p>
+                    <p className="text-gray-600">
+                      Khu đô thị FPT City, Ngũ Hành Sơn, Da Nang
+                    </p>
                   </div>
                 </div>
               </div>
@@ -74,7 +78,9 @@ export default function ContactUsPage() {
             {/* Right Column - Contact Form */}
             <div className="bg-gray-50 p-6 rounded-lg">
               <h3 className="text-xl font-semibold mb-4">Contact Info</h3>
-              <p className="text-gray-500 mb-6">Nibh dis faucibus prom lacus tristique</p>
+              <p className="text-gray-500 mb-6">
+                Get in touch with us for quick and effective support.
+              </p>
 
               <ContactForm />
             </div>
@@ -87,7 +93,7 @@ export default function ContactUsPage() {
         <div className="container mx-auto px-4 md:px-6">
           <div className="h-[300px] w-full rounded-lg overflow-hidden">
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.9663095343077!2d-74.46059872426865!3d40.54892835343177!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c3c65531ee8d1f%3A0x7a7f4a1c5a29f1e!2sPiscataway%2C%20NJ%2008854!5e0!3m2!1sen!2sus!4v1716151234567!5m2!1sen!2sus"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3835.8561678280007!2d108.2608913!3d15.968885900000002!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3142116949840599%3A0x365b35580f52e8d5!2sFPT%20University%20Danang!5e0!3m2!1sen!2s!4v1750506528381!5m2!1sen!2s"
               width="100%"
               height="100%"
               style={{ border: 0 }}
@@ -106,5 +112,5 @@ export default function ContactUsPage() {
         </div>
       </section>
     </main>
-  )
+  );
 }

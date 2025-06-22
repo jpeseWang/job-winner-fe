@@ -22,11 +22,11 @@ export function useApplications(filters: ApplicationFilters = {}) {
   queryParams.append("page", page.toString())
   queryParams.append("limit", limit.toString())
 
-  const queryKey = `/applications?${queryParams.toString()}`
+  const queryKey = `/applications/by-recruiter?${queryParams.toString()}`
 
   // Fetch applications with SWR
   const { data, error, isLoading, isValidating, mutate } = useSWR(queryKey, () =>
-    applicationService.getApplications({ ...filters, page, limit }),
+    applicationService.getApplicationsByRecruiter({ ...filters, page, limit }),
   )
 
   // Helper function to change page

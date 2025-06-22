@@ -71,14 +71,16 @@ export default function Header() {
                   Home
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/jobs"
-                  className={`hover:text-teal-400 transition ${pathname === "/jobs" ? "text-teal-400" : ""}`}
-                >
-                  Jobs
-                </Link>
-              </li>
+              {session?.user?.role !== UserRole.RECRUITER && (
+                <li>
+                  <Link
+                    href="/jobs"
+                    className={`hover:text-teal-400 transition ${pathname === "/jobs" ? "text-teal-400" : ""}`}
+                  >
+                    Jobs
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link
                   href="/about-us"
@@ -183,15 +185,17 @@ export default function Header() {
                   Home
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/jobs"
-                  className={`hover:text-teal-400 transition ${pathname === "/jobs" ? "text-teal-400" : ""}`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Jobs
-                </Link>
-              </li>
+              {session?.user?.role !== UserRole.RECRUITER && (
+                <li>
+                  <Link
+                    href="/jobs"
+                    className={`hover:text-teal-400 transition ${pathname === "/jobs" ? "text-teal-400" : ""}`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Jobs
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link
                   href="/about-us"

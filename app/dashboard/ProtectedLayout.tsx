@@ -16,6 +16,7 @@ export default function ProtectedLayout({ children, requiredRole }: ProtectedLay
   const router = useRouter()
 
   useEffect(() => {
+    if (status === "loading") return;
     if (status === "unauthenticated") {
       router.replace("/auth/login")
     } else if (requiredRole && session?.user?.role !== requiredRole) {

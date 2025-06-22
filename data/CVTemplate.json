@@ -1,0 +1,160 @@
+[
+  {
+    "name": "The Modern Minimalist",
+    "description": "A clean, modern, and elegant CV template perfect for tech professionals, developers, and designers who value clarity and simplicity. Features a single-column layout with a focus on typography.",
+    "thumbnail": "/assets/templates/modern-minimalist-thumb.png",
+    "previewImages": [
+      "/assets/templates/modern-minimalist-preview-1.png",
+      "/assets/templates/modern-minimalist-preview-2.png"
+    ],
+    "htmlTemplate": "<!DOCTYPE html><html><head><title>{{name}}</title></head><body><header><h1>{{name}}</h1><p>{{email}} | {{phone}}</p></header><section><h2>Experience</h2><div class=\"job\">...</div></section></body></html>",
+    "cssStyles": "body { font-family: 'Inter', sans-serif; } header { text-align: center; margin-bottom: 2rem; } h1 { font-size: 2.5rem; } .job { border-left: 2px solid #333; padding-left: 1rem; }",
+    "category": "modern",
+    "tags": ["minimalist", "tech", "developer", "simple", "clean"],
+    "creator": "60d5f3f7e8b9a2b8d4c1f8a1",
+    "isPremium": false,
+    "isActive": true,
+    "usageCount": 1850,
+    "rating": {
+      "average": 4.7,
+      "count": 210
+    },
+    "createdAt": "2025-01-15T09:30:00.000Z",
+    "updatedAt": "2025-05-20T11:00:00.000Z"
+  },
+  {
+    "name": "The Executive",
+    "description": "A sophisticated and professional template designed for managers, executives, and business leaders. Its classic two-column layout projects authority and experience.",
+    "thumbnail": "/assets/templates/executive-thumb.png",
+    "previewImages": ["/assets/templates/executive-preview-1.png"],
+    "htmlTemplate": "<!DOCTYPE html><html><body><div class=\"main\"><div class=\"sidebar\">...</div><div class=\"content\">...</div></div></body></html>",
+    "cssStyles": ".main { display: flex; } .sidebar { width: 30%; background-color: #f4f4f4; padding: 1rem; } .content { width: 70%; padding: 1rem; } h2 { color: #004d99; border-bottom: 2px solid #004d99; }",
+    "category": "executive",
+    "tags": ["professional", "corporate", "manager", "business", "formal"],
+    "creator": "60d5f3f7e8b9a2b8d4c1f8a2",
+    "isPremium": true,
+    "price": 9.99,
+    "isActive": true,
+    "usageCount": 640,
+    "rating": {
+      "average": 4.9,
+      "count": 125
+    },
+    "createdAt": "2025-02-20T14:00:00.000Z",
+    "updatedAt": "2025-06-01T10:15:00.000Z"
+  },
+  {
+    "name": "Creative Canvas",
+    "description": "A vibrant and creative template for artists, photographers, and graphic designers. This layout allows your portfolio to shine with large image placeholders and a unique, asymmetric design.",
+    "thumbnail": "/assets/templates/creative-canvas-thumb.png",
+    "previewImages": [
+      "/assets/templates/creative-canvas-preview-1.png",
+      "/assets/templates/creative-canvas-preview-2.png",
+      "/assets/templates/creative-canvas-preview-3.png"
+    ],
+    "htmlTemplate": "<!DOCTYPE html><html><body><div class=\"hero-image\"><h1>{{name}}</h1></div><section class=\"portfolio-grid\">...</section></body></html>",
+    "cssStyles": ".hero-image { height: 40vh; background: url('{{hero_image}}'); } .portfolio-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }",
+    "category": "creative",
+    "tags": ["designer", "portfolio", "visual", "artistic", "photography"],
+    "creator": "60d5f3f7e8b9a2b8d4c1f8a1",
+    "isPremium": false,
+    "isActive": true,
+    "usageCount": 2500,
+    "rating": {
+      "average": 4.5,
+      "count": 450
+    },
+    "createdAt": "2025-03-10T18:45:00.000Z",
+    "updatedAt": "2025-05-25T12:00:00.000Z"
+  },
+  {
+    "name": "Academic Standard",
+    "description": "A formal, well-structured template for academics, researchers, and students applying for grants or university positions. Follows standard academic CV formatting.",
+    "thumbnail": "/assets/templates/academic-standard-thumb.png",
+    "previewImages": ["/assets/templates/academic-standard-preview-1.png"],
+    "htmlTemplate": "<!DOCTYPE html><html><body><section><h2>Publications</h2><ol><li>...</li></ol></section><section><h2>Conferences</h2>...</section></body></html>",
+    "cssStyles": "body { font-family: 'Times New Roman', serif; line-height: 1.6; } ol { list-style-type: decimal; } h2, h3 { margin-top: 1.5em; }",
+    "category": "academic",
+    "tags": ["researcher", "university", "phd", "scholar", "formal"],
+    "creator": "60d5f3f7e8b9a2b8d4c1f8a3",
+    "isPremium": false,
+    "isActive": false,
+    "usageCount": 980,
+    "rating": {
+      "average": 4.2,
+      "count": 95
+    },
+    "createdAt": "2024-11-05T12:00:00.000Z",
+    "updatedAt": "2025-04-10T16:20:00.000Z"
+  },
+  {
+    "name": "Sleek Professional",
+    "description": "A clean and modern CV template perfect for corporate and executive roles.",
+    "thumbnail": "https://cdn.example.com/templates/professional1-thumb.jpg",
+    "previewImages": [
+      "https://cdn.example.com/templates/professional1-preview1.jpg",
+      "https://cdn.example.com/templates/professional1-preview2.jpg"
+    ],
+    "htmlTemplate": "<html><body><h1>John Doe</h1></body></html>",
+    "cssStyles": "body { font-family: Arial; } h1 { color: #333; }",
+    "category": "professional",
+    "tags": ["clean", "corporate", "modern"],
+    "creator": "666fa6e53759bce8a7f1c209",
+    "isPremium": true,
+    "price": 4.99,
+    "isActive": true,
+    "usageCount": 321,
+    "rating": {
+      "average": 4.7,
+      "count": 89
+    },
+    "createdAt": "2025-06-17T08:00:00Z",
+    "updatedAt": "2025-06-17T08:00:00Z"
+  },
+  {
+    "name": "Minimalist Creative",
+    "description": "Stylish yet simple CV for designers, writers, and artists who want to stand out.",
+    "thumbnail": "https://cdn.example.com/templates/creative-minimal-thumb.jpg",
+    "previewImages": [
+      "https://cdn.example.com/templates/creative-minimal1.jpg"
+    ],
+    "htmlTemplate": "<html><body><h2>Jane Doe</h2><p>Creative Writer</p></body></html>",
+    "cssStyles": "h2 { font-family: 'Georgia'; }",
+    "category": "creative",
+    "tags": ["minimal", "elegant", "creative"],
+    "creator": "666fa6e53759bce8a7f1c209",
+    "isPremium": false,
+    "isActive": true,
+    "usageCount": 892,
+    "rating": {
+      "average": 4.5,
+      "count": 211
+    },
+    "createdAt": "2025-06-15T14:20:00Z",
+    "updatedAt": "2025-06-16T10:11:00Z"
+  },
+  {
+    "name": "Academic Resume",
+    "description": "Tailored for academic professionals, including sections for publications and research.",
+    "thumbnail": "https://cdn.example.com/templates/academic-thumb.jpg",
+    "previewImages": [
+      "https://cdn.example.com/templates/academic1.jpg",
+      "https://cdn.example.com/templates/academic2.jpg"
+    ],
+    "htmlTemplate": "<html><body><h3>Dr. Alan Grant</h3><p>Paleontology Researcher</p></body></html>",
+    "cssStyles": "h3 { color: navy; font-size: 24px; }",
+    "category": "academic",
+    "tags": ["research", "phd", "academic"],
+    "creator": "666fa6e53759bce8a7f1c209",
+    "isPremium": true,
+    "price": 6.99,
+    "isActive": true,
+    "usageCount": 157,
+    "rating": {
+      "average": 4.9,
+      "count": 34
+    },
+    "createdAt": "2025-06-10T09:00:00Z",
+    "updatedAt": "2025-06-12T17:30:00Z"
+  }
+]

@@ -19,6 +19,7 @@ export interface IProfile extends Document {
   completionPercentage: number
   createdAt: Date
   updatedAt: Date
+  profilePicture?: string
 }
 
 const ProfileSchema = new Schema<IProfile>(
@@ -30,12 +31,10 @@ const ProfileSchema = new Schema<IProfile>(
     },
     title: {
       type: String,
-
       maxlength: [100, "Title cannot be more than 100 characters"],
     },
     bio: {
       type: String,
-
       maxlength: [1000, "Bio cannot be more than 1000 characters"],
     },
     location: {
@@ -192,6 +191,10 @@ const ProfileSchema = new Schema<IProfile>(
     completionPercentage: {
       type: Number,
       default: 0,
+    },
+    profilePicture: {
+      type: String,
+      trim: true,
     },
   },
   { timestamps: true },

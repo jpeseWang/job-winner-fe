@@ -31,6 +31,12 @@ export interface IUser {
 }
 
 export interface IUserProfile {
+   user: {
+    id: string
+    name: string
+    email: string
+    photo?: string
+  }
   id: string
   name: string
   email?: string
