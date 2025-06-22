@@ -151,6 +151,7 @@ export default function LoginPage() {
                 <Briefcase className="h-4 w-4" />
                 Recruiter
               </TabsTrigger>
+        
             </TabsList>
 
             <form onSubmit={handleSubmit} className="space-y-4">

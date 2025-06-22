@@ -33,7 +33,7 @@ async function _send(options: {
   if (transporter) {
     const attachments = options.includeLogo
       ? [{
-        filename: "logo2.png",
+        filename: "logo2.jpg",
         path: path.resolve("public/logo2.jpg"),
         cid: "jobwinnerlogo",
       }]
@@ -70,7 +70,7 @@ export async function sendContactEmail(
   message: string,
 ) {
   const fullName = `${firstName.trim()} ${lastName.trim()}`
-  const adminEmail = process.env.ADMIN_EMAIL || "anhwuan2k4@gmail.com"
+  const adminEmail = process.env.ADMIN_EMAIL || "jobwinnerr@gmail.com"
 
   const html = loadHtmlTemplate('verification-contact', {
     name: fullName,

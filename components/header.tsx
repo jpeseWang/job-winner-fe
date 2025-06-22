@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { usePathname } from "next/navigation"
 import { useSession, signIn, signOut } from "next-auth/react"
 import { UserRole } from "@/types/enums"
@@ -11,13 +12,35 @@ import { UserRole } from "@/types/enums"
 export default function Header() {
   const { data: session, status } = useSession()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [profilePicture, setProfilePicture] = useState<string>("")
   const pathname = usePathname()
   const menuRef = useRef<HTMLDivElement>(null)
+  
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
   }
-  console.log("Session:", session)
-  console.log("Status:", status)
+
+  // Fetch profile picture when session changes
+  useEffect(() => {
+    const fetchProfilePicture = async () => {
+      if (session?.user?.id) {
+        try {
+          const response = await fetch("/api/profiles/recruiter")
+          if (response.ok) {
+            const data = await response.json()
+            if (data.profilePicture) {
+              setProfilePicture(data.profilePicture)
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching profile picture:", error)
+        }
+      }
+    }
+
+    fetchProfilePicture()
+  }, [session])
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -83,9 +106,14 @@ export default function Header() {
             <>
               <button
                 onClick={() => setIsMenuOpen((prev) => !prev)}
-                className="w-9 h-9 rounded-full bg-white text-black flex items-center justify-center font-semibold transition duration-200 hover:ring-2 hover:ring-teal-400 hover:shadow"
+                className="transition duration-200 hover:ring-2 hover:ring-teal-400 hover:shadow rounded-full"
               >
-                {session?.user?.name?.charAt(0).toUpperCase() || "U"}
+                <Avatar className="w-9 h-9">
+                  <AvatarImage src={profilePicture} alt={session?.user?.name || "User"} />
+                  <AvatarFallback className="bg-white text-black font-semibold">
+                    {session?.user?.name?.charAt(0).toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
               </button>
 
               <div
@@ -97,7 +125,7 @@ export default function Header() {
                     session?.user?.role === UserRole.JOB_SEEKER
                       ? "/dashboard/job-seeker/my-profile"
                       : session?.user?.role === UserRole.RECRUITER
-                        ? "/dashboard/recruiter"
+                        ? "/dashboard/recruiter/profile"
                         : "/dashboard/admin"
                   }
                   className="block px-4 py-2 hover:bg-gray-100"
