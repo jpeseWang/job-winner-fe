@@ -12,6 +12,7 @@ import type { Job } from "@/types/interfaces"
 import { formatSalary } from "@/utils/formatters";
 import { useSearchParams } from "next/navigation"
 import { DEFAULT_AVATAR } from "@/constants"
+import { getTimeAgo } from "@/utils/getTimeAgo"
 
 export default function JobsPage() {
   const searchParams = useSearchParams()
@@ -109,7 +110,7 @@ export default function JobsPage() {
                           category={job.category}
                           experienceLevel={job.experienceLevel}
                           salary={salaryString}
-                          postedDays={job.postedDays || 0}
+                          postedDays={getTimeAgo(job.createdAt ?? "") || ""}
                           logo={job.companyLogo || DEFAULT_AVATAR}
                         />
                       )

@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { UserRole } from "@/types/enums";
-
+import { getTimeAgo } from "@/utils/getTimeAgo";
 import JobApplicationForm from "@/components/jobs/job-application-form";
 import { jobService } from "@/services/jobService";
 import JobCard from "@/components/job-card"
@@ -38,7 +38,7 @@ export default async function ApplyJobPage({ params }: ApplyJobPageProps) {
             category={job.category}
             experienceLevel={job.experienceLevel}
             salary={formatSalary(job.salary)}
-            postedDays={job.postedDays || 0}
+            postedDays={getTimeAgo(job.createdAt ?? "") || ""}
             logo={job.companyLogo || "/placeholder.svg?height=40&width=40"}
             hideButton={true}
           />
