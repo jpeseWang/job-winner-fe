@@ -92,7 +92,7 @@ export default function Header() {
               <li>
                 <Link
                   href="/pricing"
-                  className={`hover:text-teal-400 transition ${pathname === "/contact-us" ? "text-teal-400" : ""}`}
+                  className={`hover:text-teal-400 transition ${pathname === "/pricing" ? "text-teal-400" : ""}`}
                 >
                   Pricing
                 </Link>

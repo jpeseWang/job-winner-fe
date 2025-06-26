@@ -10,6 +10,7 @@ import { jobService } from "@/services/jobService"
 import type { Job } from "@/types/interfaces"
 import type { FilterOption } from "@/types/interfaces/job"
 import { formatSalary } from "@/utils/formatters"
+import { getTimeAgo } from "@/utils/getTimeAgo"
 
 export default function Home() {
   const [jobCount, setJobCount] = useState<number>(0)
@@ -159,23 +160,23 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 gap-6">
-          {latestJobs 
+          {latestJobs
             .filter((j) => j.id)                      // chỉ lấy job hợp lệ
             .map((job) => (
-            <JobCard
-              key={job.id}
-              id={job.id}
-              title={job.title}
-              company={job.company}
-              location={job.location}
-              type={job.type}
-              category={job.category}
-              experienceLevel={job.experienceLevel}
-              salary={formatSalary(job.salary)}
-              postedDays={job.postedDays || 0}
-              logo={job.companyLogo || "/placeholder.svg?height=40&width=40"}
-            />
-          ))}
+              <JobCard
+                key={job.id}
+                id={job.id}
+                title={job.title}
+                company={job.company}
+                location={job.location}
+                type={job.type}
+                category={job.category}
+                experienceLevel={job.experienceLevel}
+                salary={formatSalary(job.salary)}
+                postedDays={getTimeAgo(job.createdAt ?? "") || ""}
+                logo={job.companyLogo || "/placeholder.svg?height=40&width=40"}
+              />
+            ))}
         </div>
       </section>
 

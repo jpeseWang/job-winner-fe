@@ -12,7 +12,7 @@ interface JobCardProps {
   category: string
   experienceLevel: string
   salary: string
-  postedDays: number
+  postedDays: string | Date
   logo: string
   hideButton?: boolean
 }
@@ -44,7 +44,7 @@ export default function JobCard({
               <p className="text-gray-600 text-sm">{company}</p>
             </div>
             <div className="text-xs text-gray-500">
-              {postedDays} day{postedDays !== 1 ? "s" : ""} ago
+              {postedDays.toString()}
             </div>
           </div>
 
