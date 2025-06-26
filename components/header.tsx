@@ -15,7 +15,7 @@ export default function Header() {
   const [profilePicture, setProfilePicture] = useState<string>("")
   const pathname = usePathname()
   const menuRef = useRef<HTMLDivElement>(null)
-  
+
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
   }
@@ -91,13 +91,21 @@ export default function Header() {
               </li>
               <li>
                 <Link
+                  href="/pricing"
+                  className={`hover:text-teal-400 transition ${pathname === "/pricing" ? "text-teal-400" : ""}`}
+                >
+                  Pricing
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/contact-us"
                   className={`hover:text-teal-400 transition ${pathname === "/contact-us" ? "text-teal-400" : ""}`}
                 >
                   Contact Us
                 </Link>
               </li>
-               <li>
+              <li>
                 <Link
                   href="/blog"
                   className={`hover:text-teal-400 transition ${pathname === "/blogs" ? "text-teal-400" : ""}`}
@@ -211,6 +219,15 @@ export default function Header() {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   About Us
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/pricing"
+                  className={`hover:text-teal-400 transition ${pathname === "/about-us" ? "text-teal-400" : ""}`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Pricing
                 </Link>
               </li>
               <li>

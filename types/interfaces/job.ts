@@ -41,7 +41,8 @@ export interface Job {
   educationLevel?: string
   featured?: boolean
   status?: JobStatus
-  updatedAt?: string
+  updatedAt?: string | Date
+  createdAt?: string | Date
 }
 
 export interface JobCategory {
