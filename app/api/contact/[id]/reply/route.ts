@@ -4,9 +4,10 @@ import dbConnect from "@/lib/db"
 import { sendAdminReplyEmail } from "@/lib/email"
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  await dbConnect()
 
-  const { id } = params  
+    await dbConnect()
+
+   const { id } = params  
   const contact = await Contact.findById(id)
   if (!contact) {
     return NextResponse.json({ error: "Liên hệ không tồn tại" }, { status: 404 })
