@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import dbConnect from "@/lib/db"
 import { sendContactConfirmationEmail, sendContactEmail } from "@/lib/email"
 import { getServerSession } from "next-auth"
@@ -37,7 +37,12 @@ export async function POST(request: Request) {
     }
 
     await dbConnect()
-    await Contact.create({ fullName: `${firstName} ${lastName}`, email, message })
+    await Contact.create({
+  fullName: `${firstName} ${lastName}`,
+  email,
+  message,
+  replied: false  
+})
 
  try {
   // Gửi email cho admin
@@ -68,4 +73,39 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Lỗi gửi liên hệ:", error)
   }
+}
+
+// Lấy danh sách liên hệ với các bộ lọc và sắp xếp
+export async function GET(req: NextRequest) {
+  await dbConnect()
+
+  const searchParams = req.nextUrl.searchParams
+  const search = searchParams.get("search") || ""
+  const status = searchParams.get("status") // replied | pending
+  const sort = searchParams.get("sort") || "-createdAt"
+
+  const query: any = {}
+
+  if (search) {
+    query.$or = [
+      { fullName: { $regex: search, $options: "i" } },
+      { email: { $regex: search, $options: "i" } },
+      { message: { $regex: search, $options: "i" } }
+    ]
+  }
+
+  if (status === "replied") {
+    query.replied = true
+  }
+
+  if (status === "pending") {
+    query.$or = [
+      ...(query.$or || []),
+      { replied: false },
+      { replied: { $exists: false } }
+    ]
+  }
+
+  const contacts = await Contact.find(query).sort(sort)
+  return NextResponse.json(contacts)
 }

@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>New Contact Message from Job Winner</title>
+    <title>Reply from Job Winner</title>
+
     <style>
       body {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -11,7 +12,7 @@
         padding: 0;
         background-color: #f9fafb;
         color: #374151;
-        line-height: 1.5;
+        line-height: 1.6;
       }
       .container {
         max-width: 600px;
@@ -31,18 +32,21 @@
       .content {
         padding: 30px 20px;
       }
-      .message-box {
-        background-color: #ecfdf5;
-        border-left: 4px solid #10b981;
-        padding: 15px 20px;
+      .highlight {
+        border-left: 4px solid;
+        padding: 12px 16px;
         margin: 20px 0;
-        border-radius: 4px;
+        border-radius: 6px;
       }
-      .info {
-        margin-top: 20px;
-        font-size: 15px;
-        color: #4b5563;
+      .original {
+        background-color: #fef3c7;
+        border-color: #f59e0b;
       }
+      .reply {
+        background-color: #d1fae5;
+        border-color: #10b981;
+      }
+
       .footer {
         text-align: center;
         padding: 20px;
@@ -52,13 +56,7 @@
       }
       h1 {
         color: #10b981;
-        margin-top: 0;
-        text-align: center;
-      }
-      @media only screen and (max-width: 600px) {
-        .container {
-          width: 100%;
-        }
+        margin-bottom: 10px;
       }
     </style>
   </head>
@@ -69,32 +67,40 @@
       </div>
 
       <div class="content">
-        <h1>New Contact Message</h1>
+        <h1>Reply from Job Winner</h1>
+        <p>Hello <strong>{{name}}</strong>,</p>
 
-        <p>Hello Admin,</p>
         <p>
-          You have received a new contact message from a user via the Job Winner platform:
+          Thank you for contacting us. Below is our response to your message:
         </p>
 
-        <div class="info">
-          <p><strong>Name:</strong> {{name}}</p>
-          <p><strong>Email:</strong> {{email}}</p>
-        </div>
-
-        <div class="message-box">
-          <p><strong>Message:</strong></p>
+        <div class="highlight original">
+          <p><strong>Your original message:</strong></p>
           <p>{{message}}</p>
         </div>
 
+        <div class="highlight reply">
+          <p><strong>Our reply:</strong></p>
+          <p>{{replyMessage}}</p>
+        </div>
+
         <p>
-          If you wish to respond, please reply directly to the user's email address above.
+          If you have any further questions, feel free to reply to this email.
+          We’re always here to help.
         </p>
+
+        <p style="margin-top: 30px">Best regards,<br />Job Winner Team</p>
       </div>
 
       <div class="footer">
         <p>&copy; 2025 Job Winner. All rights reserved.</p>
         <p>
-          5th Floor, FutureTech Building, 123 Cach Mang Street, District 3, Ho Chi Minh City, Vietnam
+          5th Floor, FutureTech Building, 123 Cach Mang Street, Dist. 3, HCMC
+        </p>
+        <p>
+          <a href="https://jobwinner.vn/chinh-sach-bao-mat">Privacy Policy</a> |
+          <a href="https://jobwinner.vn/dieu-khoan-su-dung">Terms</a> |
+          <a href="https://jobwinner.vn/huy-dang-ky">Unsubscribe</a>
         </p>
       </div>
     </div>

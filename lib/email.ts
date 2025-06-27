@@ -78,13 +78,14 @@ export async function sendContactEmail(
     message,
   })
 
-  await _send({
-    to: adminEmail,
-    subject: `📬 Liên hệ mới từ ${fullName}`,
-    html,
-    text: `Liên hệ mới từ ${fullName} (${email}):\n\n${message}`,
-    includeLogo: true,
-  })
+ await _send({
+  to: adminEmail,
+  subject: `📬 New contact from ${fullName}`,
+  html,
+  text: `New contact from ${fullName} (${email}):\n\n${message}`,
+  includeLogo: true,
+})
+
 }
 // === Verify Contact FORM ===
 export async function sendContactConfirmationEmail(
@@ -100,14 +101,38 @@ export async function sendContactConfirmationEmail(
     message,
   })
 
-  await _send({
-    to: email,
-    subject: "Chúng tôi đã nhận được liên hệ của bạn",
-    html,
-    text: `Chào ${fullName},\n\nCảm ơn bạn đã liên hệ. Chúng tôi sẽ phản hồi sớm nhất.\n\nNội dung:\n${message}`,
-    includeLogo: true,
-  })
+ await _send({
+  to: email,
+  subject: "We have received your contact request",
+  html,
+  text: `Hello ${fullName},\n\nThank you for reaching out to us. We will get back to you as soon as possible.\n\nYour message:\n${message}`,
+  includeLogo: true,
+})
 }
+
+// === ADMIN REPLY EMAIL ===
+export async function sendAdminReplyEmail(
+  fullName: string,
+  email: string,
+  message: string,
+  replyMessage: string
+) {
+  const html = loadHtmlTemplate("admin-reply", {
+    name: fullName,
+    message,
+    replyMessage,
+  })
+
+await _send({
+  to: email,
+  subject: "Reply from Job Winner",
+  html,
+  text: `Hello ${fullName},\n\nHere is our reply from Job Winner:\n\n${replyMessage}`,
+  includeLogo: true,
+});
+
+}
+
 
 
 // === VERIFY EMAIL===
