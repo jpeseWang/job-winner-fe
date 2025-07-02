@@ -158,7 +158,6 @@ export default function NewJobPage() {
         responsibilities: responsibilities.filter((resp) => resp.trim() !== ""),
         skills: skills.filter((skill) => skill.trim() !== ""),
         salary: transformedSalary,
-        status: "active",
         postedDate: new Date().toISOString(),
         recruiter: session?.user?.id || "",
       }

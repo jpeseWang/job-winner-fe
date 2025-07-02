@@ -53,7 +53,7 @@ export const jobService = {
     }
   },
 
-  async updateJob(id: string, jobData: Partial<Job>): Promise<Job> {
+  async updateJob(id: string, jobData: Partial<Job> & { rejectionReason?: string }): Promise<Job> {
     try {
       const res = await axiosInstance.put(`/jobs/${id}`, jobData)
       return res.data

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -31,6 +31,8 @@ import {
   MessageSquare,
 } from "lucide-react"
 import { jobs, categories } from "@/lib/data"
+import { jobService } from "@/services/jobService"
+import { JobStatus } from "@/types/enums"
 
 export default function AdminJobsTab() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -40,12 +42,19 @@ export default function AdminJobsTab() {
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false)
   const [reviewDecision, setReviewDecision] = useState<"approve" | "reject" | null>(null)
   const [rejectionReason, setRejectionReason] = useState("")
+  const [jobsData, setJobsData] = useState<any[]>([])
 
-  // Add status to jobs for demo purposes
-  const jobsWithStatus = jobs.map((job) => ({
-    ...job,
-    status: Math.random() > 0.3 ? "approved" : Math.random() > 0.5 ? "pending" : "rejected",
-  }))
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const { data } = await jobService.getJobs({ status: undefined, limit: 100 })
+        setJobsData(data)
+      } catch (error) {}
+    }
+    fetchJobs()
+  }, [])
+
+  const jobsWithStatus = jobsData.length > 0 ? jobsData : jobs.map((job) => ({ ...job, status: Math.random() > 0.3 ? "approved" : Math.random() > 0.5 ? "pending" : "rejected" }))
 
   // Filter jobs based on search term, category, and status
   const filteredJobs = jobsWithStatus.filter((job) => {
@@ -95,14 +104,24 @@ export default function AdminJobsTab() {
     setIsReviewDialogOpen(true)
   }
 
-  const submitReview = () => {
-    // In a real app, this would call an API to update the job status
-    console.log(`Job ${selectedJob?.id} ${reviewDecision === "approve" ? "approved" : "rejected"}`)
-    if (reviewDecision === "reject") {
-      console.log(`Rejection reason: ${rejectionReason}`)
+  const submitReview = async () => {
+    if (!selectedJob) return
+    if (reviewDecision === "approve") {
+      await jobService.updateJob(selectedJob.id, { status: JobStatus.ACTIVE })
+      setJobsData(jobsData.map((job) => (job.id === selectedJob.id ? { ...job, status: JobStatus.ACTIVE } : job)))
+    } else if (reviewDecision === "reject") {
+      await jobService.updateJob(selectedJob.id, { status: JobStatus.REJECTED, rejectionReason })
+      setJobsData(jobsData.map((job) => (job.id === selectedJob.id ? { ...job, status: JobStatus.REJECTED, rejectionReason } : job)))
     }
     setIsReviewDialogOpen(false)
   }
+
+  useEffect(() => {
+    if (reviewDecision) {
+      submitReview()
+      setReviewDecision(null)
+    }
+  }, [reviewDecision])
 
   return (
     <div className="space-y-6">
@@ -176,7 +195,7 @@ export default function AdminJobsTab() {
                     <TableCell>{job.company}</TableCell>
                     <TableCell>{job.category}</TableCell>
                     <TableCell>{getStatusBadge(job.status)}</TableCell>
-                    <TableCell>{new Date(job.postedDate).toLocaleDateString()}</TableCell>
+                    <TableCell>{job.postedDate ? new Date(job.postedDate).toLocaleDateString() : (job.createdAt ? new Date(job.createdAt).toLocaleDateString() : "-")}</TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -234,92 +253,26 @@ export default function AdminJobsTab() {
       <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Review Job Posting</DialogTitle>
-            <DialogDescription>Review this job posting to ensure it meets our platform guidelines.</DialogDescription>
+            <DialogTitle>Review Job</DialogTitle>
+            <DialogDescription>
+              Approve or reject this job posting.
+            </DialogDescription>
           </DialogHeader>
-
-          {selectedJob && (
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-sm font-medium mb-1">Job Title</h3>
-                <p className="font-medium">{selectedJob.title}</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-sm font-medium mb-1">Company</h3>
-                  <p>{selectedJob.company}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium mb-1">Location</h3>
-                  <p>{selectedJob.location}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium mb-1">Category</h3>
-                  <p>{selectedJob.category}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium mb-1">Salary</h3>
-                  <p>{selectedJob.salary || "Not specified"}</p>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-sm font-medium mb-1">Description</h3>
-                <div className="bg-gray-50 p-3 rounded-md text-sm max-h-40 overflow-y-auto">
-                  {selectedJob.description}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <h3 className="text-sm font-medium">Review Decision</h3>
-                <div className="flex gap-4">
-                  <Button
-                    variant={reviewDecision === "approve" ? "default" : "outline"}
-                    className={reviewDecision === "approve" ? "bg-green-600 hover:bg-green-700" : ""}
-                    onClick={() => setReviewDecision("approve")}
-                  >
-                    <CheckCircle2 className="mr-2 h-4 w-4" />
-                    Approve
-                  </Button>
-                  <Button
-                    variant={reviewDecision === "reject" ? "default" : "outline"}
-                    className={reviewDecision === "reject" ? "bg-red-600 hover:bg-red-700" : ""}
-                    onClick={() => setReviewDecision("reject")}
-                  >
-                    <XCircle className="mr-2 h-4 w-4" />
-                    Reject
-                  </Button>
-                </div>
-              </div>
-
-              {reviewDecision === "reject" && (
-                <div className="space-y-2">
-                  <label htmlFor="rejection-reason" className="text-sm font-medium">
-                    Rejection Reason
-                  </label>
-                  <Textarea
-                    id="rejection-reason"
-                    placeholder="Explain why this job posting is being rejected..."
-                    value={rejectionReason}
-                    onChange={(e) => setRejectionReason(e.target.value)}
-                    rows={3}
-                  />
-                </div>
-              )}
-            </div>
-          )}
-
+          <div className="space-y-4">
+            <div className="font-semibold">{selectedJob?.title}</div>
+            <div>Status: <span className="capitalize">{selectedJob?.status}</span></div>
+            {reviewDecision === "reject" && (
+              <Textarea
+                placeholder="Enter rejection reason..."
+                value={rejectionReason}
+                onChange={e => setRejectionReason(e.target.value)}
+              />
+            )}
+          </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsReviewDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={submitReview}
-              disabled={!reviewDecision || (reviewDecision === "reject" && !rejectionReason.trim())}
-            >
-              Submit Review
-            </Button>
+            <Button variant="outline" onClick={() => setIsReviewDialogOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={() => { setReviewDecision("reject"); }}>Reject</Button>
+            <Button variant="default" onClick={() => { setReviewDecision("approve"); }}>Approve</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

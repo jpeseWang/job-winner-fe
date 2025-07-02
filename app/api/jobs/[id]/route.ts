@@ -15,8 +15,24 @@ export async function GET(request: Request) {
     const id = getIdFromRequest(request)
     if (!id) return NextResponse.json({ error: "Invalid ID" }, { status: 400 })
 
+    // Lấy session để kiểm tra quyền
+    let session = null
+    try {
+      const { getServerSession } = await import("next-auth/next")
+      const { authOptions } = await import("@/lib/auth")
+      session = await getServerSession(authOptions)
+    } catch {}
+
     const job = await Job.findById(id).lean({ virtuals: true, getters: true });
     if (!job) return NextResponse.json({ error: "Job not found" }, { status: 404 });
+
+    // Nếu không phải recruiter hoặc admin thì chỉ trả về job active
+    const jobAny = job as any;
+    if (!session || (session.user.role !== "recruiter" && session.user.role !== "admin")) {
+      if (jobAny.status !== "active") {
+        return NextResponse.json({ error: "Job not available" }, { status: 403 })
+      }
+    }
     return NextResponse.json(job);
   } catch (error) {
     console.error('Error fetching job:', error)
@@ -33,7 +49,7 @@ export async function PUT(request: Request) {
     const body = await request.json()
     const updatedJob = await Job.findByIdAndUpdate(id, body, { new: true })
 
-    if (!updatedJob) {
+    if (!updatedJob || !updatedJob._id) {
       return NextResponse.json({ error: "Job not found" }, { status: 404 })
     }
 
