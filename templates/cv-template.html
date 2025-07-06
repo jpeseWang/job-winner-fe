@@ -1,0 +1,452 @@
+htmlTemplate: `
+      <div class="cv-template modern-professional">
+        <header>
+          <h1>{{name}}</h1>
+          <p class="subtitle">{{location}}</p>
+          <div class="contact-info">
+            <p>{{email}}</p>
+            <p>{{phone}}</p>
+          </div>
+        </header>
+        <section class="summary">
+          <h2>Professional Summary</h2>
+          <p>{{summary}}</p>
+        </section>
+        <section class="experience">
+          <h2>Experience</h2>
+          {{#each experience}}
+            <div class="job">
+              <div class="job-header">
+                <h3>{{jobTitle}}</h3>
+                <p class="date">{{startDate}} - {{endDate}}</p>
+              </div>
+              <p class="company">{{company}}, {{location}}</p>
+              <p class="description">{{description}}</p>
+            </div>
+          {{/each}}
+        </section>
+        <section class="education">
+          <h2>Education</h2>
+          <div class="education-item">
+            <div class="education-header">
+              <h3>{{degree}}</h3>
+              <p class="date">{{educationStartDate}} - {{educationEndDate}}</p>
+            </div>
+            <p class="institution">{{institution}}, {{educationLocation}}</p>
+          </div>
+        </section>
+        <section class="skills">
+          <h2>Skills</h2>
+          <div class="skills-list">
+            {{#each skills}}
+              <span class="skill">{{this}}</span>
+            {{/each}}
+          </div>
+        </section>
+      </div>
+
+       <style>
+          .cv-template {
+            font-family: 'Inter', sans-serif;
+            color: #333;
+            line-height: 1.5;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+          }
+          
+          .cv-template h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+          }
+          
+          .cv-template h2 {
+            font-size: 18px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+          }
+          
+          .cv-template h3 {
+            font-size: 16px;
+            margin-bottom: 5px;
+          }
+          
+          .cv-template p {
+            margin-bottom: 10px;
+          }
+          
+          .cv-template .job, .cv-template .education-item {
+            margin-bottom: 20px;
+          }
+          
+          .cv-template .job-header, .cv-template .education-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+          }
+          
+          .cv-template .date {
+            color: #666;
+            font-size: 14px;
+          }
+          
+          .cv-template .company, .cv-template .institution {
+            font-weight: 500;
+          }
+          
+          .cv-template .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+          }
+          
+          .cv-template .skill {
+            background-color: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+          }
+          
+          /* Modern Professional Template */
+          .modern-professional header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+          }
+          
+          /* Classic Elegant Template */
+          .classic-elegant {
+            text-align: left;
+          }
+          
+          .classic-elegant header {
+            text-align: center;
+            margin-bottom: 20px;
+          }
+          
+          /* Creative Design Template */
+          .creative-design {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+          }
+          
+          .creative-design .sidebar {
+            background-color: #f5f5f5;
+            padding: 20px;
+          }
+          
+          .creative-design .profile-image {
+            width: 100px;
+            height: 100px;
+            background-color: teal;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+          }
+          
+          .creative-design .initials {
+            color: white;
+            font-size: 36px;
+            font-weight: bold;
+          }
+          
+          .creative-design .date-badge {
+            background-color: teal;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+          }
+          
+          /* Minimal Clean Template */
+          .minimal-clean hr {
+            border: none;
+            border-top: 1px solid #eee;
+            margin: 15px 0;
+          }
+          
+          /* Tech Professional Template */
+          .tech-professional header {
+            display: flex;
+            justify-content: space-between;
+            background-color: #f0f0f0;
+            padding: 20px;
+            margin-bottom: 20px;
+          }
+          
+          /* Executive Resume Template */
+          .executive-resume .job-title {
+            margin-top: 5px;
+          }
+        </style>
+
+        {
+    id: "classic-1",
+    name: "Classic Elegant",
+    category: "traditional",
+    thumbnail: "https://res.cloudinary.com/da0uq57dc/image/upload/v1750566942/Screenshot_2025-06-22_at_11.32.51_dggmqg.png",
+    htmlTemplate: `
+      <div class="cv-template classic-elegant">
+        <header class="text-center">
+          <h1>{{name}}</h1>
+          <div class="contact-info">
+            <p>{{email}} | {{phone}} | {{location}}</p>
+          </div>
+        </header>
+        <section class="summary">
+          <h2>PROFESSIONAL SUMMARY</h2>
+          <p>{{summary}}</p>
+        </section>
+        <section class="experience">
+          <h2>EXPERIENCE</h2>
+          {{#each experience}}
+            <div class="job">
+              <h3>{{jobTitle}}</h3>
+              <p class="company">{{company}}, {{location}}</p>
+              <p class="date"><em>{{startDate}} - {{endDate}}</em></p>
+              <p class="description">{{description}}</p>
+            </div>
+          {{/each}}
+        </section>
+        <section class="education">
+          <h2>EDUCATION</h2>
+          <div class="education-item">
+            <h3>{{degree}}</h3>
+            <p class="institution">{{institution}}, {{educationLocation}}</p>
+            <p class="date"><em>{{educationStartDate}} - {{educationEndDate}}</em></p>
+          </div>
+        </section>
+        <section class="skills">
+          <h2>SKILLS</h2>
+          <p>{{skills}}</p>
+        </section>
+      </div>
+    `,
+    isPremium: false,
+  },
+  {
+    id: "creative-1",
+    name: "Creative Design",
+    category: "creative",
+    thumbnail: "https://res.cloudinary.com/da0uq57dc/image/upload/v1750566942/Screenshot_2025-06-22_at_11.33.10_sr28xb.png",
+    htmlTemplate: `
+      <div class="cv-template creative-design">
+        <div class="sidebar">
+          <div class="profile">
+            <div class="profile-image">
+              <div class="initials">{{initials}}</div>
+            </div>
+            <h1>{{name}}</h1>
+            <p>{{location}}</p>
+          </div>
+          <div class="contact">
+            <h2>CONTACT</h2>
+            <p>{{email}}</p>
+            <p>{{phone}}</p>
+          </div>
+          <div class="skills">
+            <h2>SKILLS</h2>
+            <div class="skills-list">
+              {{#each skills}}
+                <span class="skill">{{this}}</span>
+              {{/each}}
+            </div>
+          </div>
+        </div>
+        <div class="main-content">
+          <section class="about">
+            <h2>ABOUT ME</h2>
+            <p>{{summary}}</p>
+          </section>
+          <section class="experience">
+            <h2>EXPERIENCE</h2>
+            {{#each experience}}
+              <div class="job">
+                <div class="job-header">
+                  <h3>{{jobTitle}}</h3>
+                  <div class="date-badge">{{startDate}} - {{endDate}}</div>
+                </div>
+                <p class="company">{{company}}, {{location}}</p>
+                <p class="description">{{description}}</p>
+              </div>
+            {{/each}}
+          </section>
+          <section class="education">
+            <h2>EDUCATION</h2>
+            <div class="education-item">
+              <div class="education-header">
+                <h3>{{degree}}</h3>
+                <div class="date-badge">{{educationStartDate}} - {{educationEndDate}}</div>
+              </div>
+              <p class="institution">{{institution}}, {{educationLocation}}</p>
+            </div>
+          </section>
+        </div>
+      </div>
+    `,
+    isPremium: true,
+  },
+  {
+    id: "minimal-1",
+    name: "Minimal Clean",
+    category: "minimal",
+    thumbnail: "https://res.cloudinary.com/da0uq57dc/image/upload/v1750566942/Screenshot_2025-06-22_at_11.33.55_hmaygz.png",
+    htmlTemplate: `
+      <div class="cv-template minimal-clean">
+        <header>
+          <h1>{{name}}</h1>
+          <div class="contact-info">
+            <p>{{email}} · {{phone}} · {{location}}</p>
+          </div>
+        </header>
+        <hr />
+        <section class="summary">
+          <p>{{summary}}</p>
+        </section>
+        <hr />
+        <section class="experience">
+          <h2>Experience</h2>
+          {{#each experience}}
+            <div class="job">
+              <div class="job-header">
+                <h3>{{jobTitle}} | {{company}}</h3>
+                <p class="date">{{startDate}} – {{endDate}}</p>
+              </div>
+              <p class="location">{{location}}</p>
+              <p class="description">{{description}}</p>
+            </div>
+          {{/each}}
+        </section>
+        <hr />
+        <section class="education">
+          <h2>Education</h2>
+          <div class="education-item">
+            <div class="education-header">
+              <h3>{{degree}} | {{institution}}</h3>
+              <p class="date">{{educationStartDate}} – {{educationEndDate}}</p>
+            </div>
+            <p class="location">{{educationLocation}}</p>
+          </div>
+        </section>
+        <hr />
+        <section class="skills">
+          <h2>Skills</h2>
+          <p>{{skills}}</p>
+        </section>
+      </div>
+    `,
+    isPremium: false,
+  },
+  {
+    id: "tech-1",
+    name: "Tech Professional",
+    category: "professional",
+    thumbnail: "https://res.cloudinary.com/da0uq57dc/image/upload/v1750566942/Screenshot_2025-06-22_at_11.34.17_bkfi9i.png",
+    htmlTemplate: `
+      <div class="cv-template tech-professional">
+        <header>
+          <div class="header-content">
+            <h1>{{name}}</h1>
+            <p class="subtitle">{{location}}</p>
+          </div>
+          <div class="contact-info">
+            <p>{{email}}</p>
+            <p>{{phone}}</p>
+          </div>
+        </header>
+        <section class="skills">
+          <h2>Technical Skills</h2>
+          <div class="skills-list">
+            {{#each skills}}
+              <span class="skill">{{this}}</span>
+            {{/each}}
+          </div>
+        </section>
+        <section class="summary">
+          <h2>Professional Summary</h2>
+          <p>{{summary}}</p>
+        </section>
+        <section class="experience">
+          <h2>Work Experience</h2>
+          {{#each experience}}
+            <div class="job">
+              <div class="job-header">
+                <h3>{{jobTitle}}</h3>
+                <p class="date">{{startDate}} - {{endDate}}</p>
+              </div>
+              <p class="company">{{company}} | {{location}}</p>
+              <p class="description">{{description}}</p>
+            </div>
+          {{/each}}
+        </section>
+        <section class="education">
+          <h2>Education</h2>
+          <div class="education-item">
+            <div class="education-header">
+              <h3>{{degree}}</h3>
+              <p class="date">{{educationStartDate}} - {{educationEndDate}}</p>
+            </div>
+            <p class="institution">{{institution}} | {{educationLocation}}</p>
+          </div>
+        </section>
+      </div>
+    `,
+    isPremium: true,
+  },
+  {
+    id: "executive-1",
+    name: "Executive Resume",
+    category: "professional",
+    thumbnail: "https://res.cloudinary.com/da0uq57dc/image/upload/v1750566942/Screenshot_2025-06-22_at_11.34.17_bkfi9i.png",
+    htmlTemplate: `
+      <div class="cv-template executive-resume">
+        <header>
+          <h1>{{name}}</h1>
+          <p class="subtitle">{{location}}</p>
+          <div class="contact-info">
+            <p>{{email}} | {{phone}}</p>
+          </div>
+        </header>
+        <section class="summary">
+          <h2>Executive Summary</h2>
+          <p>{{summary}}</p>
+        </section>
+        <section class="experience">
+          <h2>Professional Experience</h2>
+          {{#each experience}}
+            <div class="job">
+              <div class="job-header">
+                <h3>{{company}}</h3>
+                <p class="date">{{startDate}} - {{endDate}}</p>
+              </div>
+              <p class="job-title"><strong>{{jobTitle}}</strong> | {{location}}</p>
+              <p class="description">{{description}}</p>
+            </div>
+          {{/each}}
+        </section>
+        <section class="education">
+          <h2>Education</h2>
+          <div class="education-item">
+            <h3>{{degree}}</h3>
+            <p class="institution">{{institution}}, {{educationLocation}}</p>
+            <p class="date">{{educationStartDate}} - {{educationEndDate}}</p>
+          </div>
+        </section>
+        <section class="skills">
+          <h2>Core Competencies</h2>
+          <div class="skills-list">
+            {{#each skills}}
+              <span class="skill">{{this}}</span>
+            {{/each}}
+          </div>
+        </section>
+      </div>
+    `,
+    isPremium: true,
+  },

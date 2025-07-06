@@ -1,58 +1,31 @@
 import mongoose, { type Document, Schema } from "mongoose"
+import type { ICVTemplate } from "@/types/interfaces"
+import { ETemplateCategory } from "@/types/enums"
 
-export enum TemplateCategory {
-  PROFESSIONAL = "professional",
-  CREATIVE = "creative",
-  SIMPLE = "simple",
-  MODERN = "modern",
-  ACADEMIC = "academic",
-  EXECUTIVE = "executive",
-}
-
-export interface ICVTemplate extends Document {
-  name: string
-  description: string
-  thumbnail: string
-  previewImages: string[]
-  htmlTemplate: string
-  cssStyles: string
-  category: TemplateCategory
-  tags: string[]
-  creator: mongoose.Types.ObjectId
-  isPremium: boolean
-  price?: number
-  isActive: boolean
-  usageCount: number
-  rating: {
-    average: number
-    count: number
-  }
+interface CVTemplate extends Document, Omit<ICVTemplate, "id" | "creator"> {
   createdAt: Date
   updatedAt: Date
+  creator: mongoose.Types.ObjectId
 }
 
-const CVTemplateSchema = new Schema<ICVTemplate>(
+const CVTemplateSchema = new Schema<CVTemplate>(
   {
     name: {
       type: String,
       required: [true, "Please provide a template name"],
       trim: true,
-      maxlength: [100, "Template name cannot be more than 100 characters"],
+      maxLength: [100, "Template name cannot be more than 100 characters"],
     },
     description: {
       type: String,
       required: [true, "Please provide a template description"],
       trim: true,
     },
-    thumbnail: {
+    previewImage:
+    {
       type: String,
-      required: [true, "Please provide a thumbnail image"],
-    },
-    previewImages: [
-      {
-        type: String,
-      },
-    ],
+    }
+    ,
     htmlTemplate: {
       type: String,
       required: [true, "Please provide HTML template"],
@@ -63,7 +36,7 @@ const CVTemplateSchema = new Schema<ICVTemplate>(
     },
     category: {
       type: String,
-      enum: Object.values(TemplateCategory),
+      enum: Object.values(ETemplateCategory),
       required: [true, "Please specify template category"],
     },
     tags: [
@@ -114,4 +87,6 @@ CVTemplateSchema.index({
   category: "text",
 })
 
-export default mongoose.models.CVTemplate || mongoose.model<ICVTemplate>("CVTemplate", CVTemplateSchema)
+export default (mongoose.models && mongoose.models.CVTemplate)
+  ? mongoose.models.CVTemplate
+  : mongoose.model<CVTemplate>("CVTemplate", CVTemplateSchema)

@@ -6,7 +6,7 @@ import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { usePathname } from "next/navigation"
-import { useSession, signIn, signOut } from "next-auth/react"
+import { useSession, signOut } from "next-auth/react"
 import { UserRole } from "@/types/enums"
 
 export default function Header() {
@@ -23,7 +23,7 @@ export default function Header() {
   // Fetch profile picture when session changes
   useEffect(() => {
     const fetchProfilePicture = async () => {
-      if (session?.user?.id) {
+      if (session?.user?.id && session?.user?.role === UserRole.RECRUITER) {
         try {
           const response = await fetch("/api/profiles/recruiter")
           if (response.ok) {
@@ -158,7 +158,7 @@ export default function Header() {
                   }
                   className="block px-4 py-2 hover:bg-gray-100"
                 >
-                  Dashboard
+                  {session?.user?.role === UserRole.ADMIN ? "Admin Page" : "Dashboard"}
                 </Link>
                 <button
                   onClick={() =>

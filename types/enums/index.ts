@@ -40,7 +40,7 @@ export enum SortOrder {
   DESC = "desc",
 }
 
-export enum JobCategory{
+export enum JobCategory {
   TECHNOLOGY = "Technology",
   TELECOMMUNICATIONS = "Telecommunications",
   HEALTH = "Health Medical",
@@ -72,4 +72,13 @@ export enum SubscriptionTier {
   BASIC = "basic",
   PREMIUM = "premium",
   ENTERPRISE = "enterprise",
+}
+
+export enum ETemplateCategory {
+  PROFESSIONAL = "professional",
+  CREATIVE = "creative",
+  SIMPLE = "simple",
+  MODERN = "modern",
+  ACADEMIC = "academic",
+  EXECUTIVE = "executive",
 }
