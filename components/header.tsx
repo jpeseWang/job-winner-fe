@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { Menu, X } from "lucide-react"
+import { Menu, X, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { usePathname } from "next/navigation"
@@ -136,6 +136,18 @@ export default function Header() {
                 className={`absolute right-0 top-12 bg-white text-black rounded shadow-md py-2 w-40 z-50 transform transition-all duration-200 ${isMenuOpen ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
                   }`}
               >
+                <div className="flex-shrink-0 flex items-center px-4 py-2">
+                  <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded inline-flex items-center">
+                    <User className="h-3 w-3 mr-1" />
+                    {
+                      session?.user?.role === UserRole.JOB_SEEKER
+                        ? "Job Seeker"
+                        : session?.user?.role === UserRole.RECRUITER
+                          ? "Recruiter"
+                          : "Admin"
+                    }
+                  </span>
+                </div>
                 <Link
                   href={
                     session?.user?.role === UserRole.JOB_SEEKER
@@ -151,7 +163,7 @@ export default function Header() {
                 <Link
                   href={
                     session?.user?.role === UserRole.JOB_SEEKER
-                      ? "/dashboard/job-seeker/proposals"
+                      ? "/dashboard/job-seeker"
                       : session?.user?.role === UserRole.RECRUITER
                         ? "/dashboard/recruiter"
                         : "/dashboard/admin"
