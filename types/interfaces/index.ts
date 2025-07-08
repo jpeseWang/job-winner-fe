@@ -71,7 +71,7 @@ export interface JobApplication {
 
 // CV interfaces
 export interface ICVTemplate {
-  id: string
+  _id: string
   name: string
   description: string
   previewImage: string
