@@ -6,7 +6,7 @@ import JobFilters from "@/components/job-filters"
 import type { JobFilters as JobFiltersType } from "@/types/interfaces/job"
 import CompanyCard from "@/components/company-card"
 import { Button } from "@/components/ui/button"
-import { useJobs } from "@/hooks/useJobs"
+import { useJobs } from "@/hooks/use-jobs"
 import { Loader2 } from "lucide-react"
 import type { Job } from "@/types/interfaces"
 import { formatSalary } from "@/utils/formatters";

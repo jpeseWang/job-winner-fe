@@ -14,7 +14,7 @@ import { ChevronLeft, ChevronRight, Plus, Trash2, Download, Share, FileText, Wan
 import CVTemplateLibrary from "@/components/cv/cv-template-library"
 import CVPreview from "@/components/cv/cv-preview"
 import { generateCV, generateFieldContent } from "@/services/cvService"
-import type { CVTemplate } from "@/types/interfaces"
+import type { ICVTemplate } from "@/types/interfaces"
 import toast from "react-hot-toast"
 // @ts-ignore
 import html2pdf from 'html2pdf.js';
@@ -42,7 +42,7 @@ export default function GenerateCVPage() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedCV, setGeneratedCV] = useState<any>(null)
   const [aiPrompt, setAiPrompt] = useState("")
-  const [selectedTemplate, setSelectedTemplate] = useState<CVTemplate | null>(null)
+  const [selectedTemplate, setSelectedTemplate] = useState<ICVTemplate | null>(null)
   const [isGeneratingField, setIsGeneratingField] = useState<string | null>(null)
   const cvRef = useRef<HTMLDivElement>(null);
   const [sections, setSections] = useState<FormSection[]>([
@@ -229,7 +229,7 @@ export default function GenerateCVPage() {
     }
   }
 
-  const handleSelectTemplate = (template: CVTemplate) => {
+  const handleSelectTemplate = (template: ICVTemplate) => {
     setSelectedTemplate(template)
     toast.success(`You've selected the ${template.name} template.`
     )
@@ -255,7 +255,7 @@ export default function GenerateCVPage() {
       // Call the CV generation service
       const result = await generateCV({
         data: formData,
-        templateId: selectedTemplate.id,
+        templateId: selectedTemplate._id,
       })
 
       setGeneratedCV(result)
@@ -286,7 +286,7 @@ export default function GenerateCVPage() {
       const result = await generateCV(
         {
           prompt: aiPrompt,
-          templateId: selectedTemplate.id,
+          templateId: selectedTemplate._id,
         },
         true,
       )
@@ -368,6 +368,8 @@ export default function GenerateCVPage() {
     toast.success("Your CV sharing link has been copied to clipboard."
     )
   }
+  console.log("selectedTemplate", selectedTemplate)
+
 
   return (
     <main className="min-h-screen bg-gray-50 py-8">
@@ -402,7 +404,7 @@ export default function GenerateCVPage() {
           </TabsList>
 
           <TabsContent value="cv-template" className="space-y-6">
-            <CVTemplateLibrary onSelectTemplate={handleSelectTemplate} selectedTemplateId={selectedTemplate?.id} />
+            <CVTemplateLibrary onSelectTemplate={handleSelectTemplate} selectedTemplateId={selectedTemplate?._id} />
           </TabsContent>
 
           <TabsContent value="cv-editor" className="space-y-6">
