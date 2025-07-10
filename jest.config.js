@@ -15,6 +15,6 @@ module.exports = {
     "^@/(.*)$": "<rootDir>/$1",
   },
   transform: {
-    "^.+\\.(ts|tsx)$": "babel-jest",
-  },
+    '^.+\\.(ts|tsx)$': 'ts-jest'
+  }
 };
