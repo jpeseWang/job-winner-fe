@@ -14,15 +14,15 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20   # ✅ Use Node 20+
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: npm ci          # ✅ Use `npm ci` for clean install (faster + reproducible)
 
-      - name: Build TypeScript (optional, if you use TS)
-        run: yarn tsc --noEmit
+      - name: Build TypeScript (optional)
+        run: npx tsc --noEmit
 
       - name: Run Danger
-        run: yarn danger ci --dangerfile dangerfile.ts
+        run: npx danger ci --dangerfile dangerfile.ts
         env:
           DANGER_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
