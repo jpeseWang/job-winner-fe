@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -23,7 +23,7 @@ import {
   Eye,
   Edit,
   Trash2,
-  CheckCircle2,
+  CheckCircle,
   XCircle,
   AlertTriangle,
   Star,
@@ -33,8 +33,10 @@ import {
 import { jobs, categories } from "@/lib/data"
 import { jobService } from "@/services/jobService"
 import { JobStatus } from "@/types/enums"
+import { useToast } from "@/hooks/use-toast"
 
 export default function AdminJobsTab() {
+  const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -47,9 +49,12 @@ export default function AdminJobsTab() {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const { data } = await jobService.getJobs({ status: undefined, limit: 100 })
+        const { data } = await jobService.getJobs({ limit: 100 })
         setJobsData(data)
-      } catch (error) {}
+      } catch (error) {
+        console.error("Error fetching jobs:", error)
+        // Không show toast ở đây để tránh dependency issues
+      }
     }
     fetchJobs()
   }, [])
@@ -64,7 +69,9 @@ export default function AdminJobsTab() {
       job.location.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesCategory = categoryFilter === "all" || job.category === categoryFilter
-    const matchesStatus = statusFilter === "all" || job.status === statusFilter
+    const matchesStatus = statusFilter === "all" || 
+      (statusFilter === "approved" && (job.status === "approved" || job.status === "active")) ||
+      job.status === statusFilter
 
     return matchesSearch && matchesCategory && matchesStatus
   })
@@ -72,9 +79,10 @@ export default function AdminJobsTab() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "approved":
+      case "active":
         return (
           <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 flex items-center">
-            <CheckCircle2 className="h-3 w-3 mr-1" />
+            <CheckCircle className="h-3 w-3 mr-1" />
             Approved
           </Badge>
         )
@@ -104,24 +112,45 @@ export default function AdminJobsTab() {
     setIsReviewDialogOpen(true)
   }
 
-  const submitReview = async () => {
+  const submitReview = useCallback(async () => {
     if (!selectedJob) return
-    if (reviewDecision === "approve") {
-      await jobService.updateJob(selectedJob.id, { status: JobStatus.ACTIVE })
-      setJobsData(jobsData.map((job) => (job.id === selectedJob.id ? { ...job, status: JobStatus.ACTIVE } : job)))
-    } else if (reviewDecision === "reject") {
-      await jobService.updateJob(selectedJob.id, { status: JobStatus.REJECTED, rejectionReason })
-      setJobsData(jobsData.map((job) => (job.id === selectedJob.id ? { ...job, status: JobStatus.REJECTED, rejectionReason } : job)))
+    
+    try {
+      if (reviewDecision === "approve") {
+        await jobService.updateJob(selectedJob.id, { status: JobStatus.APPROVED })
+        setJobsData(prev => prev.map((job) => (job.id === selectedJob.id ? { ...job, status: JobStatus.APPROVED } : job)))
+        toast({
+          title: "Success",
+          description: "Job approved successfully!",
+        })
+      } else if (reviewDecision === "reject") {
+        await jobService.updateJob(selectedJob.id, { status: JobStatus.REJECTED, rejectionReason })
+        setJobsData(prev => prev.map((job) => (job.id === selectedJob.id ? { ...job, status: JobStatus.REJECTED, rejectionReason } : job)))
+        toast({
+          title: "Success",
+          description: "Job rejected successfully!",
+        })
+      }
+      setIsReviewDialogOpen(false)
+      setSelectedJob(null)
+      setReviewDecision(null)
+      setRejectionReason("")
+    } catch (error) {
+      console.error("Error updating job status:", error)
+      toast({
+        title: "Error",
+        description: "Failed to update job status. Please try again.",
+        variant: "destructive",
+      })
+      // Không đóng dialog khi lỗi, cho phép thử lại
     }
-    setIsReviewDialogOpen(false)
-  }
+  }, [selectedJob, reviewDecision, rejectionReason, toast])
 
   useEffect(() => {
     if (reviewDecision) {
       submitReview()
-      setReviewDecision(null)
     }
-  }, [reviewDecision])
+  }, [reviewDecision, submitReview])
 
   return (
     <div className="space-y-6">
