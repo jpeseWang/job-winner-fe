@@ -9,14 +9,16 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Loader2, Plus, Trash2, Building2, AlertCircle } from "lucide-react"
+import { Loader2, Plus, Trash2, Building2, AlertCircle, Lock, Crown } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { JobLocation, JobCategory, JobType, ExperienceLevel } from "@/types/enums"
 import { useCompanyById } from "@/hooks/use-company"
+import { useSubscription } from "@/hooks/useSubscription"
 import toast from "react-hot-toast"
 
 export default function NewJobPage() {
@@ -24,6 +26,7 @@ export default function NewJobPage() {
   const { data: session } = useSession()
   // const { toast } = useToast()
   const { company, isLoading: companyLoading, isError: companyError, hasCompany } = useCompanyById(session?.user?.id || "")
+  const { subscription, isLoading: subscriptionLoading } = useSubscription()
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [requirements, setRequirements] = useState<string[]>([""])
@@ -135,6 +138,13 @@ export default function NewJobPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Check if user can post job
+    if (!subscription?.canPostJob) {
+      router.push("/dashboard/recruiter/unlock")
+      return
+    }
+    
     setIsSubmitting(true)
 
     try {
@@ -190,8 +200,7 @@ export default function NewJobPage() {
         throw new Error(errorMessage)
       }
 
-      toast.success("Job posted successfully!"
-      )
+      toast.success("Job posted successfully!")
       router.push("/dashboard/recruiter?tab=jobs")
     } catch (error) {
       console.error("Error posting job:", error)
@@ -200,6 +209,8 @@ export default function NewJobPage() {
       setIsSubmitting(false)
     }
   }
+
+
   console.log("formData:", formData)
   // Show loading state while fetching company
   if (companyLoading) {
@@ -243,16 +254,73 @@ export default function NewJobPage() {
     )
   }
 
+  // Show subscription warning if user can't post job
+  if (!subscriptionLoading && !subscription?.canPostJob) {
+    return (
+      <main className="max-w-4xl mx-auto py-8 px-4">
+        <div className="flex items-center gap-3 mb-6">
+          <Lock className="h-8 w-8 text-orange-600" />
+          <div>
+            <h1 className="text-2xl font-bold">Post a New Job</h1>
+            <p className="text-gray-600">Upgrade your plan to create more job postings</p>
+          </div>
+        </div>
+        
+        <Card className="border-orange-200 bg-orange-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Crown className="h-5 w-5 text-orange-600" />
+              Subscription Required
+            </CardTitle>
+            <CardDescription>
+              You've reached your job posting limit. Upgrade your plan to continue posting jobs.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-white rounded-lg">
+                <div>
+                  <p className="font-medium">Current Plan: {subscription?.planName}</p>
+                  <p className="text-sm text-gray-600">
+                    {subscription?.jobPostingsUsed} / {subscription?.jobPostingsLimit === -1 ? "Unlimited" : subscription?.jobPostingsLimit} jobs posted
+                  </p>
+                </div>
+                <Button onClick={() => router.push("/dashboard/recruiter/unlock")}>
+                  Upgrade Plan
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </main>
+    )
+  }
+
   return (
     <main className="max-w-4xl mx-auto py-8 px-4">
-      <div className="flex items-center gap-3 mb-6">
-        <Building2 className="h-8 w-8 text-blue-600" />
-        <div>
-          <h1 className="text-2xl font-bold">Post a New Job</h1>
-          <p className="text-sm text-muted-foreground">
-            Posting as <span className="font-medium">{company?.name}</span>
-          </p>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <Building2 className="h-8 w-8 text-blue-600" />
+          <div>
+            <h1 className="text-2xl font-bold">Post a New Job</h1>
+            <p className="text-sm text-muted-foreground">
+              Posting as <span className="font-medium">{company?.name}</span>
+            </p>
+          </div>
         </div>
+        
+        {/* Subscription Status */}
+        {subscription && (
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-gray-600">Plan:</span>
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+              {subscription.planName}
+            </Badge>
+            <span className="text-gray-600">
+              ({subscription.jobPostingsUsed} / {subscription.jobPostingsLimit === -1 ? "∞" : subscription.jobPostingsLimit})
+            </span>
+          </div>
+        )}
       </div>
 
       <form onSubmit={handleSubmit}>
