@@ -16,7 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Loader2, Plus, Trash2, Building2, AlertCircle } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { JobLocation, JobCategory, JobType, ExperienceLevel } from "@/types/enums"
-import { useCompanyById } from "@/hooks/useCompany"
+import { useCompanyById } from "@/hooks/use-company"
 import toast from "react-hot-toast"
 
 export default function NewJobPage() {

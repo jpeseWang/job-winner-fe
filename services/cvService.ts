@@ -83,3 +83,17 @@ export const getTemplates = async (): Promise<any[]> => {
     throw new Error("Failed to fetch templates")
   }
 }
+
+export const generateCVWithAI = async (prompt: string, templateId: string, recommendations?: string): Promise<any> => {
+  try {
+    const response = await axiosInstance.post("/cv/generate-ai", {
+      prompt,
+      templateId,
+      recommendations,
+    })
+    return response.data
+  } catch (error) {
+    console.error("Error generating CV with AI:", error)
+    throw new Error("Failed to generate CV with AI")
+  }
+}

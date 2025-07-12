@@ -20,96 +20,148 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { Search, MoreVertical, Eye, Edit, Trash2, Plus, Upload, FileCode, Download, Copy } from "lucide-react"
+import { Search, MoreVertical, Eye, Edit, Trash2, Plus, Download, Copy, Power, PowerOff, BarChart3 } from "lucide-react"
 import Image from "next/image"
-import type { CVTemplate } from "@/types/interfaces"
-// import { placeholders } from "@/utils/placeholders" 
-// Importing placeholders
+import { useTemplates, useTemplateAnalytics } from "@/hooks/use-templates"
+import { ImageUpload } from "@/components/ui/image-upload"
+import { AvatarUpload } from "@/components/ui/avatar-upload"
+import type { ICVTemplate } from "@/types/interfaces"
+import { ETemplateCategory } from "@/types/enums"
 
 export default function AdminTemplatesTab() {
   const [searchTerm, setSearchTerm] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
+  const [typeFilter, setTypeFilter] = useState("all")
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false)
-  const [selectedTemplate, setSelectedTemplate] = useState<CVTemplate | null>(null)
+  const [isAnalyticsDialogOpen, setIsAnalyticsDialogOpen] = useState(false)
+  const [selectedTemplate, setSelectedTemplate] = useState<ICVTemplate | null>(null)
 
-  // Mock templates data
-  const templates: CVTemplate[] = [
-    {
-      id: "modern-1",
-      name: "Modern Professional",
-      category: "professional",
-      thumbnail: "/placeholder.svg?height=200&width=150",
-      htmlTemplate: "<div>Template HTML content</div>",
-      isPremium: false,
-    },
-    {
-      id: "classic-1",
-      name: "Classic Elegant",
-      category: "traditional",
-      thumbnail: "/placeholder.svg?height=200&width=150",
-      htmlTemplate: "<div>Template HTML content</div>",
-      isPremium: false,
-    },
-    {
-      id: "creative-1",
-      name: "Creative Design",
-      category: "creative",
-      thumbnail: "/placeholder.svg?height=200&width=150",
-      htmlTemplate: "<div>Template HTML content</div>",
-      isPremium: true,
-    },
-    {
-      id: "minimal-1",
-      name: "Minimal Clean",
-      category: "minimal",
-      thumbnail: "/placeholder.svg?height=200&width=150",
-      htmlTemplate: "<div>Template HTML content</div>",
-      isPremium: false,
-    },
-    {
-      id: "tech-1",
-      name: "Tech Professional",
-      category: "professional",
-      thumbnail: "/placeholder.svg?height=200&width=150",
-      htmlTemplate: "<div>Template HTML content</div>",
-      isPremium: true,
-    },
-    {
-      id: "executive-1",
-      name: "Executive Resume",
-      category: "professional",
-      thumbnail: "/placeholder.svg?height=200&width=150",
-      htmlTemplate: "<div>Template HTML content</div>",
-      isPremium: true,
-    },
-  ]
-
-  // Filter templates based on search term and category
-  const filteredTemplates = templates.filter((template) => {
-    const matchesSearch = template.name.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = categoryFilter === "all" || template.category === categoryFilter
-
-    return matchesSearch && matchesCategory
+  // Form states
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    previewImage: "",
+    htmlTemplate: "",
+    cssStyles: "",
+    category: "",
+    tags: [] as string[],
+    isPremium: false,
+    price: 0,
   })
 
-  const categories = ["professional", "traditional", "creative", "minimal"]
+  const {
+    templates,
+    pagination,
+    loading,
+    createTemplate,
+    updateTemplate,
+    deleteTemplate,
+    toggleTemplateStatus,
+    duplicateTemplate,
+    updateFilters,
+  } = useTemplates({
+    search: searchTerm,
+    category: categoryFilter === "all" ? undefined : categoryFilter,
+    isPremium: typeFilter === "all" ? undefined : typeFilter === "premium",
+  })
 
-  const handleEditTemplate = (template: CVTemplate) => {
+  const { analytics } = useTemplateAnalytics()
+
+  const categories = Object.values(ETemplateCategory)
+
+  const handleSearch = (value: string) => {
+    setSearchTerm(value)
+    updateFilters({ search: value, page: 1 })
+  }
+
+  const handleCategoryFilter = (value: string) => {
+    setCategoryFilter(value)
+    updateFilters({
+      category: value === "all" ? undefined : value,
+      page: 1,
+    })
+  }
+
+  const handleTypeFilter = (value: string) => {
+    setTypeFilter(value)
+    updateFilters({
+      isPremium: value === "all" ? undefined : value === "premium",
+      page: 1,
+    })
+  }
+
+  const handleCreateTemplate = async () => {
+    try {
+      await createTemplate(formData)
+      setIsCreateDialogOpen(false)
+      resetForm()
+    } catch (error) {
+      console.error("Error creating template:", error)
+    }
+  }
+
+  const handleEditTemplate = (template: ICVTemplate) => {
     setSelectedTemplate(template)
+    setFormData({
+      name: template.name,
+      description: template.description,
+      previewImage: template.previewImage,
+      htmlTemplate: template.htmlTemplate,
+      cssStyles: template.cssStyles,
+      category: template.category,
+      tags: template.tags || [],
+      isPremium: template.isPremium,
+      price: template.price || 0,
+    })
     setIsEditDialogOpen(true)
   }
 
-  const handlePreviewTemplate = (template: CVTemplate) => {
+  const handleUpdateTemplate = async () => {
+    if (!selectedTemplate) return
+
+    try {
+      await updateTemplate(selectedTemplate.id, formData)
+      setIsEditDialogOpen(false)
+      resetForm()
+    } catch (error) {
+      console.error("Error updating template:", error)
+    }
+  }
+
+  const handlePreviewTemplate = (template: ICVTemplate) => {
     setSelectedTemplate(template)
     setIsPreviewDialogOpen(true)
   }
 
-  const handleDeleteTemplate = (templateId: string) => {
-    // In a real app, this would call an API to delete the template
-    console.log(`Delete template with ID: ${templateId}`)
+  const handleDeleteTemplate = async (templateId: string) => {
+    if (confirm("Are you sure you want to delete this template?")) {
+      await deleteTemplate(templateId)
+    }
+  }
+
+  const handleToggleStatus = async (templateId: string) => {
+    await toggleTemplateStatus(templateId)
+  }
+
+  const handleDuplicate = async (templateId: string) => {
+    await duplicateTemplate(templateId)
+  }
+
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      description: "",
+      previewImage: "",
+      htmlTemplate: "",
+      cssStyles: "",
+      category: "",
+      tags: [],
+      isPremium: false,
+      price: 0,
+    })
+    setSelectedTemplate(null)
   }
 
   return (
@@ -121,11 +173,11 @@ export default function AdminTemplatesTab() {
             placeholder="Search templates..."
             className="pl-8"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
           />
         </div>
 
-        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+        <Select value={categoryFilter} onValueChange={handleCategoryFilter}>
           <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue placeholder="Filter by category" />
           </SelectTrigger>
@@ -139,6 +191,22 @@ export default function AdminTemplatesTab() {
           </SelectContent>
         </Select>
 
+        <Select value={typeFilter} onValueChange={handleTypeFilter}>
+          <SelectTrigger className="w-full sm:w-[200px]">
+            <SelectValue placeholder="Filter by type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="premium">Premium</SelectItem>
+            <SelectItem value="free">Free</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Button onClick={() => setIsAnalyticsDialogOpen(true)} variant="outline">
+          <BarChart3 className="h-4 w-4 mr-2" />
+          Analytics
+        </Button>
+
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button className="flex items-center gap-2">
@@ -146,51 +214,37 @@ export default function AdminTemplatesTab() {
               <span>Create Template</span>
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-4xl">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New CV Template</DialogTitle>
-              <DialogDescription>
-                Create a new CV template by providing HTML and CSS. Use placeholders for dynamic content.
-              </DialogDescription>
+              <DialogDescription>Create a new CV template with HTML, CSS, and configuration.</DialogDescription>
             </DialogHeader>
 
-            <Tabs defaultValue="editor" className="w-full">
-              <TabsList className="grid grid-cols-3 mb-4">
-                <TabsTrigger value="editor">Template Editor</TabsTrigger>
+            <Tabs defaultValue="basic" className="w-full">
+              <TabsList className="grid grid-cols-4 mb-4">
+                <TabsTrigger value="basic">Basic Info</TabsTrigger>
+                <TabsTrigger value="design">Design</TabsTrigger>
                 <TabsTrigger value="preview">Preview</TabsTrigger>
                 <TabsTrigger value="settings">Settings</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="editor" className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="template-html">HTML Template</Label>
-                  <Textarea
-                    id="template-html"
-                    placeholder="Enter HTML template with {placeholders}"
-                    className="font-mono h-[400px]"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="template-css">CSS Styles</Label>
-                  <Textarea id="template-css" placeholder="Enter CSS styles" className="font-mono h-[200px]" />
-                </div>
-              </TabsContent>
-
-              <TabsContent value="preview" className="h-[650px] border rounded-md p-4 overflow-auto">
-                <div className="bg-white p-6 shadow-md">
-                  <p className="text-center text-gray-500">Preview will appear here</p>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="settings" className="space-y-4">
+              <TabsContent value="basic" className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="template-name">Template Name</Label>
-                    <Input id="template-name" placeholder="e.g., Modern Professional" />
+                    <Input
+                      id="template-name"
+                      placeholder="e.g., Modern Professional"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="template-category">Category</Label>
-                    <Select>
+                    <Select
+                      value={formData.category}
+                      onValueChange={(value) => setFormData({ ...formData, category: value })}
+                    >
                       <SelectTrigger id="template-category">
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
@@ -207,29 +261,124 @@ export default function AdminTemplatesTab() {
 
                 <div className="space-y-2">
                   <Label htmlFor="template-description">Description</Label>
-                  <Textarea id="template-description" placeholder="Brief description of the template" />
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Switch id="premium-template" />
-                  <Label htmlFor="premium-template">Premium Template</Label>
+                  <Textarea
+                    id="template-description"
+                    placeholder="Brief description of the template"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  />
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Template Thumbnail</Label>
-                  <div className="border-2 border-dashed rounded-md p-6 flex flex-col items-center justify-center">
-                    <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                    <p className="text-sm text-gray-500">Drag and drop an image, or click to browse</p>
-                    <Input type="file" className="hidden" id="thumbnail-upload" accept="image/*" />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-2"
-                      onClick={() => document.getElementById("thumbnail-upload")?.click()}
-                    >
-                      Upload Thumbnail
-                    </Button>
+                  <Label>Preview Image</Label>
+                  <ImageUpload
+                    value={formData.previewImage ? {
+                      id: "1",
+                      url: formData.previewImage,
+                      publicId: "previewImage",
+                      name: "previewImage.png",
+                      size: 0
+                    } : undefined}
+                    onChange={(url) =>
+                      setFormData({
+                        ...formData,
+                        previewImage:
+                          typeof url === "string"
+                            ? url
+                            : url && typeof url === "object" && "url" in url
+                              ? url.url
+                              : "",
+                      })
+                    }
+                    multiple={false}
+                    maxFiles={1}
+                    folder="template-previews"
+                    placeholder="Upload preview image"
+                  />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="design" className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="template-html">HTML Template</Label>
+                  <Textarea
+                    id="template-html"
+                    placeholder="Enter HTML template with placeholders"
+                    className="font-mono h-[300px]"
+                    value={formData.htmlTemplate}
+                    onChange={(e) => setFormData({ ...formData, htmlTemplate: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="template-css">CSS Styles</Label>
+                  <Textarea
+                    id="template-css"
+                    placeholder="Enter CSS styles"
+                    className="font-mono h-[200px]"
+                    value={formData.cssStyles}
+                    onChange={(e) => setFormData({ ...formData, cssStyles: e.target.value })}
+                  />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="preview" className="h-[500px] border rounded-md p-4 overflow-auto">
+                <div className="bg-white p-6 shadow-md">
+
+
+                  <div className="bg-white p-6 shadow-md">
+                    {formData.htmlTemplate ? (
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: `<style>${formData.cssStyles}</style>${formData.htmlTemplate}`,
+                        }}
+                      />
+                    ) : (
+                      <p className="text-center text-gray-500">Preview will appear here</p>
+                    )}
                   </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="settings" className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="premium-template"
+                    checked={formData.isPremium}
+                    onCheckedChange={(checked) => setFormData({ ...formData, isPremium: checked })}
+                  />
+                  <Label htmlFor="premium-template">Premium Template</Label>
+                </div>
+
+                {formData.isPremium && (
+                  <div className="space-y-2">
+                    <Label htmlFor="template-price">Price ($)</Label>
+                    <Input
+                      id="template-price"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={formData.price}
+                      onChange={(e) => setFormData({ ...formData, price: Number.parseFloat(e.target.value) || 0 })}
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="template-tags">Tags (comma separated)</Label>
+                  <Input
+                    id="template-tags"
+                    placeholder="modern, professional, clean"
+                    value={formData.tags.join(", ")}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        tags: e.target.value
+                          .split(",")
+                          .map((tag) => tag.trim())
+                          .filter(Boolean),
+                      })
+                    }
+                  />
                 </div>
               </TabsContent>
             </Tabs>
@@ -238,89 +387,37 @@ export default function AdminTemplatesTab() {
               <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button>Save Template</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline" className="flex items-center gap-2">
-              <Upload className="h-4 w-4" />
-              <span>Upload Template</span>
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Upload CV Template</DialogTitle>
-              <DialogDescription>
-                Upload an HTML template file with CSS. Make sure to use placeholders for dynamic content.
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-4">
-              <div className="border-2 border-dashed rounded-md p-6 flex flex-col items-center justify-center">
-                <FileCode className="h-8 w-8 text-gray-400 mb-2" />
-                <p className="text-sm text-gray-500">Drag and drop template files, or click to browse</p>
-                <Input type="file" className="hidden" id="template-file-upload" accept=".html,.css,.zip" />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-2"
-                  onClick={() => document.getElementById("template-file-upload")?.click()}
-                >
-                  Upload Files
-                </Button>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="upload-template-name">Template Name</Label>
-                <Input id="upload-template-name" placeholder="e.g., Modern Professional" />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="upload-template-category">Category</Label>
-                <Select>
-                  <SelectTrigger id="upload-template-category">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category.charAt(0).toUpperCase() + category.slice(1)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Switch id="upload-premium-template" />
-                <Label htmlFor="upload-premium-template">Premium Template</Label>
-              </div>
-            </div>
-
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsUploadDialogOpen(false)}>
-                Cancel
+              <Button onClick={handleCreateTemplate} disabled={loading}>
+                {loading ? "Creating..." : "Create Template"}
               </Button>
-              <Button>Upload Template</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
+      {/* Templates Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredTemplates.map((template) => (
+        {templates.map((template) => (
           <Card key={template.id} className="overflow-hidden">
             <div className="relative h-48 bg-gray-100">
-              <Image src={template.thumbnail || "/placeholder.svg"} alt={template.name} fill className="object-cover" />
-              {template.isPremium && <Badge className="absolute top-2 right-2 bg-amber-500">Premium</Badge>}
+              <Image
+                src={template.previewImage || "/placeholder.svg?height=200&width=150"}
+                alt={template.name}
+                fill
+                className="object-cover"
+              />
+              <div className="absolute top-2 right-2 flex gap-1">
+                {template.isPremium && <Badge className="bg-amber-500">Premium</Badge>}
+                <Badge variant={template.isActive ? "default" : "secondary"}>
+                  {template.isActive ? "Active" : "Inactive"}
+                </Badge>
+              </div>
             </div>
             <CardHeader className="pb-2">
               <CardTitle className="text-lg">{template.name}</CardTitle>
               <CardDescription>
-                Category: {template.category.charAt(0).toUpperCase() + template.category.slice(1)}
+                {template.category.charAt(0).toUpperCase() + template.category.slice(1)} •{template.usageCount} uses •
+                ⭐ {template.rating?.average?.toFixed(1) || "0.0"}
               </CardDescription>
             </CardHeader>
             <CardFooter className="flex justify-between pt-2">
@@ -339,17 +436,30 @@ export default function AdminTemplatesTab() {
                     <Edit className="h-4 w-4 mr-2" />
                     Edit Template
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleDuplicate(template.id)}>
                     <Copy className="h-4 w-4 mr-2" />
                     Duplicate
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleToggleStatus(template.id)}>
+                    {template.isActive ? (
+                      <>
+                        <PowerOff className="h-4 w-4 mr-2" />
+                        Deactivate
+                      </>
+                    ) : (
+                      <>
+                        <Power className="h-4 w-4 mr-2" />
+                        Activate
+                      </>
+                    )}
+                  </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Download className="h-4 w-4 mr-2" />
-                    Download
+                    Export
                   </DropdownMenuItem>
                   <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteTemplate(template.id)}>
                     <Trash2 className="h-4 w-4 mr-2" />
-                    Delete Template
+                    Delete
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -357,6 +467,35 @@ export default function AdminTemplatesTab() {
           </Card>
         ))}
       </div>
+
+      {templates.length === 0 && !loading && (
+        <div className="text-center py-12">
+          <p className="text-gray-500">No templates found matching your criteria.</p>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {pagination.totalPages > 1 && (
+        <div className="flex justify-center gap-2">
+          <Button
+            variant="outline"
+            disabled={pagination.page === 1}
+            onClick={() => updateFilters({ page: pagination.page - 1 })}
+          >
+            Previous
+          </Button>
+          <span className="flex items-center px-4">
+            Page {pagination.page} of {pagination.totalPages}
+          </span>
+          <Button
+            variant="outline"
+            disabled={pagination.page === pagination.totalPages}
+            onClick={() => updateFilters({ page: pagination.page + 1 })}
+          >
+            Next
+          </Button>
+        </div>
+      )}
 
       {/* Preview Dialog */}
       <Dialog open={isPreviewDialogOpen} onOpenChange={setIsPreviewDialogOpen}>
@@ -366,65 +505,13 @@ export default function AdminTemplatesTab() {
           </DialogHeader>
           <div className="bg-white p-6 border rounded-md">
             <div className="aspect-[8.5/11] bg-white shadow-lg p-8 mx-auto max-w-[600px]">
-              {/* This would render the actual template with sample data */}
-              <div className="text-center mb-6">
-                <h1 className="text-2xl font-bold">John Doe</h1>
-                <p className="text-gray-600">Software Engineer</p>
-                <div className="flex justify-center gap-2 mt-2 text-sm text-gray-500">
-                  <span>john.doe@example.com</span>
-                  <span>•</span>
-                  <span>(123) 456-7890</span>
-                  <span>•</span>
-                  <span>New York, NY</span>
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <h2 className="text-lg font-semibold border-b pb-1 mb-2">Summary</h2>
-                <p className="text-sm">
-                  Experienced software engineer with 5+ years of experience in full-stack development. Specialized in
-                  React, Node.js, and cloud technologies.
-                </p>
-              </div>
-
-              <div className="mb-4">
-                <h2 className="text-lg font-semibold border-b pb-1 mb-2">Experience</h2>
-                <div className="mb-3">
-                  <div className="flex justify-between">
-                    <h3 className="font-medium">Senior Software Engineer</h3>
-                    <span className="text-sm text-gray-500">2020 - Present</span>
-                  </div>
-                  <p className="text-sm font-medium text-gray-600">Tech Company Inc.</p>
-                  <ul className="text-sm list-disc list-inside mt-1">
-                    <li>Led development of microservices architecture</li>
-                    <li>Improved application performance by 40%</li>
-                    <li>Mentored junior developers</li>
-                  </ul>
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <h2 className="text-lg font-semibold border-b pb-1 mb-2">Education</h2>
-                <div>
-                  <div className="flex justify-between">
-                    <h3 className="font-medium">BS in Computer Science</h3>
-                    <span className="text-sm text-gray-500">2012 - 2016</span>
-                  </div>
-                  <p className="text-sm text-gray-600">University of Technology</p>
-                </div>
-              </div>
-
-              <div>
-                <h2 className="text-lg font-semibold border-b pb-1 mb-2">Skills</h2>
-                <div className="flex flex-wrap gap-2 text-sm">
-                  <span className="bg-gray-100 px-2 py-1 rounded">JavaScript</span>
-                  <span className="bg-gray-100 px-2 py-1 rounded">React</span>
-                  <span className="bg-gray-100 px-2 py-1 rounded">Node.js</span>
-                  <span className="bg-gray-100 px-2 py-1 rounded">TypeScript</span>
-                  <span className="bg-gray-100 px-2 py-1 rounded">AWS</span>
-                  <span className="bg-gray-100 px-2 py-1 rounded">Docker</span>
-                </div>
-              </div>
+              {selectedTemplate && (
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: selectedTemplate.htmlTemplate,
+                  }}
+                />
+              )}
             </div>
           </div>
           <DialogFooter>
@@ -434,7 +521,7 @@ export default function AdminTemplatesTab() {
             <Button
               onClick={() => {
                 setIsPreviewDialogOpen(false)
-                handleEditTemplate(selectedTemplate!)
+                if (selectedTemplate) handleEditTemplate(selectedTemplate)
               }}
             >
               Edit Template
@@ -445,56 +532,37 @@ export default function AdminTemplatesTab() {
 
       {/* Edit Dialog - Similar to Create but pre-filled */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit CV Template</DialogTitle>
-            <DialogDescription>Edit the HTML, CSS, and settings for this template.</DialogDescription>
+            <DialogDescription>Edit the template configuration and design.</DialogDescription>
           </DialogHeader>
 
-          {/* Similar content to Create Dialog but pre-filled with selectedTemplate data */}
-          <Tabs defaultValue="editor" className="w-full">
-            <TabsList className="grid grid-cols-3 mb-4">
-              <TabsTrigger value="editor">Template Editor</TabsTrigger>
+          {/* Similar content to Create Dialog but with update functionality */}
+          <Tabs defaultValue="basic" className="w-full">
+            <TabsList className="grid grid-cols-4 mb-4">
+              <TabsTrigger value="basic">Basic Info</TabsTrigger>
+              <TabsTrigger value="design">Design</TabsTrigger>
               <TabsTrigger value="preview">Preview</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="editor" className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-template-html">HTML Template</Label>
-                <Textarea
-                  id="edit-template-html"
-                  placeholder="Enter HTML template with {placeholders}"
-                  className="font-mono h-[400px]"
-                  defaultValue={selectedTemplate?.htmlTemplate || ""}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-template-css">CSS Styles</Label>
-                <Textarea id="edit-template-css" placeholder="Enter CSS styles" className="font-mono h-[200px]" />
-              </div>
-            </TabsContent>
-
-            <TabsContent value="preview" className="h-[650px] border rounded-md p-4 overflow-auto">
-              <div className="bg-white p-6 shadow-md">
-                {/* Similar preview content as in the Preview Dialog */}
-                <div className="text-center mb-6">
-                  <h1 className="text-2xl font-bold">John Doe</h1>
-                  <p className="text-gray-600">Software Engineer</p>
-                </div>
-                <p className="text-center text-gray-500">Preview with sample data</p>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="settings" className="space-y-4">
+            <TabsContent value="basic" className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="edit-template-name">Template Name</Label>
-                  <Input id="edit-template-name" defaultValue={selectedTemplate?.name || ""} />
+                  <Input
+                    id="edit-template-name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-template-category">Category</Label>
-                  <Select defaultValue={selectedTemplate?.category}>
+                  <Select
+                    value={formData.category}
+                    onValueChange={(value) => setFormData({ ...formData, category: value })}
+                  >
                     <SelectTrigger id="edit-template-category">
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
@@ -509,38 +577,80 @@ export default function AdminTemplatesTab() {
                 </div>
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="edit-template-description">Description</Label>
+                <Textarea
+                  id="edit-template-description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                />
+              </div>
+
+              {/* <div className="space-y-2">
+                <Label>Template Thumbnail</Label>
+                <AvatarUpload
+                  value={formData.thumbnail}
+                  onChange={(url) => setFormData({ ...formData, thumbnail: url || "" })}
+                  size={120}
+                  name="Template Thumbnail"
+                />
+              </div> */}
+            </TabsContent>
+
+            <TabsContent value="design" className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-template-html">HTML Template</Label>
+                <Textarea
+                  id="edit-template-html"
+                  className="font-mono h-[300px]"
+                  value={formData.htmlTemplate}
+                  onChange={(e) => setFormData({ ...formData, htmlTemplate: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-template-css">CSS Styles</Label>
+                <Textarea
+                  id="edit-template-css"
+                  className="font-mono h-[200px]"
+                  value={formData.cssStyles}
+                  onChange={(e) => setFormData({ ...formData, cssStyles: e.target.value })}
+                />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="preview" className="h-[500px] border rounded-md p-4 overflow-auto">
+              <div className="bg-white p-6 shadow-md">
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: formData.htmlTemplate,
+                  }}
+                />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="settings" className="space-y-4">
               <div className="flex items-center space-x-2">
-                <Switch id="edit-premium-template" defaultChecked={selectedTemplate?.isPremium} />
+                <Switch
+                  id="edit-premium-template"
+                  checked={formData.isPremium}
+                  onCheckedChange={(checked) => setFormData({ ...formData, isPremium: checked })}
+                />
                 <Label htmlFor="edit-premium-template">Premium Template</Label>
               </div>
 
-              <div className="space-y-2">
-                <Label>Template Thumbnail</Label>
-                <div className="border-2 border-dashed rounded-md p-6 flex flex-col items-center justify-center">
-                  {selectedTemplate?.thumbnail ? (
-                    <div className="relative w-full h-32 mb-2">
-                      <Image
-                        src={selectedTemplate.thumbnail || "/placeholder.svg"}
-                        alt={selectedTemplate.name}
-                        fill
-                        className="object-contain"
-                      />
-                    </div>
-                  ) : (
-                    <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                  )}
-                  <p className="text-sm text-gray-500">Drag and drop an image, or click to browse</p>
-                  <Input type="file" className="hidden" id="edit-thumbnail-upload" accept="image/*" />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-2"
-                    onClick={() => document.getElementById("edit-thumbnail-upload")?.click()}
-                  >
-                    {selectedTemplate?.thumbnail ? "Change Thumbnail" : "Upload Thumbnail"}
-                  </Button>
+              {formData.isPremium && (
+                <div className="space-y-2">
+                  <Label htmlFor="edit-template-price">Price ($)</Label>
+                  <Input
+                    id="edit-template-price"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: Number.parseFloat(e.target.value) || 0 })}
+                  />
                 </div>
-              </div>
+              )}
             </TabsContent>
           </Tabs>
 
@@ -548,7 +658,92 @@ export default function AdminTemplatesTab() {
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
               Cancel
             </Button>
-            <Button>Save Changes</Button>
+            <Button onClick={handleUpdateTemplate} disabled={loading}>
+              {loading ? "Updating..." : "Update Template"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Analytics Dialog */}
+      <Dialog open={isAnalyticsDialogOpen} onOpenChange={setIsAnalyticsDialogOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Template Analytics</DialogTitle>
+            <DialogDescription>Overview of template performance and usage statistics.</DialogDescription>
+          </DialogHeader>
+
+          {analytics && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-4 gap-4">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">Total Templates</CardTitle>
+                  </CardHeader>
+                  <CardDescription className="text-2xl font-bold">{analytics.overview.totalTemplates}</CardDescription>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">Active Templates</CardTitle>
+                  </CardHeader>
+                  <CardDescription className="text-2xl font-bold text-green-600">
+                    {analytics.overview.activeTemplates}
+                  </CardDescription>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">Premium Templates</CardTitle>
+                  </CardHeader>
+                  <CardDescription className="text-2xl font-bold text-amber-600">
+                    {analytics.overview.premiumTemplates}
+                  </CardDescription>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">Free Templates</CardTitle>
+                  </CardHeader>
+                  <CardDescription className="text-2xl font-bold text-blue-600">
+                    {analytics.overview.freeTemplates}
+                  </CardDescription>
+                </Card>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Top Templates by Usage</CardTitle>
+                  </CardHeader>
+                  <div className="p-4">
+                    {analytics.topTemplates.map((template: any, index: number) => (
+                      <div key={template._id} className="flex justify-between items-center py-2">
+                        <span className="font-medium">{template.name}</span>
+                        <Badge variant="outline">{template.usageCount} uses</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Category Distribution</CardTitle>
+                  </CardHeader>
+                  <div className="p-4">
+                    {analytics.categoryStats.map((category: any) => (
+                      <div key={category._id} className="flex justify-between items-center py-2">
+                        <span className="font-medium capitalize">{category._id}</span>
+                        <Badge variant="outline">{category.count} templates</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAnalyticsDialogOpen(false)}>
+              Close
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

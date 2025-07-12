@@ -1,4 +1,4 @@
-import type { UserRole, UserStatus } from "@/types/enums"
+import type { UserRole, UserStatus, ETemplateCategory } from "@/types/enums"
 
 export interface User {
   id: string
@@ -70,13 +70,25 @@ export interface JobApplication {
 }
 
 // CV interfaces
-export interface CVTemplate {
-  id: string
+export interface ICVTemplate {
+  _id: string
   name: string
-  category: string
-  thumbnail: string
+  description: string
+  previewImage: string
   htmlTemplate: string
+  cssStyles: string
+  category: ETemplateCategory
+  tags: string[]
+  creator: string
   isPremium: boolean
+  price?: number
+  isActive: boolean
+  usageCount: number
+  rating: {
+    average: number
+    count: number
+  }
+
 }
 
 export interface CV {
