@@ -37,8 +37,8 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: "Job not found" }, { status: 404 })
     }
 
-    const { _id, ...updatedJobData } = updatedJob.toJSON()
-    return NextResponse.json({ ...updatedJobData, id: _id.toString() })
+    const updatedJobObj = updatedJob.toJSON ? updatedJob.toJSON() : updatedJob
+    return NextResponse.json({ ...updatedJobObj, id: updatedJobObj._id?.toString?.() || "" })
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.errors }, { status: 400 })
