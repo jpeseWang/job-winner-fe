@@ -1,14 +1,4 @@
-export enum UserRole {
-  ADMIN = "admin",
-  RECRUITER = "recruiter",
-  JOB_SEEKER = "job_seeker",
-}
-
-export enum UserStatus {
-  ACTIVE = "active",
-  INACTIVE = "inactive",
-  PENDING = "pending",
-}
+import type { UserRole, UserStatus, ETemplateCategory } from "@/types/enums"
 
 export interface User {
   id: string
@@ -53,7 +43,7 @@ export interface SocialLinks {
 }
 
 // Job interfaces
-export type { JobType, JobStatus, Salary, Job, JobCategory, Company } from "./job";
+export type { Salary, Job, JobCategory, Company } from "./job";
 
 // Application interfaces
 export enum ApplicationStatus {
@@ -80,13 +70,25 @@ export interface JobApplication {
 }
 
 // CV interfaces
-export interface CVTemplate {
-  id: string
+export interface ICVTemplate {
+  _id: string
   name: string
-  category: string
-  thumbnail: string
+  description: string
+  previewImage: string
   htmlTemplate: string
+  cssStyles: string
+  category: ETemplateCategory
+  tags: string[]
+  creator: string
   isPremium: boolean
+  price?: number
+  isActive: boolean
+  usageCount: number
+  rating: {
+    average: number
+    count: number
+  }
+
 }
 
 export interface CV {

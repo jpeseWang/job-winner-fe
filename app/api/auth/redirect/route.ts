@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       targetPath = "/dashboard/recruiter";
       break;
     case UserRole.JOB_SEEKER:
-      targetPath = "/dashboard/job-seeker/proposals";
+      targetPath = "/dashboard/job-seeker";
       break;
     default:
       targetPath = "/unauthorized";

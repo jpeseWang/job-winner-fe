@@ -40,12 +40,15 @@ export enum SortOrder {
   DESC = "desc",
 }
 
-export enum JobCategory{
+export enum JobCategory {
   TECHNOLOGY = "Technology",
   TELECOMMUNICATIONS = "Telecommunications",
   HEALTH = "Health Medical",
   EDUCATION = "Education",
-  FINANCIAL = "Financial Services"
+  HOSPITALITY = "Hospitality",
+  MANUFACTURING = "Manufacturing",
+  ENGINEERING = "Engineering",
+  FINANCIAL = "Financial Services",
 }
 
 export enum JobLocation {
@@ -62,4 +65,20 @@ export enum ExperienceLevel {
   SENIOR = "Senior Level",
   LEAD = "Lead",
   MANAGER = "Manager",
+}
+
+export enum SubscriptionTier {
+  FREE = "free",
+  BASIC = "basic",
+  PREMIUM = "premium",
+  ENTERPRISE = "enterprise",
+}
+
+export enum ETemplateCategory {
+  PROFESSIONAL = "professional",
+  CREATIVE = "creative",
+  SIMPLE = "simple",
+  MODERN = "modern",
+  ACADEMIC = "academic",
+  EXECUTIVE = "executive",
 }

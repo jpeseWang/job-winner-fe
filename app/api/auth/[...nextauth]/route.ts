@@ -25,16 +25,16 @@ export const authOptions: NextAuthOptions = {
         const { email, password, role } = credentials as {
           email: string
           password: string
-          role: UserRole.JOB_SEEKER | UserRole.RECRUITER
+          role: UserRole.JOB_SEEKER | UserRole.ADMIN | UserRole.RECRUITER
         }
         // 1) Kết nối DB & tìm user theo email
         await dbConnect()
         const user = await User.findOne({ email: credentials!.email.toLowerCase() })
 
         // so khớp role
-        if (user.role !== role) {
-          throw new Error("Wrong role selected")        // front-end sẽ nhận error
-        }
+        // if (user.role !== role) {
+        //   throw new Error("Wrong role selected")        // front-end sẽ nhận error
+        // }
 
         // 2) Nếu không có user hoặc user không có password (tài khoản OAuth), báo lỗi chung
         if (!user || !user.password) throw new Error("Invalid email or password")

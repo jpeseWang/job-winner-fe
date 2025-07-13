@@ -3,24 +3,32 @@
 import { useState } from "react"
 import JobCard from "@/components/job-card"
 import JobFilters from "@/components/job-filters"
-import type { JobFilters as JobFiltersType } from "@/types/interfaces/job" 
+import type { JobFilters as JobFiltersType } from "@/types/interfaces/job"
 import CompanyCard from "@/components/company-card"
 import { Button } from "@/components/ui/button"
-import { useJobs } from "@/hooks/useJobs"
+import { useJobs } from "@/hooks/use-jobs"
 import { Loader2 } from "lucide-react"
 import type { Job } from "@/types/interfaces"
+import { formatSalary } from "@/utils/formatters";
+import { useSearchParams } from "next/navigation"
+import { DEFAULT_AVATAR } from "@/constants"
+import { getTimeAgo } from "@/utils/getTimeAgo"
 
 export default function JobsPage() {
-  const [sort, setSort] = useState<JobFiltersType["sort"]>("latest")
+  const searchParams = useSearchParams()
 
-  const [filters, setFilters] = useState<JobFiltersType>({
-    keyword: "",
-    location: "",
-    category: [] as string[],
-    type: [] as string[],
-    experienceLevel: [] as string[],
+  const initialFilters: JobFiltersType = {
+    keyword: searchParams.get("keyword") || "",
+    location: searchParams.get("location") || "",
+    category: searchParams.get("category") ? [searchParams.get("category")!] : [],
+    type: [],
+    experienceLevel: [],
     sort: "latest",
-  })
+  }
+
+  const [filters, setFilters] = useState<JobFiltersType>(initialFilters)
+
+  const [sort, setSort] = useState<JobFiltersType["sort"]>("latest")
 
   const { jobs, total, isLoading, totalPages, currentPage, goToPage } = useJobs({
     ...filters,
@@ -30,7 +38,7 @@ export default function JobsPage() {
 
   const handleFilterChange = (newFilters: typeof filters) => {
     setFilters(newFilters)
-    goToPage(1) 
+    goToPage(1)
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
@@ -61,20 +69,20 @@ export default function JobsPage() {
 
                 <div className="flex items-center gap-2">
                   <span className="text-sm">Sort by:</span>
-                    <select
-                      value={sort}
-                      onChange={(e) => {
-                        setSort(e.target.value as JobFiltersType["sort"])
-                        goToPage(1)
-                        window.scrollTo({ top: 0, behavior: "smooth" })
-                      }}
-                      className="border rounded-md px-2 py-1 text-sm"
-                    >
-                      <option value="latest">Latest</option>
-                      <option value="oldest">Oldest</option>
-                      <option value="highestSalary">Highest Salary</option>
-                      <option value="lowestSalary">Lowest Salary</option>
-                    </select>
+                  <select
+                    value={sort}
+                    onChange={(e) => {
+                      setSort(e.target.value as JobFiltersType["sort"])
+                      goToPage(1)
+                      window.scrollTo({ top: 0, behavior: "smooth" })
+                    }}
+                    className="border rounded-md px-2 py-1 text-sm"
+                  >
+                    <option value="latest">Latest</option>
+                    <option value="oldest">Oldest</option>
+                    <option value="highestSalary">Highest Salary</option>
+                    <option value="lowestSalary">Lowest Salary</option>
+                  </select>
                 </div>
               </div>
 
@@ -89,16 +97,7 @@ export default function JobsPage() {
                     {jobs.map((job: Job, idx: number) => {
                       const uniqueKey = (job as any)._id ?? job.id ?? idx
                       const jobId = (job as any)._id ?? job.id ?? ""
-
-                      const salaryString = job.salary
-                        ? job.salary.isNegotiable
-                          ? "Negotiable"
-                          : `${job.salary.min ? `$${job.salary.min}` : ""}${
-                              job.salary.min && job.salary.max ? " - " : ""
-                            }${job.salary.max ? `$${job.salary.max}` : ""} per ${
-                              job.salary.period
-                            }`
-                        : ""
+                      const salaryString = formatSalary(job.salary)
 
                       return (
                         <JobCard
@@ -108,10 +107,11 @@ export default function JobsPage() {
                           company={job.company}
                           location={job.location}
                           type={job.type}
+                          category={job.category}
+                          experienceLevel={job.experienceLevel}
                           salary={salaryString}
-                          postedDays={job.postedDays || 0}
-                          logo={job.companyLogo || "/placeholder.svg?height=40&width=40"}
-                          detailed
+                          postedDays={getTimeAgo(job.createdAt ?? "") || ""}
+                          logo={job.companyLogo || DEFAULT_AVATAR}
                         />
                       )
                     })}

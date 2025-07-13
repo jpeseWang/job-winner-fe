@@ -14,7 +14,12 @@ import { ChevronLeft, ChevronRight, Plus, Trash2, Download, Share, FileText, Wan
 import CVTemplateLibrary from "@/components/cv/cv-template-library"
 import CVPreview from "@/components/cv/cv-preview"
 import { generateCV, generateFieldContent } from "@/services/cvService"
-import type { CVTemplate } from "@/types/interfaces"
+import type { ICVTemplate } from "@/types/interfaces"
+import toast from "react-hot-toast"
+// @ts-ignore
+import html2pdf from 'html2pdf.js';
+import { useRef } from "react";
+import { useAuth } from "@/hooks/use-auth"
 
 interface FormSection {
   id: string
@@ -31,16 +36,15 @@ interface FormField {
 }
 
 export default function GenerateCVPage() {
-  const router = useRouter()
-  const { toast } = useToast()
+
   const [activeTab, setActiveTab] = useState("cv-template")
   const [currentStep, setCurrentStep] = useState(0)
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedCV, setGeneratedCV] = useState<any>(null)
   const [aiPrompt, setAiPrompt] = useState("")
-  const [selectedTemplate, setSelectedTemplate] = useState<CVTemplate | null>(null)
+  const [selectedTemplate, setSelectedTemplate] = useState<ICVTemplate | null>(null)
   const [isGeneratingField, setIsGeneratingField] = useState<string | null>(null)
-
+  const cvRef = useRef<HTMLDivElement>(null);
   const [sections, setSections] = useState<FormSection[]>([
     {
       id: "personal",
@@ -109,6 +113,8 @@ export default function GenerateCVPage() {
     },
   ])
 
+  const { user } = useAuth()
+
   const handleFieldChange = (sectionId: string, fieldId: string, value: string) => {
     setSections((prevSections) =>
       prevSections.map((section) => {
@@ -152,17 +158,11 @@ export default function GenerateCVPage() {
 
       if (result && result.content) {
         handleFieldChange(sectionId, fieldId, result.content)
-        toast({
-          title: "Content Generated",
-          description: `AI-generated content for ${field.label} has been added.`,
-        })
+        toast.success(`AI-generated content for ${field.label} has been added.`
+        )
       }
     } catch (error) {
-      toast({
-        title: "Generation Failed",
-        description: "Failed to generate content. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to generate content. Please try again.")
     } finally {
       setIsGeneratingField(null)
     }
@@ -229,21 +229,15 @@ export default function GenerateCVPage() {
     }
   }
 
-  const handleSelectTemplate = (template: CVTemplate) => {
+  const handleSelectTemplate = (template: ICVTemplate) => {
     setSelectedTemplate(template)
-    toast({
-      title: "Template Selected",
-      description: `You've selected the ${template.name} template.`,
-    })
+    toast.success(`You've selected the ${template.name} template.`
+    )
   }
 
   const handleGenerateCV = async () => {
     if (!selectedTemplate) {
-      toast({
-        title: "Template Required",
-        description: "Please select a CV template first.",
-        variant: "destructive",
-      })
+      toast.error("Please select a CV template first.")
       return
     }
 
@@ -261,21 +255,14 @@ export default function GenerateCVPage() {
       // Call the CV generation service
       const result = await generateCV({
         data: formData,
-        templateId: selectedTemplate.id,
+        templateId: selectedTemplate._id,
       })
 
       setGeneratedCV(result)
 
-      toast({
-        title: "CV Generated Successfully",
-        description: "Your CV has been generated. You can now download or share it.",
-      })
+      toast.success("Your CV has been generated. You can now download or share it.")
     } catch (error) {
-      toast({
-        title: "CV Generation Failed",
-        description: "There was an error generating your CV. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("There was an error generating your CV. Please try again.")
     } finally {
       setIsGenerating(false)
     }
@@ -283,20 +270,12 @@ export default function GenerateCVPage() {
 
   const handleGenerateWithAI = async () => {
     if (!aiPrompt) {
-      toast({
-        title: "Prompt Required",
-        description: "Please enter a prompt to generate your CV with AI.",
-        variant: "destructive",
-      })
+      toast.error("Please enter a prompt to generate your CV with AI.")
       return
     }
 
     if (!selectedTemplate) {
-      toast({
-        title: "Template Required",
-        description: "Please select a CV template first.",
-        variant: "destructive",
-      })
+      toast.error("Please select a CV template first.")
       return
     }
 
@@ -307,7 +286,7 @@ export default function GenerateCVPage() {
       const result = await generateCV(
         {
           prompt: aiPrompt,
-          templateId: selectedTemplate.id,
+          templateId: selectedTemplate._id,
         },
         true,
       )
@@ -331,36 +310,66 @@ export default function GenerateCVPage() {
         }),
       )
 
-      toast({
-        title: "CV Generated with AI",
-        description: "Your CV has been generated using AI. You can now edit, download, or share it.",
-      })
+      toast.success("Your CV has been generated using AI. You can now edit, download, or share it."
+      )
     } catch (error) {
-      toast({
-        title: "AI Generation Failed",
-        description: "There was an error generating your CV with AI. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("There was an error generating your CV with AI. Please try again.")
     } finally {
       setIsGenerating(false)
     }
   }
 
   const handleDownloadCV = () => {
-    // In a real app, this would download the CV as a PDF
-    toast({
-      title: "Download Started",
-      description: "Your CV is being downloaded as a PDF.",
-    })
+
+    if (!cvRef.current) return;
+
+    const sanitizeFilename = (name: string) =>
+      name.replace(/[^a-z0-9_\- ]/gi, '').trim().replace(/\s+/g, ' ');
+    const fullName = user?.name || "Unnamed";
+    const fileName = `${sanitizeFilename(fullName)} - CV - by JobWinner.pdf`;
+
+    const element = cvRef.current as HTMLDivElement;
+    const originalHeight = element.style.height;
+    const scrollHeight = element.scrollHeight;
+    element.style.height = `${element.scrollHeight}px`;
+    console.log("scrollHeight", element.style.height);
+
+    const opt = {
+      margin: 0,
+      filename: fileName,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: {
+        scale: 2,
+        scrollY: 0,
+        useCORS: true,
+      },
+      jsPDF: {
+        unit: 'px',
+        format: [element.offsetWidth, scrollHeight],
+        orientation: 'portrait',
+      },
+    };
+    html2pdf()
+      .set(opt)
+      .from(element)
+      .save()
+      .then(() => {
+        toast("Your CV is being downloaded as a PDF.");
+        element.style.height = originalHeight;
+      })
+      .catch((err: any) => {
+        toast.error("Something went wrong while generating the PDF.");
+        console.error(err);
+      });
   }
 
   const handleShareCV = () => {
     // In a real app, this would open a share dialog
-    toast({
-      title: "Share CV",
-      description: "Your CV sharing link has been copied to clipboard.",
-    })
+    toast.success("Your CV sharing link has been copied to clipboard."
+    )
   }
+  console.log("selectedTemplate", selectedTemplate)
+
 
   return (
     <main className="min-h-screen bg-gray-50 py-8">
@@ -395,7 +404,7 @@ export default function GenerateCVPage() {
           </TabsList>
 
           <TabsContent value="cv-template" className="space-y-6">
-            <CVTemplateLibrary onSelectTemplate={handleSelectTemplate} selectedTemplateId={selectedTemplate?.id} />
+            <CVTemplateLibrary onSelectTemplate={handleSelectTemplate} selectedTemplateId={selectedTemplate?._id} />
           </TabsContent>
 
           <TabsContent value="cv-editor" className="space-y-6">
@@ -422,7 +431,7 @@ export default function GenerateCVPage() {
                               disabled={isGeneratingField === field.id}
                               className="h-8 px-2 text-xs"
                             >
-                              {isGeneratingField === field.id ? "Generating..." : "Generate with AI"}
+                              {isGeneratingField === field.id ? "Generating..." : "✨ Generate with AI"}
                             </Button>
                           </div>
                           {field.type === "textarea" ? (
@@ -508,7 +517,9 @@ export default function GenerateCVPage() {
                     <CardTitle>CV Preview</CardTitle>
                     <CardDescription>See how your CV will look</CardDescription>
                   </CardHeader>
-                  <CardContent className="h-[600px] overflow-auto border rounded-md bg-white">
+                  <CardContent
+                    ref={cvRef}
+                    className="h-[600px] overflow-auto border rounded-md bg-white">
                     <CVPreview data={sections} generatedCV={generatedCV} template={selectedTemplate} />
                   </CardContent>
                   <CardFooter className="flex justify-end gap-2">

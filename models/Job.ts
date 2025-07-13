@@ -1,4 +1,4 @@
-import mongoose, { type Document, Schema } from "mongoose"
+import mongoose, { type Document, Schema, Types } from "mongoose"
 import {
   JobType,
   JobStatus,
@@ -10,6 +10,7 @@ import {
 export interface IJob extends Document {
   title: string
   company: string
+  companyId: Types.ObjectId
   recruiter: string
   description: string
   responsibilities: string[]
@@ -40,6 +41,7 @@ export interface IJob extends Document {
   createdAt: Date
   updatedAt: Date
   publishedAt?: Date
+  companyLogo: string
 }
 
 const JobSchema = new Schema<IJob>(
@@ -54,6 +56,11 @@ const JobSchema = new Schema<IJob>(
       type: String,
       required: [true, "Please provide a company name"],
       trim: true,
+    },
+    companyId: {
+      type: Schema.Types.ObjectId,
+      ref: "Company",
+      required: [true, "Please provide a company ID"]
     },
     recruiter: {
       type: String,
@@ -103,7 +110,7 @@ const JobSchema = new Schema<IJob>(
       default: false,
     },
     salary: {
-min: {
+      min: {
         type: Number,
       },
       max: {
@@ -143,6 +150,7 @@ min: {
     },
     applicationUrl: {
       type: String,
+      required: false,
       trim: true,
     },
     contactEmail: {
@@ -171,6 +179,10 @@ min: {
       type: Number,
       default: 0,
     },
+    companyLogo: {
+      type: String,
+      default: "https://sportleaders.club/uploads/company-logo/0-default.png"
+    },
     publishedAt: {
       type: Date,
     },
@@ -181,6 +193,29 @@ min: {
   },
   { timestamps: true },
 )
+
+JobSchema.virtual("id").get(function (this: IJob & { _id: Types.ObjectId }) {
+  // ép kiểu để TypeScript biết chắc _id là ObjectId
+  return this._id.toHexString();      // hoặc this._id.toString()
+});
+
+const transform = (_: unknown, ret: any) => {
+  ret.id = ret._id.toString(); // thêm id (string)
+  delete ret._id;              // ẩn _id
+  delete ret.__v;              // ẩn __v (nếu muốn)
+};
+
+JobSchema.set("toJSON", {
+  virtuals: true,
+  versionKey: false,
+  transform,
+});
+
+JobSchema.set("toObject", {
+  virtuals: true,
+  versionKey: false,
+  transform,
+});
 
 // Set publishedAt when job becomes active
 JobSchema.pre("save", function (next) {

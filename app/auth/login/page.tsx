@@ -25,6 +25,8 @@ export default function LoginPage() {
   const searchParams = useSearchParams()
   const { toast } = useToast()
 
+  const unauthorized = searchParams.get("unauthorized")
+
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [userType, setUserType] = useState<UserRole.JOB_SEEKER | UserRole.RECRUITER>(UserRole.JOB_SEEKER)
@@ -121,6 +123,14 @@ export default function LoginPage() {
         </CardHeader>
 
         <CardContent>
+          {unauthorized === "1" && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                You must be logged in as a <strong>Job Seeker</strong> to apply for a job.
+              </AlertDescription>
+            </Alert>
+          )}
           {errorMessage && (
             <Alert variant="destructive" className="mb-6">
               <AlertCircle className="h-4 w-4" />
@@ -132,17 +142,6 @@ export default function LoginPage() {
             defaultValue="job_seeker"
             onValueChange={v => setUserType(v as UserRole.JOB_SEEKER | UserRole.RECRUITER)}
           >
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="job_seeker" className="flex items-center gap-2">
-                <User className="h-4 w-4" />
-                Job Seeker
-              </TabsTrigger>
-              <TabsTrigger value="recruiter" className="flex items-center gap-2">
-                <Briefcase className="h-4 w-4" />
-                Recruiter
-              </TabsTrigger>
-            </TabsList>
-
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>

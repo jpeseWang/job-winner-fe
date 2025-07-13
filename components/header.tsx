@@ -2,22 +2,45 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { Menu, X } from "lucide-react"
+import { Menu, X, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { usePathname } from "next/navigation"
-import { useSession, signIn, signOut } from "next-auth/react"
+import { useSession, signOut } from "next-auth/react"
 import { UserRole } from "@/types/enums"
 
 export default function Header() {
   const { data: session, status } = useSession()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [profilePicture, setProfilePicture] = useState<string>("")
   const pathname = usePathname()
   const menuRef = useRef<HTMLDivElement>(null)
+
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
   }
-  console.log("Session:", session)
-  console.log("Status:", status)
+
+  // Fetch profile picture when session changes
+  useEffect(() => {
+    const fetchProfilePicture = async () => {
+      if (session?.user?.id && session?.user?.role === UserRole.RECRUITER) {
+        try {
+          const response = await fetch("/api/profiles/recruiter")
+          if (response.ok) {
+            const data = await response.json()
+            if (data.profilePicture) {
+              setProfilePicture(data.profilePicture)
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching profile picture:", error)
+        }
+      }
+    }
+
+    fetchProfilePicture()
+  }, [session])
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -48,14 +71,16 @@ export default function Header() {
                   Home
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/jobs"
-                  className={`hover:text-teal-400 transition ${pathname === "/jobs" ? "text-teal-400" : ""}`}
-                >
-                  Jobs
-                </Link>
-              </li>
+              {session?.user?.role !== UserRole.RECRUITER && (
+                <li>
+                  <Link
+                    href="/jobs"
+                    className={`hover:text-teal-400 transition ${pathname === "/jobs" ? "text-teal-400" : ""}`}
+                  >
+                    Jobs
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link
                   href="/about-us"
@@ -66,10 +91,26 @@ export default function Header() {
               </li>
               <li>
                 <Link
+                  href="/pricing"
+                  className={`hover:text-teal-400 transition ${pathname === "/pricing" ? "text-teal-400" : ""}`}
+                >
+                  Pricing
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/contact-us"
                   className={`hover:text-teal-400 transition ${pathname === "/contact-us" ? "text-teal-400" : ""}`}
                 >
                   Contact Us
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/blog"
+                  className={`hover:text-teal-400 transition ${pathname === "/blogs" ? "text-teal-400" : ""}`}
+                >
+                  Blog
                 </Link>
               </li>
             </ul>
@@ -81,21 +122,38 @@ export default function Header() {
             <>
               <button
                 onClick={() => setIsMenuOpen((prev) => !prev)}
-                className="w-9 h-9 rounded-full bg-white text-black flex items-center justify-center font-semibold transition duration-200 hover:ring-2 hover:ring-teal-400 hover:shadow"
+                className="transition duration-200 hover:ring-2 hover:ring-teal-400 hover:shadow rounded-full"
               >
-                {session?.user?.name?.charAt(0).toUpperCase() || "U"}
+                <Avatar className="w-9 h-9">
+                  <AvatarImage src={profilePicture} alt={session?.user?.name || "User"} />
+                  <AvatarFallback className="bg-white text-black font-semibold">
+                    {session?.user?.name?.charAt(0).toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
               </button>
 
               <div
                 className={`absolute right-0 top-12 bg-white text-black rounded shadow-md py-2 w-40 z-50 transform transition-all duration-200 ${isMenuOpen ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
                   }`}
               >
+                <div className="flex-shrink-0 flex items-center px-4 py-2">
+                  <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded inline-flex items-center">
+                    <User className="h-3 w-3 mr-1" />
+                    {
+                      session?.user?.role === UserRole.JOB_SEEKER
+                        ? "Job Seeker"
+                        : session?.user?.role === UserRole.RECRUITER
+                          ? "Recruiter"
+                          : "Admin"
+                    }
+                  </span>
+                </div>
                 <Link
                   href={
                     session?.user?.role === UserRole.JOB_SEEKER
                       ? "/dashboard/job-seeker/my-profile"
                       : session?.user?.role === UserRole.RECRUITER
-                        ? "/dashboard/recruiter"
+                        ? "/dashboard/recruiter/profile"
                         : "/dashboard/admin"
                   }
                   className="block px-4 py-2 hover:bg-gray-100"
@@ -105,14 +163,14 @@ export default function Header() {
                 <Link
                   href={
                     session?.user?.role === UserRole.JOB_SEEKER
-                      ? "/dashboard/job-seeker/proposals"
+                      ? "/dashboard/job-seeker"
                       : session?.user?.role === UserRole.RECRUITER
                         ? "/dashboard/recruiter"
                         : "/dashboard/admin"
                   }
                   className="block px-4 py-2 hover:bg-gray-100"
                 >
-                  Dashboard
+                  {session?.user?.role === UserRole.ADMIN ? "Admin Page" : "Dashboard"}
                 </Link>
                 <button
                   onClick={() =>
@@ -155,15 +213,17 @@ export default function Header() {
                   Home
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/jobs"
-                  className={`hover:text-teal-400 transition ${pathname === "/jobs" ? "text-teal-400" : ""}`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Jobs
-                </Link>
-              </li>
+              {session?.user?.role !== UserRole.RECRUITER && (
+                <li>
+                  <Link
+                    href="/jobs"
+                    className={`hover:text-teal-400 transition ${pathname === "/jobs" ? "text-teal-400" : ""}`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Jobs
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link
                   href="/about-us"
@@ -171,6 +231,15 @@ export default function Header() {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   About Us
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/pricing"
+                  className={`hover:text-teal-400 transition ${pathname === "/about-us" ? "text-teal-400" : ""}`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Pricing
                 </Link>
               </li>
               <li>

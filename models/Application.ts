@@ -1,94 +1,155 @@
-import mongoose, { type Document, Schema } from "mongoose"
+import mongoose from "mongoose"
 
-export enum ApplicationStatus {
-  PENDING = "pending",
-  REVIEWED = "reviewed",
-  SHORTLISTED = "shortlisted",
-  INTERVIEW = "interview",
-  REJECTED = "rejected",
-  HIRED = "hired",
-  WITHDRAWN = "withdrawn",
-}
-
-export interface IApplication extends Document {
-  job: mongoose.Types.ObjectId
-  applicant: mongoose.Types.ObjectId
-  resume: string
-  coverLetter?: string
-  answers: { question: string; answer: string }[]
-  status: ApplicationStatus
-  notes?: string[]
-  isWithdrawn: boolean
-  withdrawReason?: string
-  createdAt: Date
-  updatedAt: Date
-  lastStatusChangeAt: Date
-}
-
-const ApplicationSchema = new Schema<IApplication>(
+const applicationSchema = new mongoose.Schema(
   {
-    job: {
-      type: Schema.Types.ObjectId,
-      ref: "Job",
-      required: true,
-    },
-    applicant: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    resume: {
+    // Job Information
+    jobId: {
       type: String,
-      required: [true, "Please provide a resume"],
+      required: true,
+      index: true,
+    },
+    jobTitle: {
+      type: String,
+      required: true,
+    },
+    company: {
+      type: String,
+      required: true,
+    },
+
+    // User Information
+    userId: {
+      type: String,
+      required: true,
+      index: true,
+    },
+
+    // Personal Information
+    firstName: {
+      type: String,
+      required: true,
+    },
+    lastName: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+    },
+    phone: {
+      type: String,
+      required: true,
+    },
+    location: {
+      type: String,
+      required: true,
+    },
+
+    // Professional Information
+    currentPosition: String,
+    experience: {
+      type: String,
+      required: true,
+    },
+    expectedSalary: String,
+    availableFrom: String,
+
+    // Education & Skills
+    education: {
+      type: String,
+      required: true,
+    },
+    skills: [
+      {
+        type: String,
+        required: true,
+      },
+    ],
+
+    // Application Materials
+    resumeUrl: {
+      type: String,
+      required: true,
     },
     coverLetter: {
       type: String,
+      required: true,
     },
-    answers: [
-      {
-        question: {
-          type: String,
-          required: true,
-        },
-        answer: {
-          type: String,
-          required: true,
-        },
-      },
-    ],
-    status: {
-      type: String,
-      enum: Object.values(ApplicationStatus),
-      default: ApplicationStatus.PENDING,
-    },
-    notes: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
-    isWithdrawn: {
+    portfolioUrls: [String],
+
+    // Social Links
+    linkedinUrl: String,
+    githubUrl: String,
+    websiteUrl: String,
+
+    // Preferences
+    remoteWork: {
       type: Boolean,
       default: false,
     },
-    withdrawReason: {
-      type: String,
-      trim: true,
+    relocation: {
+      type: Boolean,
+      default: false,
     },
-    lastStatusChangeAt: {
+
+    // Legal
+    workAuthorization: {
+      type: Boolean,
+      required: true,
+    },
+    agreeToTerms: {
+      type: Boolean,
+      required: true,
+    },
+
+    // Application Status
+    status: {
+      type: String,
+      enum: ["pending", "reviewed", "interviewed", "hired", "rejected"],
+      default: "pending",
+    },
+
+    // Timestamps
+    appliedDate: {
+      type: Date,
+      required: true,
+    },
+    submittedAt: {
       type: Date,
       default: Date.now,
     },
+    updatedAt: {
+      type: Date,
+      default: Date.now,
+    },
+
+    // Recruiter Notes
+    recruiterNotes: String,
+    interviewDate: Date,
+
+    // Tracking
+    viewedByRecruiter: {
+      type: Boolean,
+      default: false,
+    },
+    viewedAt: Date,
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+  },
 )
 
-// Update lastStatusChangeAt when status changes
-ApplicationSchema.pre("save", function (next) {
-  if (this.isModified("status")) {
-    this.lastStatusChangeAt = new Date()
-  }
+// Indexes for better query performance
+applicationSchema.index({ userId: 1, jobId: 1 }, { unique: true })
+applicationSchema.index({ status: 1 })
+applicationSchema.index({ appliedDate: -1 })
+applicationSchema.index({ company: 1 })
+
+// Update the updatedAt field before saving
+applicationSchema.pre("save", function (next) {
+  this.updatedAt = new Date()
   next()
 })
 
-export default mongoose.models.Application || mongoose.model<IApplication>("Application", ApplicationSchema)
+export default mongoose.models.Application || mongoose.model("Application", applicationSchema)

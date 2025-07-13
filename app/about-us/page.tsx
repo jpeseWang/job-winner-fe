@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -5,7 +7,6 @@ import {
   FileText,
   Briefcase,
   CheckCircle,
-  Play,
   CheckCircle2,
 } from "lucide-react";
 import {
@@ -14,8 +15,54 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
+
+interface Blog {
+  _id: string;
+  title: string;
+  excerpt: string;
+  featuredImage: string;
+  publishedAt: string;
+  category: string;
+  status: string;
+}
 
 export default function AboutUsPage() {
+  const { toast } = useToast();
+  const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchBlogs() {
+      try {
+        setIsLoading(true);
+        const res = await fetch("/api/blogs", {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+        if (!res.ok) throw new Error("Failed to fetch blogs");
+        const data = await res.json();
+        // Lọc bài published và lấy 2 bài mới nhất
+        const publishedBlogs = data
+          .filter((blog: Blog) => blog.status === "published")
+          .sort((a: Blog, b: Blog) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+          .slice(0, 2);
+        setBlogs(publishedBlogs);
+      } catch (error) {
+        toast({
+          title: "Lỗi",
+          description: "Không tải được bài viết",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchBlogs();
+  }, [toast]);
+
   return (
     <main className="flex flex-col min-h-screen">
       {/* Hero Section */}
@@ -28,11 +75,12 @@ export default function AboutUsPage() {
       {/* Introduction Section */}
       <section className="py-16">
         <div className="container mx-auto px-4 md:px-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div>
-              <h2 className="text-3xl font-bold mb-6">
-                Your Career, Upgraded with AI
-              </h2>
+          <h2 className="text-3xl font-bold mb-6">
+            Your Career, Upgraded with AI
+          </h2>
+
+          <div className="md:flex md:gap-12 items-start">
+            <div className="md:w-1/2">
               <p className="text-gray-600 mb-6">
                 JobWinner is a modern job matching platform designed to connect
                 job seekers with the best opportunities tailored to their skills
@@ -42,26 +90,35 @@ export default function AboutUsPage() {
                 talent effortlessly. Whether you're starting your career or
                 scaling your team, JobWinner makes hiring and job hunting
                 simpler and more effective.
+                <br />
+                <br />
+                In addition, JobWinner continues to evolve with AI-powered
+                tools, supporting various industries and helping employers
+                connect with top-tier talent globally. Our platform bridges the
+                gap between ambition and opportunity.
               </p>
             </div>
-            <div>
+            <div className="md:w-1/2">
               <p className="text-gray-600 mb-6">
                 JobMarket is a dynamic online marketplace where employers and
                 job seekers meet in real-time. It offers a transparent,
                 decentralized space to post openings, apply for roles, and
                 manage applications — all in one place. Built for flexibility
                 and accessibility, JobMarket empowers freelancers, full-timers,
-                and recruiters to connect with precision and purpose. The AI CV
-                Generator is your intelligent assistant for creating
+                and recruiters to connect with precision and purpose.With
+                intelligent matching and real-time updates, JobMarket
+                streamlines the hiring process for both sides of the market.
+                <br />
+                <br />
+                The AI CV Generator is your intelligent assistant for creating
                 professional, customized resumes in minutes. Powered by AI, it
                 analyzes your background, skills, and job goals to generate
-                beautifully designed CVs tailored to your industry. Whether
-                you're applying for your first job or making a career move, the
-                AI CV Generator helps you stand out with ease and confidence.
+                beautifully designed CVs tailored to your industry.
               </p>
             </div>
           </div>
-          <div className="mt-8">
+          {/* Hình ảnh */}
+          <div className="mt-12">
             <div className="relative rounded-lg overflow-hidden max-w-[1200px] mx-auto h-[500px]">
               <Image
                 src="/about-us.webp"
@@ -361,9 +418,9 @@ export default function AboutUsPage() {
                 We're Only Working With The Best
               </h2>
               <p className="text-gray-600 mb-8">
-                Ultrices porta dolor mattis in tempor sit tempus et. Ultrices
-                porta dolor mattis in tempor sit tempus et. Ultrices porta dolor
-                mattis in tempor sit tempus et.
+                We collaborate with top employers and professionals to ensure
+                the best opportunities and results for everyone. Whether you're
+                hiring or job-seeking, quality is our standard.
               </p>
 
               <div className="grid grid-cols-2 gap-6">
@@ -431,74 +488,56 @@ export default function AboutUsPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-white rounded-lg overflow-hidden shadow-sm">
-              <div className="relative">
-                <Image
-                  src="/placeholder.svg?height=300&width=600"
-                  alt="Blog post"
-                  width={600}
-                  height={300}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="absolute top-4 left-4">
-                  <span className="bg-teal-500 text-white text-xs px-2 py-1 rounded">
-                    News
-                  </span>
-                </div>
-              </div>
-              <div className="p-6">
-                <div className="text-gray-500 text-sm mb-2">10 March 2024</div>
-                <h3 className="font-bold text-xl mb-3">
-                  Revitalizing Workplace Morale: Innovative Tactics for Boosting
-                  Employee Engagement in 2024
-                </h3>
-                <p className="text-gray-600 mb-4 line-clamp-3">
-                  Discover effective strategies to enhance workplace culture and
-                  improve employee satisfaction in the modern work environment.
-                </p>
-                <Link
-                  href="/blog/revitalizing-workplace-morale"
-                  className="text-teal-500 font-medium hover:text-teal-600"
-                >
-                  Read More
-                </Link>
-              </div>
+          {isLoading ? (
+            <div className="flex justify-center items-center h-48">
+              <Loader2 className="h-8 w-8 animate-spin text-teal-500" />
             </div>
-
-            <div className="bg-white rounded-lg overflow-hidden shadow-sm">
-              <div className="relative">
-                <Image
-                  src="/placeholder.svg?height=300&width=600"
-                  alt="Blog post"
-                  width={600}
-                  height={300}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="absolute top-4 left-4">
-                  <span className="bg-teal-500 text-white text-xs px-2 py-1 rounded">
-                    Tips
-                  </span>
-                </div>
-              </div>
-              <div className="p-6">
-                <div className="text-gray-500 text-sm mb-2">05 March 2024</div>
-                <h3 className="font-bold text-xl mb-3">
-                  How To Avoid The Top Six Most Common Job Interview Mistakes
-                </h3>
-                <p className="text-gray-600 mb-4 line-clamp-3">
-                  Learn how to navigate job interviews successfully by avoiding
-                  these common pitfalls that can cost you the position.
-                </p>
-                <Link
-                  href="/blog/common-interview-mistakes"
-                  className="text-teal-500 font-medium hover:text-teal-600"
+          ) : blogs.length === 0 ? (
+            <p className="text-center text-gray-600">Chưa có bài viết nào.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {blogs.map((blog) => (
+                <div
+                  key={blog._id}
+                  className="bg-white rounded-lg overflow-hidden shadow-sm"
                 >
-                  Read More
-                </Link>
-              </div>
+                  <div className="relative">
+                    <Image
+                      src={blog.featuredImage || "/placeholder.svg"}
+                      alt={blog.title}
+                      width={600}
+                      height={300}
+                      className="w-full h-48 object-cover"
+                    />
+                    <div className="absolute top-4 left-4">
+                      <span className="bg-teal-500 text-white text-xs px-2 py-1 rounded">
+                        {blog.category || "General"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="text-gray-500 text-sm mb-2">
+                      {blog.publishedAt
+                        ? new Date(blog.publishedAt).toLocaleDateString("vi-VN")
+                        : "N/A"}
+                    </div>
+                    <h3 className="font-bold text-xl mb-3 line-clamp-2">
+                      {blog.title}
+                    </h3>
+                    <p className="text-gray-600 mb-4 line-clamp-3">
+                      {blog.excerpt}
+                    </p>
+                    <Link
+                      href={`/blog/${blog._id}`}
+                      className="text-teal-500 font-medium hover:text-teal-600"
+                    >
+                      Read More
+                    </Link>
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
+          )}
         </div>
       </section>
     </main>

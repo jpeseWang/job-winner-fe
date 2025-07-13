@@ -1,15 +1,12 @@
 // Job interfaces
-export enum JobType {
-  FULL_TIME = "full_time",
-  PART_TIME = "part_time",
-  CONTRACT = "contract",
-  FREELANCE = "freelance",
-}
+import { JobType, JobStatus } from "@/types/enums/index";
 
-export enum JobStatus {
-  ACTIVE = "active",
-  EXPIRED = "expired",
-  PENDING = "pending",
+export interface Salary {
+  min?: number;
+  max?: number;
+  currency: string;
+  isNegotiable: boolean;
+  period: "hourly" | "daily" | "weekly" | "monthly" | "yearly";
 }
 
 export interface Salary {
@@ -40,11 +37,12 @@ export interface Job {
   postedDays: number
   applicationDeadline?: string
   isRemote?: boolean
-  experienceLevel?: string
+  experienceLevel: string
   educationLevel?: string
   featured?: boolean
   status?: JobStatus
-  updatedAt?: string
+  updatedAt?: string | Date
+  createdAt?: string | Date
 }
 
 export interface JobCategory {

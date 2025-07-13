@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
-
-import { JobCategory, JobLocation, JobType, ExperienceLevel } from "@/types/enums/index" 
+import dbConnect from '@/lib/db'
+import { JobCategory, JobLocation, JobType, ExperienceLevel } from "@/types/enums/index"
 import Job from "@/models/Job"
 
 async function countByField(field: string) {
@@ -15,6 +15,7 @@ async function countByField(field: string) {
 }
 
 export async function GET() {
+  await dbConnect()
   const [categoryCounts, typeCounts, experienceCounts] = await Promise.all([
     countByField("category"),
     countByField("type"),

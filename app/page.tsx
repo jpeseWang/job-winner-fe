@@ -1,9 +1,73 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import JobCard from "@/components/job-card"
 import CategoryCard from "@/components/category-card"
 import SearchBar from "@/components/search-bar"
+import { Briefcase, Building, Users } from "lucide-react"
+import { jobService } from "@/services/jobService"
+import type { Job } from "@/types/interfaces"
+import type { FilterOption } from "@/types/interfaces/job"
+import { formatSalary } from "@/utils/formatters"
+import { getTimeAgo } from "@/utils/getTimeAgo"
 
 export default function Home() {
+  const [jobCount, setJobCount] = useState<number>(0)
+  const [companyCount, setCompanyCount] = useState<number>(0)
+  const [candidateCount, setCandidateCount] = useState(0)
+  useEffect(() => {
+    const fetchOverview = async () => {
+      try {
+        const data = await jobService.getJobOverview()
+        setJobCount(data.jobCount)
+        setCompanyCount(data.companyCount)
+        setCandidateCount(data.candidateCount)
+      } catch (err) {
+        console.error("Failed to fetch job count:", err)
+      }
+    }
+    fetchOverview()
+  }, []);
+
+  const [latestJobs, setLatestJobs] = useState<Job[]>([])
+  useEffect(() => {
+    const fetchLatestJobs = async () => {
+      try {
+        const data = await jobService.getLatestJobs(5)
+        setLatestJobs(data)
+      } catch (err) {
+        console.error("Failed to fetch latest jobs:", err)
+      }
+    }
+    fetchLatestJobs()
+  }, []);
+
+  const [categories, setCategories] = useState<FilterOption[]>([])
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await jobService.getFilterMetadata()
+        setCategories(data.categories)
+      } catch (err) {
+        console.error("Failed to fetch categories:", err)
+      }
+    }
+    fetchCategories()
+  }, [])
+
+  const categoryIconMap: Record<string, string> = {
+    "Technology": "cpu",
+    "Telecommunications": "radio-tower",
+    "Health Medical": "stethoscope",
+    "Education": "graduation-cap",
+    "Hospitality": "hotel",
+    "Manufacturing": "factory",
+    "Engineering": "wrench",
+    "Financial Services": "landmark",
+  }
+
+
   return (
     <main className="min-h-screen">
       {/* Hero Section */}
@@ -21,30 +85,30 @@ export default function Home() {
           <div className="flex flex-wrap gap-8 justify-start mb-12">
             <div className="flex items-center gap-2">
               <div className="bg-teal-500 rounded-full w-10 h-10 flex items-center justify-center">
-                <span className="text-white font-semibold">25</span>
+                <Briefcase className="h-5 w-5 text-white" />
               </div>
               <div>
-                <p className="font-bold">75,000</p>
+                <p className="font-bold">{jobCount.toLocaleString()}</p>
                 <p className="text-sm opacity-70">Job Listings</p>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
               <div className="bg-teal-500 rounded-full w-10 h-10 flex items-center justify-center">
-                <span className="text-white font-semibold">25</span>
+                <Building className="h-5 w-5 text-white" />
               </div>
               <div>
-                <p className="font-bold">95,000</p>
+                <p className="font-bold">{companyCount.toLocaleString()}</p>
                 <p className="text-sm opacity-70">Companies</p>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
               <div className="bg-teal-500 rounded-full w-10 h-10 flex items-center justify-center">
-                <span className="text-white font-semibold">25</span>
+                <Users className="h-5 w-5 text-white" />
               </div>
               <div>
-                <p className="font-bold">150,000</p>
+                <p className="font-bold">{candidateCount.toLocaleString()}</p>
                 <p className="text-sm opacity-70">Candidates</p>
               </div>
             </div>
@@ -96,60 +160,23 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 gap-6">
-          <JobCard
-            id="1"
-            title="Forward Security Director"
-            company="Reach, Fortitude and Strategi Inc."
-            location="New York, USA"
-            type="Full-time"
-            salary="$120,000-$140,000"
-            postedDays={2}
-            logo="/placeholder.svg?height=40&width=40"
-          />
-
-          <JobCard
-            id="2"
-            title="Regional Creative Facilitator"
-            company="Sketch - Studio Inc."
-            location="Los Angeles, USA"
-            type="Full-time"
-            salary="$90,000-$110,000"
-            postedDays={3}
-            logo="/placeholder.svg?height=40&width=40"
-          />
-
-          <JobCard
-            id="3"
-            title="Internal Integration Planner"
-            company="Trello, Spotify and Figma Inc."
-            location="Texas, USA"
-            type="Full-time"
-            salary="$100,000-$120,000"
-            postedDays={5}
-            logo="/placeholder.svg?height=40&width=40"
-          />
-
-          <JobCard
-            id="4"
-            title="District Intranet Director"
-            company="VoiceRadar - Media Inc."
-            location="Nevada, USA"
-            type="Full-time"
-            salary="$110,000-$130,000"
-            postedDays={7}
-            logo="/placeholder.svg?height=40&width=40"
-          />
-
-          <JobCard
-            id="5"
-            title="Corporate Tactics Facilitator"
-            company="Central, Focal and Metrics Inc."
-            location="Boston, USA"
-            type="Full-time"
-            salary="$95,000-$115,000"
-            postedDays={8}
-            logo="/placeholder.svg?height=40&width=40"
-          />
+          {latestJobs
+            .filter((j) => j.id)                      // chỉ lấy job hợp lệ
+            .map((job) => (
+              <JobCard
+                key={job.id}
+                id={job.id}
+                title={job.title}
+                company={job.company}
+                location={job.location}
+                type={job.type}
+                category={job.category}
+                experienceLevel={job.experienceLevel}
+                salary={formatSalary(job.salary)}
+                postedDays={getTimeAgo(job.createdAt ?? "") || ""}
+                logo={job.companyLogo || "/placeholder.svg?height=40&width=40"}
+              />
+            ))}
         </div>
       </section>
 
@@ -157,16 +184,15 @@ export default function Home() {
       <section className="py-12 px-4 md:px-8 lg:px-16 bg-teal-50">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl font-bold mb-8">Browse by Category</h2>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            <CategoryCard icon="leaf" title="Agriculture" jobCount={1250} />
-            <CategoryCard icon="factory" title="Metal Production" jobCount={1450} />
-            <CategoryCard icon="shopping-bag" title="Commerce" jobCount={1300} />
-            <CategoryCard icon="hard-hat" title="Construction" jobCount={1500} />
-            <CategoryCard icon="hotel" title="Hotels & Tourism" jobCount={1350} />
-            <CategoryCard icon="graduation-cap" title="Education" jobCount={1400} />
-            <CategoryCard icon="landmark" title="Financial Services" jobCount={1550} />
-            <CategoryCard icon="truck" title="Transport" jobCount={1200} />
+            {categories.map((cat) => (
+              <CategoryCard
+                key={cat.label}
+                icon={categoryIconMap[cat.label] || "briefcase"}
+                title={cat.label}
+                jobCount={cat.count}
+              />
+            ))}
           </div>
         </div>
       </section>
@@ -175,7 +201,11 @@ export default function Home() {
       <section className="py-12 px-4 md:px-8 lg:px-16 max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row gap-8">
           <div className="md:w-1/3">
-            <div className="bg-gray-200 h-64 rounded-lg"></div>
+            <img
+              src="/cv-upload.jpg"
+              alt="Upload your CV illustration"
+              className="rounded-lg object-cover w-full h-64"
+            />
           </div>
           <div className="md:w-2/3">
             <h2 className="text-3xl font-bold mb-4">Good Life Begins With</h2>

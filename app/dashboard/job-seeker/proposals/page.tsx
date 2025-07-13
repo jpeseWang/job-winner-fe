@@ -142,7 +142,7 @@ export default function ProposalsPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">My Proposals</h1>
         <Button asChild className="flex items-center gap-2">
-          <Link href="/generate-cv?type=proposal">
+          <Link href="/dashboard/job-seeker/generate-cv?type=proposal">
             <Plus className="h-4 w-4" /> Create New Proposal
           </Link>
         </Button>
@@ -188,7 +188,7 @@ export default function ProposalsPage() {
           <h3 className="text-lg font-medium mb-2">No proposals found</h3>
           <p className="text-gray-500 mb-6">You haven't created any proposals yet or none match your search.</p>
           <Button asChild>
-            <Link href="/generate-cv?type=proposal">Create Your First Proposal</Link>
+            <Link href="/dashboard/job-seeker/generate-cv?type=proposal">Create Your First Proposal</Link>
           </Button>
         </div>
       ) : (

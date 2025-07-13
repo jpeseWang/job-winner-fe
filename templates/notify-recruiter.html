@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Có ứng viên mới - Job Winner</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f9fafb;
+        color: #374151;
+        line-height: 1.6;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: auto;
+        background: #fff;
+        padding: 20px;
+      }
+      .header, .footer {
+        text-align: center;
+        padding: 20px 0;
+      }
+      .footer {
+        font-size: 12px;
+        color: #6b7280;
+        border-top: 1px solid #e5e7eb;
+      }
+      .highlight {
+        background: #ecfdf5;
+        border-left: 4px solid #10b981;
+        padding: 10px 15px;
+        margin: 20px 0;
+        border-radius: 6px;
+      }
+      a.button {
+        display: inline-block;
+        background: #10b981;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: bold;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <img src="cid:jobwinnerlogo" alt="Logo" style="height:60px" />
+      </div>
+      <div class="content">
+        <h1>🎉 Có ứng viên mới!</h1>
+        <p>Xin chào <strong>{{name}}</strong>,</p>
+        <p>
+          Một ứng viên vừa nộp đơn cho công việc <strong>{{jobTitle}}</strong> thuộc công ty <strong>{{company}}</strong>.
+        </p>
+
+        <div class="highlight">
+          <p><strong>Tên ứng viên:</strong> {{applicantName}}</p>
+          <p><strong>Email:</strong> {{applicantEmail}}</p>
+        </div>
+
+        <p>Hãy kiểm tra dashboard của bạn để xem chi tiết hồ sơ ứng viên.</p>
+
+        <div style="text-align:center">
+          <a href="{{dashboardUrl}}" class="button">Xem trên Dashboard</a>
+        </div>
+
+        <p style="margin-top: 30px">Trân trọng,<br />Đội ngũ Job Winner</p>
+      </div>
+      <div class="footer">
+        <p>&copy; 2025 Job Winner</p>
+      </div>
+    </div>
+  </body>
+</html>

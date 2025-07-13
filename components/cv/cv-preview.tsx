@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react"
 import { formatDate } from "@/utils"
-import type { CVTemplate } from "@/types/interfaces"
+import type { ICVTemplate } from "@/types/interfaces"
 
 interface CVPreviewProps {
   data: any[]
   generatedCV: any
-  template: CVTemplate | null
+  template: ICVTemplate | null
 }
 
 export default function CVPreview({ data, generatedCV, template }: CVPreviewProps) {
@@ -36,7 +36,16 @@ export default function CVPreview({ data, generatedCV, template }: CVPreviewProp
     .filter((skill: string) => skill)
 
   // Group experience fields into job entries
-  const experiences = []
+  interface Experience {
+    jobTitle: string
+    company: string
+    location: string
+    startDate: string
+    endDate: string
+    description: string
+  }
+
+  const experiences: Experience[] = []
   if (experienceSection) {
     const fieldCount = experienceSection.fields.length
     const jobCount = fieldCount / 6
@@ -92,9 +101,9 @@ export default function CVPreview({ data, generatedCV, template }: CVPreviewProp
       // Handle initials for templates that use them
       const initials = name
         ? name
-            .split(" ")
-            .map((n) => n[0])
-            .join("")
+          .split(" ")
+          .map((n: any) => n[0])
+          .join("")
         : "JD"
       html = html.replace(/{{initials}}/g, initials)
 
@@ -131,7 +140,7 @@ export default function CVPreview({ data, generatedCV, template }: CVPreviewProp
         const skillTemplate = html.match(/{{#each skills}}([\s\S]*?){{\/each}}/)?.[1] || ""
 
         if (skillTemplate) {
-          skills.forEach((skill) => {
+          skills.forEach((skill: any) => {
             skillsHTML += skillTemplate.replace(/{{this}}/g, skill)
           })
 
@@ -144,144 +153,7 @@ export default function CVPreview({ data, generatedCV, template }: CVPreviewProp
       // Add CSS for the template
       html = `
         <style>
-          .cv-template {
-            font-family: 'Inter', sans-serif;
-            color: #333;
-            line-height: 1.5;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-          }
-          
-          .cv-template h1 {
-            font-size: 24px;
-            margin-bottom: 5px;
-          }
-          
-          .cv-template h2 {
-            font-size: 18px;
-            margin-top: 20px;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 5px;
-          }
-          
-          .cv-template h3 {
-            font-size: 16px;
-            margin-bottom: 5px;
-          }
-          
-          .cv-template p {
-            margin-bottom: 10px;
-          }
-          
-          .cv-template .job, .cv-template .education-item {
-            margin-bottom: 20px;
-          }
-          
-          .cv-template .job-header, .cv-template .education-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-          }
-          
-          .cv-template .date {
-            color: #666;
-            font-size: 14px;
-          }
-          
-          .cv-template .company, .cv-template .institution {
-            font-weight: 500;
-          }
-          
-          .cv-template .skills-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-          }
-          
-          .cv-template .skill {
-            background-color: #f0f0f0;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 14px;
-          }
-          
-          /* Modern Professional Template */
-          .modern-professional header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 20px;
-          }
-          
-          /* Classic Elegant Template */
-          .classic-elegant {
-            text-align: left;
-          }
-          
-          .classic-elegant header {
-            text-align: center;
-            margin-bottom: 20px;
-          }
-          
-          /* Creative Design Template */
-          .creative-design {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 20px;
-          }
-          
-          .creative-design .sidebar {
-            background-color: #f5f5f5;
-            padding: 20px;
-          }
-          
-          .creative-design .profile-image {
-            width: 100px;
-            height: 100px;
-            background-color: teal;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-          }
-          
-          .creative-design .initials {
-            color: white;
-            font-size: 36px;
-            font-weight: bold;
-          }
-          
-          .creative-design .date-badge {
-            background-color: teal;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-          }
-          
-          /* Minimal Clean Template */
-          .minimal-clean hr {
-            border: none;
-            border-top: 1px solid #eee;
-            margin: 15px 0;
-          }
-          
-          /* Tech Professional Template */
-          .tech-professional header {
-            display: flex;
-            justify-content: space-between;
-            background-color: #f0f0f0;
-            padding: 20px;
-            margin-bottom: 20px;
-          }
-          
-          /* Executive Resume Template */
-          .executive-resume .job-title {
-            margin-top: 5px;
-          }
+        ${template.cssStyles}
         </style>
         ${html}
       `

@@ -9,9 +9,12 @@ import { Loader2, Briefcase, Users, Eye } from "lucide-react"
 import { format } from "date-fns"
 import Link from "next/link"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import ApplicationsTab from "@/components/dashboard/recruiter/applications-tab"
+import RecruiterApplicationsTab from "@/components/dashboard/recruiter/applications-tab"
 import CandidatesTab from "@/components/dashboard/recruiter/candidates-tab"
 import AnalyticsTab from "@/components/dashboard/recruiter/analytics-tab"
+import { useAuth } from "@/hooks/use-auth"
+import { companyService } from "@/services/companyService"
+import { jobService } from "@/services"
 
 interface Job {
   _id: string
@@ -28,8 +31,11 @@ interface Job {
 
 export default function RecruiterDashboard() {
   const { toast } = useToast()
+  const { user } = useAuth()
   const [jobs, setJobs] = useState<Job[]>([])
+  const [myCompany, setMyCompany] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [showAllJobs, setShowAllJobs] = useState(false)
   const [stats, setStats] = useState({
     totalJobs: 0,
     activeJobs: 0,
@@ -39,30 +45,25 @@ export default function RecruiterDashboard() {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const response = await fetch("/api/jobs")
-        if (!response.ok) {
-          throw new Error("Failed to fetch jobs")
-        }
-        const result = await response.json()
-        console.log('API Response:', result) // Debug log
-        
-        // Get jobs from the data property
-        const jobsArray = result.data || []
-        console.log('Jobs array:', jobsArray) // Debug log
-        
+        setLoading(true)
+        const jobData = await jobService.getJobs()
+        const jobsArray = jobData?.data || []
         setJobs(jobsArray)
-        
-        // Calculate stats with null checks
-        setStats({
-          totalJobs: jobsArray?.length || 0,
-          activeJobs: jobsArray?.filter((job: Job) => job?.status === "active")?.length || 0,
-          totalApplications: jobsArray?.reduce((sum: number, job: Job) => sum + (job?.applications || 0), 0) || 0
-        })
+
+        // Calculate stats
+        const totalJobs = jobsArray.length
+        const activeJobs = jobsArray.filter((job: Job) => job.status === "active").length
+        const totalApplications = jobsArray.reduce((sum: number, job: any) => sum + (job.applications || 0), 0)
+
+        setStats({ totalJobs, activeJobs, totalApplications })
+
+
+
       } catch (error) {
-        console.error("Error fetching jobs:", error)
+        console.error("Error fetching jobs/company:", error)
         toast({
           title: "Error",
-          description: "Failed to load jobs",
+          description: "Failed to load jobs or company data",
           variant: "destructive",
         })
       } finally {
@@ -71,18 +72,14 @@ export default function RecruiterDashboard() {
     }
 
     fetchJobs()
-  }, [toast])
+  }, [toast, user?.id])
+
+
+  // Get jobs to display based on showAllJobs state
+  const displayJobs = showAllJobs ? jobs : jobs.slice(0, 10)
 
   return (
     <main className="flex-1 space-y-4 p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Recruiter Dashboard</h2>
-        <div className="flex items-center space-x-2">
-          <Button asChild>
-            <Link href="/dashboard/recruiter/jobs/new">Post New Job</Link>
-          </Button>
-        </div>
-      </div>
 
       {/* Stats Overview */}
       <div className="grid gap-4 md:grid-cols-3">
@@ -136,9 +133,14 @@ export default function RecruiterDashboard() {
         <TabsContent value="jobs">
           <Card>
             <CardHeader>
-              <CardTitle>Recent Job Postings</CardTitle>
+              <CardTitle>
+                {showAllJobs ? "All Job Postings" : "Recent Job Postings"}
+              </CardTitle>
               <CardDescription>
-                Your most recent job listings and their performance
+                {showAllJobs 
+                  ? "All your job listings and their performance" 
+                  : "Your most recent job listings and their performance"
+                }
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -152,7 +154,7 @@ export default function RecruiterDashboard() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {jobs.slice(0, 10).map((job) => (
+                  {displayJobs.map((job) => (
                     <div
                       key={job._id}
                       className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
@@ -185,8 +187,11 @@ export default function RecruiterDashboard() {
                   ))}
                   {jobs.length > 10 && (
                     <div className="text-center">
-                      <Button variant="link" asChild>
-                        <Link href="/dashboard/recruiter/jobs">View All Jobs</Link>
+                      <Button 
+                        variant="link" 
+                        onClick={() => setShowAllJobs(!showAllJobs)}
+                      >
+                        {showAllJobs ? "Show Recent Jobs" : "View All Jobs"}
                       </Button>
                     </div>
                   )}
@@ -197,19 +202,7 @@ export default function RecruiterDashboard() {
         </TabsContent>
 
         <TabsContent value="applications">
-          <Card>
-            <CardHeader>
-              <CardTitle>Applications</CardTitle>
-              <CardDescription>
-                View and manage job applications
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                Applications content will be displayed here
-              </div>
-            </CardContent>
-          </Card>
+          <RecruiterApplicationsTab />
         </TabsContent>
 
         <TabsContent value="candidates">
