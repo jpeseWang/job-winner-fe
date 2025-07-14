@@ -9,6 +9,8 @@ import ThemeClientOnly from "@/components/themeClientOnly"
 import { Providers } from "./providers"
 import { Toaster } from "sonner"
 
+import "@/lib/resetQuotaJob"
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {

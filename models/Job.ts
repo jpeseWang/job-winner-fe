@@ -42,6 +42,7 @@ export interface IJob extends Document {
   updatedAt: Date
   publishedAt?: Date
   companyLogo: string
+  expiresAt?: Date
 }
 
 const JobSchema = new Schema<IJob>(
@@ -189,6 +190,10 @@ const JobSchema = new Schema<IJob>(
     updatedAt: {
       type: Date,
       default: Date.now,
+    },
+    expiresAt: {
+      type: Date,
+      required: false, 
     }
   },
   { timestamps: true },
@@ -219,7 +224,7 @@ JobSchema.set("toObject", {
 
 // Set publishedAt when job becomes active
 JobSchema.pre("save", function (next) {
-  if (this.isModified("status") && this.status === JobStatus.ACTIVE && !this.publishedAt) {
+  if (this.isModified("status") && this.status === JobStatus.APPROVED && !this.publishedAt) {
     this.publishedAt = new Date()
   }
   this.updatedAt = new Date()

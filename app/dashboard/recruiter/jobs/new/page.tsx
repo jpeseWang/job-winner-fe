@@ -505,15 +505,6 @@ export default function NewJobPage() {
                   />
                 </div>
               </div>
-
-              <div className="flex items-center space-x-2 pt-4">
-                <Switch
-                  id="featured"
-                  checked={formData.featured}
-                  onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, featured: checked }))}
-                />
-                <Label htmlFor="featured">Feature this job (highlighted in search results)</Label>
-              </div>
             </CardContent>
           </Card>
 

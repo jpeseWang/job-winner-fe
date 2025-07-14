@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import JobSeekerDashboardHeader from "@/components/dashboard/job-seeker/dashboard-header"
 import {
     Briefcase,
     FileText,
@@ -22,6 +21,7 @@ import {
     AlertCircle,
     Users,
 } from "lucide-react"
+import SubscriptionCard from "@/components/dashboard/common/SubscriptionCard"
 
 // Mock data - replace with real API calls
 const mockStats = {
@@ -117,6 +117,7 @@ const mockUpcomingInterviews = [
 
 export default function JobSeekerDashboard() {
     const { data: session } = useSession()
+    const plan = session?.user?.subscription?.plan ?? "free"
     const [profileCompletion, setProfileCompletion] = useState(75)
 
     const getStatusBadge = (status: string) => {
@@ -162,11 +163,18 @@ export default function JobSeekerDashboard() {
         <div className="min-h-screen bg-gray-50">
             <main className="max-w-7xl mx-auto px-4 py-8">
                 {/* Welcome Section */}
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
+                    <div className="flex-1">
+                        <h1 className="text-3xl font-bold text-gray-900 mb-1">
                         Welcome back, {session?.user?.name?.split(" ")[0] || "there"}! 👋
-                    </h1>
-                    <p className="text-gray-600">Here's what's happening with your job search today.</p>
+                        </h1>
+                        <p className="text-gray-600">
+                        Here's what's happening with your job search today.
+                        </p>
+                    </div>
+
+                    {/* Subscription Card */}
+                    <SubscriptionCard plan={plan as "free" | "basic" | "premium"} className="max-w-[500px] w-full"/>
                 </div>
 
                 {/* Profile Completion Alert */}

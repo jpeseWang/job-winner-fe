@@ -3,11 +3,14 @@ import dbConnect from "@/lib/db"
 import User from "@/models/User"
 import { sendVerificationEmail } from "@/lib/email"
 import crypto from "crypto"
-import { UserRole } from "@/types/enums"
+import { UserRole, SubscriptionPlan, SubscriptionStatus, BillingPeriod, PaymentStatus, PaymentType } from "@/types/enums"
 import Profile from "@/models/Profile"
+import Subscription from "@/models/Subscription"
+import Payment from "@/models/Payment"
+
 export async function POST(request: Request) {
   try {
-    const { name, email, password, role = UserRole.JOB_SEEKER, company } = await request.json()
+    const { name, email, password, role = UserRole.JOB_SEEKER, company, paymentId } = await request.json()
 
     // Validate required fields
     if (!name || !email || !password) {
@@ -69,13 +72,72 @@ export async function POST(request: Request) {
       ...userData,
     })
 
+    // Setup subscription fields
+    const now = new Date()
+    const endDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000) 
+    let plan = SubscriptionPlan.FREE
+    let billingPeriod = BillingPeriod.MONTHLY
+    let expiresAt: Date | undefined = undefined
+    let price = 0
+    let paymentMethod = "free"
+    expiresAt = undefined
+
+    if (paymentId) {
+      // Tìm payment để lấy thông tin gói
+      const payment = await Payment.findById(paymentId)
+
+      if (!payment || payment.status !== PaymentStatus.COMPLETED || payment.type !== PaymentType.SUBSCRIPTION) {
+        return NextResponse.json({ error: "Invalid or incomplete payment" }, { status: 400 })
+      }
+
+      const { plan: paidPlan, billingPeriod: paidBilling } = payment.metadata
+
+      if (!paidPlan || !paidBilling) {
+        return NextResponse.json({ error: "Payment metadata missing plan or billing period" }, { status: 400 })
+      }
+
+      plan = paidPlan
+      billingPeriod = paidBilling
+      price = payment.amount
+      paymentMethod = payment.paymentMethod
+
+      expiresAt = billingPeriod === BillingPeriod.MONTHLY
+        ? new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)  // Gói tháng: +30 ngày
+        : new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000) // Gói năm: +365 ngày
+    }
+
+    const subscription = await Subscription.create({
+      user: user._id,
+      plan,
+      status: SubscriptionStatus.ACTIVE,
+      startDate: now,
+      endDate,
+      expiresAt,
+      billingPeriod,
+      price,
+      currency: "USD",
+      autoRenew: true,
+      paymentMethod,
+    })
+
+    // Link subscription to user
+    user.subscription = subscription._id
+    await user.save() 
+
+    // Link user & subscription to payment
+    if (paymentId) {
+      await Payment.findByIdAndUpdate(
+        paymentId,
+        { user: user._id, itemId: subscription._id },
+        { new: true }
+      )
+    }
+
     if (role === UserRole.JOB_SEEKER) {
       await Profile.create({
         user: user._id,
-
       })
     }
-
 
     // Gửi email xác thực
     try {
@@ -94,6 +156,7 @@ export async function POST(request: Request) {
           email: user.email,
           role: user.role,
           isVerified: user.isVerified,
+          subscription,
         },
       },
       { status: 201 },

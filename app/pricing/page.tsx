@@ -268,16 +268,21 @@ export default function PricingPage() {
                       asChild
                       className={`w-full ${plan.popular ? "bg-blue-600 hover:bg-blue-700" : ""}`}
                       variant={plan.popular ? "default" : "outline"}
+                      disabled={isYearly && plan.price.yearly === 0}
                     >
-                      <Link
-                        href={
-                          plan.id === "recruiter-free"
-                            ? "/auth/register"
-                            : `/checkout?plan=${plan.id}&billing=${isYearly ? "yearly" : "monthly"}`
-                        }
-                      >
-                        {plan.cta}
-                      </Link>
+                      {isYearly && plan.price.yearly === 0 ? (
+                        <span className="text-gray-400">Only Available on Monthly</span>
+                      ) : (
+                        <Link
+                          href={
+                            plan.id === "recruiter-free"
+                              ? "/auth/register"
+                              : `/checkout?plan=${plan.id}&billing=${isYearly ? "yearly" : "monthly"}`
+                          }
+                        >
+                          {plan.cta}
+                        </Link>
+                      )}
                     </Button>
                   </CardContent>
                 </Card>
@@ -339,16 +344,21 @@ export default function PricingPage() {
                       asChild
                       className={`w-full ${plan.popular ? "bg-purple-600 hover:bg-purple-700" : ""}`}
                       variant={plan.popular ? "default" : "outline"}
+                      disabled={isYearly && plan.price.yearly === 0}
                     >
-                      <Link
-                        href={
-                          plan.id === "jobseeker-free"
-                            ? "/auth/register"
-                            : `/checkout?plan=${plan.id}&billing=${isYearly ? "yearly" : "monthly"}`
-                        }
-                      >
-                        {plan.cta}
-                      </Link>
+                      {isYearly && plan.price.yearly === 0 ? (
+                        <span className="text-gray-400">Only Available on Monthly</span>
+                      ) : (
+                        <Link
+                          href={
+                            plan.id === "jobseeker-free"
+                              ? "/auth/register"
+                              : `/checkout?plan=${plan.id}&billing=${isYearly ? "yearly" : "monthly"}`
+                          }
+                        >
+                          {plan.cta}
+                        </Link>
+                      )}
                     </Button>
                   </CardContent>
                 </Card>
