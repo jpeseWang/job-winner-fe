@@ -5,6 +5,7 @@ import clientPromise from "@/lib/mongodb"
 import type { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { UserRole } from "@/types/enums"
+import { getActiveSubscription } from "@/lib/subscription"
 
 import dbConnect from "@/lib/db"
 import User from "@/models/User"
@@ -101,6 +102,9 @@ export const authOptions: NextAuthOptions = {
       session.user.id = token.id;
       session.user.email = token.email;
       session.user.name = token.name;
+      const subscription = await getActiveSubscription(token.id as string)
+      session.user.subscription = subscription
+
       return session
     },
   },

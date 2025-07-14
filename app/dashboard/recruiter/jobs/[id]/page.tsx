@@ -47,6 +47,7 @@ interface Job {
   applications: number
   createdAt: string
   updatedAt: string
+  expiresAt?: string
 }
 
 export default function JobDetailPage() {
@@ -178,54 +179,23 @@ export default function JobDetailPage() {
       </div>
 
       {/* Quick Info */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center">
-              <MapPin className="w-5 h-5 text-gray-500 mr-2" />
-              <div>
-                <p className="text-sm text-gray-500">Location</p>
-                <p className="font-medium">{job.location}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center">
-              <Briefcase className="w-5 h-5 text-gray-500 mr-2" />
-              <div>
-                <p className="text-sm text-gray-500">Type</p>
-                <p className="font-medium">{job.type}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center">
-              <GraduationCap className="w-5 h-5 text-gray-500 mr-2" />
-              <div>
-                <p className="text-sm text-gray-500">Experience</p>
-                <p className="font-medium">{job.experienceLevel}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center">
-              <Calendar className="w-5 h-5 text-gray-500 mr-2" />
-              <div>
-                <p className="text-sm text-gray-500">Posted</p>
-                <p className="font-medium">{format(new Date(job.createdAt), "MMM d, yyyy")}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+        {[
+          { icon: <MapPin className="w-6 h-6 text-blue-500" />, label: "Location", value: job.location },
+          { icon: <Briefcase className="w-6 h-6 text-green-500" />, label: "Type", value: job.type },
+          { icon: <GraduationCap className="w-6 h-6 text-purple-500" />, label: "Experience", value: job.experienceLevel },
+          { icon: <Calendar className="w-6 h-6 text-gray-500" />, label: "Posted", value: format(new Date(job.createdAt), "MMM d, yyyy") },
+          { icon: <Calendar className="w-6 h-6 text-red-500" />, label: "Expires", value: job.expiresAt ? format(new Date(job.expiresAt), "MMM d, yyyy") : "No expiry set" }
+        ].map((item, index) => (
+          <div
+            key={index}
+            className="flex flex-col items-center justify-center p-4 bg-white rounded-xl shadow hover:shadow-lg transition-shadow duration-300"
+          >
+            <div className="mb-2">{item.icon}</div>
+            <p className="text-sm text-gray-500">{item.label}</p>
+            <p className="text-lg font-semibold text-gray-800">{item.value}</p>
+          </div>
+        ))}
       </div>
 
       {/* Main Content */}

@@ -1,25 +1,5 @@
 import mongoose, { type Document, Schema } from "mongoose"
-
-export enum SubscriptionPlan {
-  FREE = "free",
-  BASIC = "basic",
-  PREMIUM = "premium",
-  ENTERPRISE = "enterprise",
-}
-
-export enum SubscriptionStatus {
-  ACTIVE = "active",
-  CANCELED = "canceled",
-  EXPIRED = "expired",
-  PAST_DUE = "past_due",
-  PENDING = "pending",
-}
-
-export enum BillingPeriod {
-  MONTHLY = "monthly",
-  QUARTERLY = "quarterly",
-  ANNUAL = "annual",
-}
+import { SubscriptionPlan, SubscriptionStatus, BillingPeriod } from "@/types/enums/index"
 
 export interface ISubscription extends Document {
   user: mongoose.Types.ObjectId
@@ -49,6 +29,7 @@ export interface ISubscription extends Document {
   updatedAt: Date
   lastBillingDate?: Date
   nextBillingDate?: Date
+  expiresAt?: Date
 }
 
 const SubscriptionSchema = new Schema<ISubscription>(
@@ -142,6 +123,10 @@ const SubscriptionSchema = new Schema<ISubscription>(
     },
     nextBillingDate: {
       type: Date,
+    },
+    expiresAt: {
+      type: Date,
+      default: null
     },
   },
   { timestamps: true },
