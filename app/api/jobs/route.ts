@@ -6,6 +6,9 @@ import { validateJob } from "@/utils/validators"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { UserRole } from "@/types/enums"
+import { addDays } from "date-fns"
+import { getActiveSubscription, hasQuota, incrementJobPosting, getJobDurationForPlan } from "@/lib/subscription"
+import { JobStatus, SubscriptionPlan } from "@/types/enums"
 
 export async function GET(req: NextRequest) {
   try {
@@ -67,6 +70,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Failed to fetch jobs" }, { status: 500 })
   }
 }
+
 export async function POST(request: Request) {
   try {
     await dbConnect()
@@ -76,16 +80,38 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    // 👇 Check quota trước khi tạo job
+    const subscription = await getActiveSubscription(session.user.id)
+
+    if (!hasQuota(subscription)) {
+      return NextResponse.json({
+        error: "You have used up your job posting limit for this month. Please upgrade your plan."
+      }, { status: 403 })
+    }
+
     const body = await request.json()
     const { data: validatedData, errors } = validateJob(body)
     if (errors) {
       return NextResponse.json({ error: errors }, { status: 400 })
     }
 
+    // 📝 Set job expiry based on plan
+    const durationDays = getJobDurationForPlan(subscription.plan)
+    const now = new Date()
+    const expiresAt = addDays(now, durationDays)
+    const isFeatured = subscription.plan !== SubscriptionPlan.FREE
+
     const newJob = await Job.create({
       ...validatedData,
       recruiter: session.user.id,
+      publishedAt: now,
+      expiresAt,
+      isFeatured,
+      status: JobStatus.PENDING,
     })
+
+    // 👇 Tăng usageStats sau khi tạo thành công
+    await incrementJobPosting(session.user.id)
 
     return NextResponse.json(newJob, { status: 201 })
   } catch (error) {

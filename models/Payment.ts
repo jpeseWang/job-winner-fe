@@ -1,18 +1,5 @@
 import mongoose, { type Document, Schema } from "mongoose"
-
-export enum PaymentStatus {
-  PENDING = "pending",
-  COMPLETED = "completed",
-  FAILED = "failed",
-  REFUNDED = "refunded",
-}
-
-export enum PaymentType {
-  SUBSCRIPTION = "subscription",
-  TEMPLATE = "template",
-  FEATURE = "feature",
-  OTHER = "other",
-}
+import { PaymentStatus, PaymentType } from "@/types/enums/index"
 
 export interface IPayment extends Document {
   user: mongoose.Types.ObjectId
