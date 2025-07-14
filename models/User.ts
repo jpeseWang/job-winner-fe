@@ -1,6 +1,6 @@
 import mongoose, { type Document, Schema } from "mongoose"
 import bcrypt from "bcryptjs"
-import { UserRole, SubscriptionTier } from "@/types/enums/index"
+import { UserRole } from "@/types/enums/index"
 
 export interface IUser extends Document {
   name: string

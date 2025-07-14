@@ -70,6 +70,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Failed to fetch jobs" }, { status: 500 })
   }
 }
+
 export async function POST(request: Request) {
   try {
     await dbConnect()
