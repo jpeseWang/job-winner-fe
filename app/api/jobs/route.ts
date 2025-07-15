@@ -148,6 +148,9 @@ export async function POST(request: Request) {
     await incrementJobPosting(session.user.id, SubscriptionRole.RECRUITER)
     console.log("✅ Job created successfully:", newJob._id)
 
+    // 👇 Tăng usageStats sau khi tạo thành công
+    await incrementJobPosting(session.user.id)
+
     return NextResponse.json(newJob, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
