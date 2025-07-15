@@ -10,10 +10,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { Search, Plus, MoreVertical, Eye, Edit, Trash2, ArrowUpDown, CheckCircle2, XCircle, Clock } from "lucide-react"
-import { useJobs } from "@/hooks"
+import { useJobs } from "@/hooks/index"
 import type { JobStatus } from "@/types/enums"
 import { formatDate } from "@/utils"
 import { JOB_STATUSES } from "@/constants"
+import { jobService } from "@/services"
 
 export default function RecruiterJobsTab() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -45,16 +46,8 @@ export default function RecruiterJobsTab() {
     if (window.confirm("Are you sure you want to delete this job?")) {
       try {
         // Call the API to delete the job
-        const response = await fetch(`/api/jobs/${id}`, {
-          method: "DELETE",
-        })
-
-        if (response.ok) {
-          // Refresh the jobs list
-          refresh()
-        } else {
-          console.error("Failed to delete job")
-        }
+        await jobService.deleteJob(id)
+        refresh()
       } catch (error) {
         console.error("Error deleting job:", error)
       }

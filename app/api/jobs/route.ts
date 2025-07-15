@@ -1,83 +1,117 @@
-import { NextResponse } from "next/server"
+import { NextResponse, NextRequest } from "next/server"
 import { z } from "zod"
-import { jobs } from "@/lib/data"
+import Job from "@/models/Job"
+import dbConnect from "@/lib/db"
+import { validateJob } from "@/utils/validators"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import { UserRole } from "@/types/enums"
+import { addDays } from "date-fns"
+import { getActiveSubscription, hasQuota, incrementJobPosting, getJobDurationForPlan } from "@/lib/subscription"
+import { JobStatus, SubscriptionPlan } from "@/types/enums"
 
-// GET /api/jobs - Get all jobs with optional filtering
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
+export async function GET(req: NextRequest) {
+  try {
+    await dbConnect()
 
-  const keyword = searchParams.get("keyword")
-  const location = searchParams.get("location")
-  const category = searchParams.get("category")
-  const page = Number.parseInt(searchParams.get("page") || "1")
-  const limit = Number.parseInt(searchParams.get("limit") || "10")
+    const {
+      keyword,
+      location,
+      category,
+      type,
+      experienceLevel,
+      page = "1",
+      limit = "20",
+      sort = "latest"
+    } = Object.fromEntries(req.nextUrl.searchParams)
 
-  let filteredJobs = [...jobs]
+    const query: any = {}
 
-  // Apply filters
-  if (keyword) {
-    filteredJobs = filteredJobs.filter(
-      (job) =>
-        job.title.toLowerCase().includes(keyword.toLowerCase()) ||
-        job.company.toLowerCase().includes(keyword.toLowerCase()) ||
-        job.description.toLowerCase().includes(keyword.toLowerCase()),
-    )
+    if (keyword) query.$text = { $search: keyword }
+    if (location) query.location = location
+    if (category) query.category = { $in: category.split(",") }
+    if (type) query.type = { $in: type.split(",") }
+    if (experienceLevel) query.experienceLevel = { $in: experienceLevel.split(",") }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit)
+
+    let sortOption: any = {}
+    switch (sort) {
+      case "oldest":
+        sortOption = { createdAt: 1 }
+        break
+      case "highestSalary":
+        sortOption = { "salary.max": -1 }
+        break
+      case "lowestSalary":
+        sortOption = { "salary.max": 1 }
+        break
+      default:
+        sortOption = { createdAt: -1 }
+    }
+
+    const [data, total] = await Promise.all([
+      Job.find(query)
+        .skip(skip)
+        .limit(+limit)
+        .sort(sortOption)
+        .lean(),
+      Job.countDocuments(query),
+    ])
+
+    return NextResponse.json({
+      data,
+      total,
+      currentPage: +page,
+      totalPages: Math.ceil(total / +limit),
+    })
+  } catch (error) {
+    console.error("Error fetching jobs:", error)
+    return NextResponse.json({ error: "Failed to fetch jobs" }, { status: 500 })
   }
-
-  if (location) {
-    filteredJobs = filteredJobs.filter((job) => job.location.toLowerCase().includes(location.toLowerCase()))
-  }
-
-  if (category) {
-    filteredJobs = filteredJobs.filter((job) => job.category.toLowerCase() === category.toLowerCase())
-  }
-
-  // Pagination
-  const startIndex = (page - 1) * limit
-  const endIndex = page * limit
-  const paginatedJobs = filteredJobs.slice(startIndex, endIndex)
-
-  return NextResponse.json({
-    jobs: paginatedJobs,
-    total: filteredJobs.length,
-    page,
-    limit,
-    totalPages: Math.ceil(filteredJobs.length / limit),
-  })
 }
 
-// POST /api/jobs - Create a new job (requires authentication)
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
+    await dbConnect()
 
-    // Validate job data
-    const jobSchema = z.object({
-      title: z.string().min(3).max(100),
-      company: z.string().min(2).max(100),
-      location: z.string().min(2).max(100),
-      type: z.enum(["Full-time", "Part-time", "Contract", "Freelance", "Internship"]),
-      category: z.string(),
-      salary: z.string().optional(),
-      description: z.string().min(10),
-      requirements: z.array(z.string()).min(1),
-      benefits: z.array(z.string()).optional(),
-      contactEmail: z.string().email(),
-      applicationUrl: z.string().url().optional(),
-      companyLogo: z.string().optional(),
-      featured: z.boolean().optional(),
+    const session = await getServerSession(authOptions)
+    if (!session || session.user.role !== UserRole.RECRUITER) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    // 👇 Check quota trước khi tạo job
+    const subscription = await getActiveSubscription(session.user.id)
+
+    if (!hasQuota(subscription)) {
+      return NextResponse.json({
+        error: "You have used up your job posting limit for this month. Please upgrade your plan."
+      }, { status: 403 })
+    }
+
+    const body = await request.json()
+    const { data: validatedData, errors } = validateJob(body)
+    if (errors) {
+      return NextResponse.json({ error: errors }, { status: 400 })
+    }
+
+    // 📝 Set job expiry based on plan
+    const durationDays = getJobDurationForPlan(subscription.plan)
+    const now = new Date()
+    const expiresAt = addDays(now, durationDays)
+    const isFeatured = subscription.plan !== SubscriptionPlan.FREE
+
+    const newJob = await Job.create({
+      ...validatedData,
+      recruiter: session.user.id,
+      publishedAt: now,
+      expiresAt,
+      isFeatured,
+      status: JobStatus.PENDING,
     })
 
-    const validatedData = jobSchema.parse(body)
-
-    // In a real app, we would save to database
-    // For demo, we'll just return the data with an ID
-    const newJob = {
-      id: `job-${Date.now()}`,
-      ...validatedData,
-      postedDate: new Date().toISOString(),
-      postedDays: 0,
-    }
+    // 👇 Tăng usageStats sau khi tạo thành công
+    await incrementJobPosting(session.user.id)
 
     return NextResponse.json(newJob, { status: 201 })
   } catch (error) {
@@ -85,6 +119,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.errors }, { status: 400 })
     }
 
+    console.error("Error creating job:", error)
     return NextResponse.json({ error: "Failed to create job" }, { status: 500 })
   }
 }

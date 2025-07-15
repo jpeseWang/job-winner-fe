@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Winner Account Verification</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9fafb;
+      color: #374151;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #ffffff;
+    }
+    .header {
+      text-align: center;
+      padding: 20px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .logo {
+      width: 120px;
+      height: auto;
+    }
+    .content {
+      padding: 30px 20px;
+      text-align: center;
+    }
+    .verification-code {
+      font-size: 32px;
+      font-weight: bold;
+      letter-spacing: 5px;
+      color: #10b981;
+      background-color: #f0fdf4;
+      border: 1px solid #dcfce7;
+      border-radius: 8px;
+      padding: 15px 20px;
+      margin: 30px auto;
+      display: inline-block;
+    }
+    .footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 12px;
+      color: #6b7280;
+      border-top: 1px solid #e5e7eb;
+    }
+    .button {
+      display: inline-block;
+      background-color: #10b981;
+      color: #ffffff !important;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: 500;
+      margin-top: 20px;
+    }
+    .note {
+      font-size: 14px;
+      color: #6b7280;
+      margin-top: 30px;
+      padding: 0 20px;
+    }
+    h1 {
+      color: #10b981;
+      margin-top: 0;
+    }
+    @media only screen and (max-width: 600px) {
+      .container {
+        width: 100%;
+      }
+      .verification-code {
+        font-size: 28px;
+        letter-spacing: 3px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="cid:jobwinnerlogo" alt="Logo" style="height:60px" />
+    </div>
+    
+    <div class="content">
+      <h1>Verify Your Account</h1>
+      
+      <p>Hello {{name}},</p>
+      
+      <p>Thank you for signing up for a <strong>Job Winner</strong> account. To complete your registration, please click the button below:</p>
+      
+      <a href="{{url}}" class="button">Verify Account</a>
+      
+      <p class="note">This verification link will expire in 24 hours. If you did not make this request, simply ignore this email or contact us if you have any questions.</p>
+    </div>
+    
+    <div class="footer">
+      <p>&copy; 2025 Job Winner. All rights reserved.</p>
+      <p>5th Floor, FutureTech Building, 123 Cach Mang Street, District 3, Ho Chi Minh City, Vietnam</p>
+      <p>
+        <a href="https://jobwinner.vn/chinh-sach-bao-mat">Privacy Policy</a> | 
+        <a href="https://jobwinner.vn/dieu-khoan-su-dung">Terms of Use</a> | 
+        <a href="https://jobwinner.vn/huy-dang-ky">Unsubscribe</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>

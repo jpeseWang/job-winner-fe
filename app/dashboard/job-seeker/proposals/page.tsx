@@ -14,43 +14,92 @@ import { Plus, Search, Download, Edit, Eye, Trash2, Clock, CheckCircle, XCircle 
 const getProposals = async () => {
   // In a real app, this would fetch from an API
   return [
-    {
-      id: "prop-1",
-      title: "Web Development Proposal",
-      client: "Acme Inc.",
-      status: "sent",
-      createdAt: "2023-05-10T10:30:00Z",
-      sentAt: "2023-05-12T14:20:00Z",
-      amount: "$5,000",
-    },
-    {
-      id: "prop-2",
-      title: "Mobile App Design Proposal",
-      client: "Tech Solutions",
-      status: "draft",
-      createdAt: "2023-04-20T09:15:00Z",
-      amount: "$8,500",
-    },
-    {
-      id: "prop-3",
-      title: "UI/UX Redesign Proposal",
-      client: "Creative Agency",
-      status: "accepted",
-      createdAt: "2023-03-15T16:30:00Z",
-      sentAt: "2023-03-16T10:10:00Z",
-      acceptedAt: "2023-03-20T11:45:00Z",
-      amount: "$3,200",
-    },
-    {
-      id: "prop-4",
-      title: "E-commerce Development Proposal",
-      client: "Retail Solutions",
-      status: "rejected",
-      createdAt: "2023-02-10T14:30:00Z",
-      sentAt: "2023-02-12T09:45:00Z",
-      rejectedAt: "2023-02-15T16:20:00Z",
-      amount: "$12,000",
-    },
+    [
+  {
+    id: "1",
+    title: "Frontend Developer",
+    client: "Acme Inc.",
+    status: "sent",
+    createdAt: "2023-05-10T10:30:00Z",
+    sentAt: "2023-05-12T14:20:00Z",
+    amount: "$8,000",
+  },
+  {
+    id: "2",
+    title: "Mobile App Design Proposal",
+    client: "Tech Solutions",
+    status: "draft",
+    createdAt: "2023-04-20T09:15:00Z",
+    amount: "$8,500",
+  },
+  {
+    id: "3",
+    title: "UI/UX Redesign Proposal",
+    client: "Creative Agency",
+    status: "accepted",
+    createdAt: "2023-03-15T16:30:00Z",
+    sentAt: "2023-03-16T10:10:00Z",
+    acceptedAt: "2023-03-20T11:45:00Z",
+    amount: "$3,200",
+  },
+  {
+    id: "4",
+    title: "E-commerce Development Proposal",
+    client: "Retail Solutions",
+    status: "rejected",
+    createdAt: "2023-02-10T14:30:00Z",
+    sentAt: "2023-02-12T09:45:00Z",
+    rejectedAt: "2023-02-15T16:20:00Z",
+    amount: "$12,000",
+  },
+  {
+    id: "5",
+    title: "Backend API Development",
+    client: "Fintech Corp.",
+    status: "sent",
+    createdAt: "2023-06-01T08:00:00Z",
+    sentAt: "2023-06-03T12:00:00Z",
+    amount: "$6,500",
+  },
+  {
+    id: "6",
+    title: "Digital Marketing Proposal",
+    client: "Marketing Experts",
+    status: "accepted",
+    createdAt: "2023-07-05T11:00:00Z",
+    sentAt: "2023-07-06T09:00:00Z",
+    acceptedAt: "2023-07-10T15:30:00Z",
+    amount: "$4,200",
+  },
+  {
+  id: "7",
+  title: "Cloud Infrastructure Setup",
+  client: "Enterprise Cloud",
+  status: "draft",
+  createdAt: "2023-07-20T13:00:00Z",
+  amount: "$9,800",
+},
+{
+  id: "8",
+  title: "Brand Identity Design",
+  client: "Startup Labs",
+  status: "rejected",
+  createdAt: "2023-05-25T10:15:00Z",
+  sentAt: "2023-05-27T11:45:00Z",
+  rejectedAt: "2023-05-30T17:00:00Z",
+  amount: "$5,400",
+},
+{
+  id: "9",
+  title: "Website SEO Optimization",
+  client: "Ecom Global",
+  status: "sent",
+  createdAt: "2023-06-15T09:30:00Z",
+  sentAt: "2023-06-17T14:00:00Z",
+  amount: "$3,600",
+}
+]
+
   ]
 }
 
@@ -142,7 +191,7 @@ export default function ProposalsPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">My Proposals</h1>
         <Button asChild className="flex items-center gap-2">
-          <Link href="/generate-cv?type=proposal">
+          <Link href="/dashboard/job-seeker/generate-cv?type=proposal">
             <Plus className="h-4 w-4" /> Create New Proposal
           </Link>
         </Button>
@@ -188,7 +237,7 @@ export default function ProposalsPage() {
           <h3 className="text-lg font-medium mb-2">No proposals found</h3>
           <p className="text-gray-500 mb-6">You haven't created any proposals yet or none match your search.</p>
           <Button asChild>
-            <Link href="/generate-cv?type=proposal">Create Your First Proposal</Link>
+            <Link href="/dashboard/job-seeker/generate-cv?type=proposal">Create Your First Proposal</Link>
           </Button>
         </div>
       ) : (

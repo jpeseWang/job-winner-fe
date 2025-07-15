@@ -1,5 +1,6 @@
 import axiosInstance from "@/lib/axios"
 import type { User, UserProfile, PaginatedResponse } from "@/types/interfaces"
+import { IUserProfile } from "@/types/interfaces/user"
 import type { UserRole, UserStatus } from "@/types/enums"
 
 interface UserFilters {
@@ -39,6 +40,12 @@ export const userService = {
     }
   },
 
+  // Update user role
+  async updateRole(role: UserRole) {
+    const response = await axiosInstance.post("/set-role", { role })
+    return response.data
+  },
+
   // Create a new user
   async createUser(userData: Partial<User>): Promise<User> {
     const response = await axiosInstance.post("/users", userData)
@@ -58,13 +65,13 @@ export const userService = {
   },
 
   // Get user profile
-  async getUserProfile(userId: string): Promise<UserProfile> {
+  async getUserProfile(userId: string): Promise<IUserProfile> {
     const response = await axiosInstance.get(`/profiles/${userId}`)
     return response.data
   },
 
   // Update user profile
-  async updateUserProfile(userId: string, profileData: Partial<UserProfile>): Promise<UserProfile> {
+  async updateUserProfile(userId: string, profileData: Partial<IUserProfile>): Promise<UserProfile> {
     const response = await axiosInstance.put(`/profiles/${userId}`, profileData)
     return response.data
   },
@@ -79,5 +86,11 @@ export const userService = {
     } catch (error) {
       return null
     }
+  },
+
+  // Get current user's profile using token/session
+  async getMyProfile(): Promise<IUserProfile> {
+    const response = await axiosInstance.get("/users/profile")
+    return response.data
   },
 }

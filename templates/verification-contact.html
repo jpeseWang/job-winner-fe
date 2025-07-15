@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Contact Message from Job Winner</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f9fafb;
+        color: #374151;
+        line-height: 1.5;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #ffffff;
+      }
+      .header {
+        text-align: center;
+        padding: 20px 0;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      .logo {
+        width: 120px;
+        height: auto;
+      }
+      .content {
+        padding: 30px 20px;
+      }
+      .message-box {
+        background-color: #ecfdf5;
+        border-left: 4px solid #10b981;
+        padding: 15px 20px;
+        margin: 20px 0;
+        border-radius: 4px;
+      }
+      .info {
+        margin-top: 20px;
+        font-size: 15px;
+        color: #4b5563;
+      }
+      .footer {
+        text-align: center;
+        padding: 20px;
+        font-size: 12px;
+        color: #6b7280;
+        border-top: 1px solid #e5e7eb;
+      }
+      h1 {
+        color: #10b981;
+        margin-top: 0;
+        text-align: center;
+      }
+      @media only screen and (max-width: 600px) {
+        .container {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <img src="cid:jobwinnerlogo" alt="Logo" style="height: 60px" />
+      </div>
+
+      <div class="content">
+        <h1>New Contact Message</h1>
+
+        <p>Hello Admin,</p>
+        <p>
+          You have received a new contact message from a user via the Job Winner platform:
+        </p>
+
+        <div class="info">
+          <p><strong>Name:</strong> {{name}}</p>
+          <p><strong>Email:</strong> {{email}}</p>
+        </div>
+
+        <div class="message-box">
+          <p><strong>Message:</strong></p>
+          <p>{{message}}</p>
+        </div>
+
+        <p>
+          If you wish to respond, please reply directly to the user's email address above.
+        </p>
+      </div>
+
+      <div class="footer">
+        <p>&copy; 2025 Job Winner. All rights reserved.</p>
+        <p>
+          5th Floor, FutureTech Building, 123 Cach Mang Street, District 3, Ho Chi Minh City, Vietnam
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

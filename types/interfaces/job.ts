@@ -1,16 +1,20 @@
-
 // Job interfaces
-export enum JobType {
-  FULL_TIME = "full_time",
-  PART_TIME = "part_time",
-  CONTRACT = "contract",
-  FREELANCE = "freelance",
+import { JobType, JobStatus } from "@/types/enums/index";
+
+export interface Salary {
+  min?: number;
+  max?: number;
+  currency: string;
+  isNegotiable: boolean;
+  period: "hourly" | "daily" | "weekly" | "monthly" | "yearly";
 }
 
-export enum JobStatus {
-  ACTIVE = "active",
-  EXPIRED = "expired",
-  PENDING = "pending",
+export interface Salary {
+  min?: number;
+  max?: number;
+  currency: string;
+  isNegotiable: boolean;
+  period: "hourly" | "daily" | "weekly" | "monthly" | "yearly";
 }
 
 export interface Job {
@@ -20,18 +24,25 @@ export interface Job {
   location: string
   type: JobType
   category: string
-  salary?: string
+  salary?: Salary
   description: string
   requirements: string[]
+  responsibilities?: string[]
+  skills?: string[]
   benefits?: string[]
   contactEmail: string
   applicationUrl?: string
   companyLogo?: string
   postedDate: string
   postedDays: number
+  applicationDeadline?: string
+  isRemote?: boolean
+  experienceLevel: string
+  educationLevel?: string
   featured?: boolean
   status?: JobStatus
-  updatedAt?: string
+  updatedAt?: string | Date
+  createdAt?: string | Date
 }
 
 export interface JobCategory {
@@ -50,3 +61,31 @@ export interface Company {
   website: string
   industry: string
 }
+
+export interface FilterOption {
+  label: string
+  count: number
+}
+
+export interface Filters {
+  categories: FilterOption[]
+  locations: string[]
+  types: FilterOption[]
+  experienceLevels: FilterOption[]
+}
+
+export interface JobFilters {
+  keyword?: string
+  location?: string
+  category?: string[]
+  type?: string[]
+  experienceLevel?: string[]
+  minSalary?: number
+  maxSalary?: number
+  page?: number
+  limit?: number
+  status?: JobStatus
+  featured?: boolean
+  sort?: "latest" | "oldest" | "highestSalary" | "lowestSalary"
+}
+

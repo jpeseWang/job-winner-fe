@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { Search, MoreVertical, Eye, Edit, Trash2, UserCheck, UserX, Mail } from "lucide-react"
-import { useUsers } from "@/hooks"
+import { useUsers } from "@/hooks/index"
 import { type UserRole, UserStatus } from "@/types/enums"
 import { formatDate } from "@/utils"
 import { USER_ROLES, USER_STATUSES, DEFAULT_AVATAR } from "@/constants"

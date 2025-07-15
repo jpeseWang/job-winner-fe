@@ -1,83 +1,119 @@
+import { MongoDBAdapter } from "@auth/mongodb-adapter"
 import NextAuth from "next-auth"
-import CredentialsProvider from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google"
-import GithubProvider from "next-auth/providers/github"
-import { userService } from "@/services"
+import clientPromise from "@/lib/mongodb"
+import type { NextAuthOptions } from "next-auth"
+import CredentialsProvider from "next-auth/providers/credentials"
+import { UserRole } from "@/types/enums"
+import { getActiveSubscription } from "@/lib/subscription"
 
-const handler = NextAuth({
+import dbConnect from "@/lib/db"
+import User from "@/models/User"
+
+export const authOptions: NextAuthOptions = {
+  adapter: MongoDBAdapter(clientPromise),
+  session: { strategy: "jwt" },
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "email" },
+        email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
-        userType: { label: "User Type", type: "text" },
+        role: { label: "Role", type: "text" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email and password are required")
+        const { email, password, role } = credentials as {
+          email: string
+          password: string
+          role: UserRole.JOB_SEEKER | UserRole.ADMIN | UserRole.RECRUITER
         }
+        // 1) Kết nối DB & tìm user theo email
+        await dbConnect()
+        const user = await User.findOne({ email: credentials!.email.toLowerCase() })
 
-        try {
-          // In a real app, you would verify credentials against your database
-          // For demo purposes, we'll use a mock authentication
-          const user = await userService.authenticateUser(
-            credentials.email,
-            credentials.password,
-            credentials.userType as any,
-          )
+        // so khớp role
+        // if (user.role !== role) {
+        //   throw new Error("Wrong role selected")        // front-end sẽ nhận error
+        // }
 
-          if (!user) {
-            throw new Error("Invalid email or password")
-          }
+        // 2) Nếu không có user hoặc user không có password (tài khoản OAuth), báo lỗi chung
+        if (!user || !user.password) throw new Error("Invalid email or password")
 
-          return {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            image: user.photo,
-          }
-        } catch (error) {
-          throw new Error(error instanceof Error ? error.message : "Authentication failed")
+        // 3) So khớp mật khẩu (comparePassword đã dùng bcrypt bên Model)
+        const isMatch = await user.comparePassword(credentials!.password)
+        if (!isMatch) throw new Error("Invalid email or password")
+
+        // 4) Kiểm tra đã xác thực email chưa
+        if (!user.isVerified) throw new Error("Please verify your email")
+
+        // 5) Trả object cho NextAuth ghi vào JWT / session
+        return {
+          id: user._id.toString(),
+          name: user.name,
+          email: user.email,
+          role: user.role,
         }
       },
     }),
+
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-    }),
-    GithubProvider({
-      clientId: process.env.GITHUB_CLIENT_ID || "",
-      clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          prompt: "select_account consent",
+          access_type: "offline",
+          response_type: "code",
+        },
+      },
     }),
   ],
-  pages: {
-    signIn: "/auth/login",
-    signOut: "/auth/logout",
-    error: "/auth/error",
-  },
   callbacks: {
+    async signIn({ user, account }) {
+
+      if (account?.provider === "google") {
+        return true
+      }
+
+      const client = await clientPromise
+      const db = client.db()
+      const dbUser = await db.collection("users").findOne({ email: user.email })
+
+      // nếu user chưa xác thực, không cho đăng nhập
+      if (!dbUser?.isVerified) {
+        throw new Error("Please verify your email before signing in.")
+      }
+
+      return true
+    },
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id
-        token.role = user.role
+        token.role = user.role;
+        token.id = user.id;
+        token.email = user.email;
+        token.name = user.name;
       }
+
       return token
     },
     async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string
-        session.user.role = token.role as string
-      }
+      session.user.role = token.role;
+      session.user.id = token.id;
+      session.user.email = token.email;
+      session.user.name = token.name;
+      const subscription = await getActiveSubscription(token.id as string)
+      session.user.subscription = subscription
+
       return session
     },
   },
-  session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+  pages: {
+    signIn: "/auth/login",
+    error: "/auth/login",
   },
-  secret: process.env.NEXTAUTH_SECRET,
-})
+}
 
+const handler = NextAuth(authOptions)
 export { handler as GET, handler as POST }
+

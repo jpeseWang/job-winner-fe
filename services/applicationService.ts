@@ -10,40 +10,76 @@ interface ApplicationFilters {
 }
 
 export const applicationService = {
-  // Get all applications with optional filtering
   async getApplications(filters: ApplicationFilters = {}): Promise<JobApplication[]> {
-    const params = new URLSearchParams()
+    const params = new URLSearchParams();
 
-    if (filters.jobId) params.append("jobId", filters.jobId)
-    if (filters.status) params.append("status", filters.status)
-    if (filters.page) params.append("page", filters.page.toString())
-    if (filters.limit) params.append("limit", filters.limit.toString())
+    if (filters.jobId) params.append("jobId", filters.jobId);
+    if (filters.status) params.append("status", filters.status);
+    if (filters.page) params.append("page", filters.page.toString());
+    if (filters.limit) params.append("limit", filters.limit.toString());
 
-    const response = await axiosInstance.get(`/applications?${params.toString()}`)
-    return response.data
+    try {
+      const response = await axiosInstance.get(`/applications?${params.toString()}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error?.response?.data?.error || "Failed to load applications");
+    }
   },
 
-  // Get a specific application by ID
   async getApplicationById(id: string): Promise<JobApplication> {
-    const response = await axiosInstance.get(`/applications/${id}`)
-    return response.data
+    try {
+      const response = await axiosInstance.get(`/applications/${id}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error?.response?.data?.error || "Failed to fetch application");
+    }
   },
 
-  // Submit a new application
   async submitApplication(applicationData: Partial<JobApplication>): Promise<JobApplication> {
-    const response = await axiosInstance.post("/applications", applicationData)
-    return response.data
+    try {
+      const response = await axiosInstance.post("/applications", applicationData);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error?.response?.data?.error || "Failed to submit application");
+    }
   },
 
-  // Update application status
   async updateApplicationStatus(id: string, status: ApplicationStatus): Promise<JobApplication> {
-    const response = await axiosInstance.patch(`/applications/${id}/status`, { status })
-    return response.data
+    try {
+      const response = await axiosInstance.patch(`/applications/${id}/status`, { status });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error?.response?.data?.error || "Failed to update application status");
+    }
   },
 
-  // Get applications for a specific job
   async getApplicationsByJobId(jobId: string): Promise<JobApplication[]> {
-    const response = await axiosInstance.get(`/jobs/${jobId}/applications`)
-    return response.data
+    try {
+      const response = await axiosInstance.get(`/jobs/${jobId}/applications`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error?.response?.data?.error || "Failed to fetch job applications");
+    }
   },
-}
+
+  async getApplicationsByRecruiter(filters: {
+    status?: ApplicationStatus
+    jobId?: string
+    page?: number
+    limit?: number
+  } = {}) {
+    try {
+      const params = new URLSearchParams()
+      if (filters.status) params.append("status", filters.status)
+      if (filters.jobId) params.append("jobId", filters.jobId)
+      if (filters.page) params.append("page", filters.page.toString())
+      if (filters.limit) params.append("limit", filters.limit.toString())
+
+      const res = await axiosInstance.get(`/applications/by-recruiter?${params.toString()}`)
+      return res.data
+    } catch (err) {
+      console.error("Failed to fetch recruiter applications:", err)
+      return []
+    }
+  }
+};

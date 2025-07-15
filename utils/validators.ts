@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { JobType, UserRole } from "@/types/enums"
+import { JobType, UserRole, ExperienceLevel, JobStatus } from "@/types/enums"
 
 // Job validation schema
 export const jobSchema = z.object({
@@ -8,20 +8,40 @@ export const jobSchema = z.object({
     .string()
     .min(2, "Company name must be at least 2 characters")
     .max(100, "Company name cannot exceed 100 characters"),
+  recruiter: z.string().min(1, "Recruiter ID is required"),
+  description: z.string().min(10, "Description must be at least 10 characters"),
+  responsibilities: z.array(z.string()).min(1, "At least one responsibility is needed"),
+  requirements: z.array(z.string()).min(1, "At least one requirement is needed"),
+  benefits: z.array(z.string()).optional(),
+  type: z.nativeEnum(JobType, { errorMap: () => ({ message: "Invalid job type" }) }),
+  category: z.string().min(1, "Category is required"),
   location: z
     .string()
     .min(2, "Location must be at least 2 characters")
     .max(100, "Location cannot exceed 100 characters"),
-  type: z.nativeEnum(JobType, { errorMap: () => ({ message: "Invalid job type" }) }),
-  category: z.string().min(1, "Category is required"),
-  salary: z.string().optional(),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  requirements: z.array(z.string()).min(1, "At least one requirement is needed"),
-  benefits: z.array(z.string()).optional(),
-  contactEmail: z.string().email("Invalid email address"),
+  isRemote: z.boolean().optional(),
+  salary: z.object({
+    min: z.number().optional(),
+    max: z.number().optional(),
+    currency: z.string().default("USD"),
+    isNegotiable: z.boolean().default(false),
+    period: z.enum(["hourly", "daily", "weekly", "monthly", "yearly"]).default("yearly"),
+  }).optional(),
+  experienceLevel: z.nativeEnum(ExperienceLevel, { errorMap: () => ({ message: "Invalid experience level" }) }),
+  educationLevel: z.string().optional(),
+  skills: z.array(z.string()).min(1, "At least one skill is required"),
+  applicationDeadline: z.string().optional(),
   applicationUrl: z.string().url("Invalid URL").optional(),
-  companyLogo: z.string().optional(),
-  featured: z.boolean().optional(),
+  contactEmail: z.string().email("Invalid email address"),
+  status: z.nativeEnum(JobStatus).default(JobStatus.DRAFT).optional(),
+  rejectionReason: z.string().optional(),
+  isFeatured: z.boolean().optional(),
+  views: z.number().default(0).optional(),
+  applications: z.number().default(0).optional(),
+  publishedAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+  companyId: z.string().min(1, "Company ID is required"),
+  companyLogo: z.string().url("Invalid URL").optional(),
 })
 
 // Application validation schema
@@ -44,25 +64,25 @@ export const userSchema = z.object({
 })
 
 // Profile validation schema
-export const profileSchema = z.object({
+const baseProfileSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters").max(100, "Title cannot exceed 100 characters"),
   location: z
     .string()
     .min(2, "Location must be at least 2 characters")
     .max(100, "Location cannot exceed 100 characters"),
   skills: z.array(z.string()).min(1, "At least one skill is required"),
-  experience: z.string().min(1, "Experience is required"),
   education: z.array(
     z.object({
       degree: z.string().min(1, "Degree is required"),
       institution: z.string().min(1, "Institution is required"),
-      year: z.string().min(1, "Year is required"),
     }),
   ),
   bio: z.string().min(10, "Bio must be at least 10 characters"),
   contactEmail: z.string().email("Invalid email address"),
   isPublic: z.boolean(),
 })
+
+export const profileSchema = baseProfileSchema.partial()
 
 // Validate job data
 export const validateJob = (data: any) => {

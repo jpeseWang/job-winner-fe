@@ -10,10 +10,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { Search, MoreVertical, Eye, Download, CheckCircle, XCircle, Clock, MessageSquare, Calendar } from "lucide-react"
-import { useApplications } from "@/hooks"
+import { useApplications } from "@/hooks/index"
 import { ApplicationStatus } from "@/types/enums"
 import { formatDate } from "@/utils"
 import { APPLICATION_STATUSES, DEFAULT_AVATAR } from "@/constants"
+import type { JobApplication } from "@/types/interfaces"
 
 export default function RecruiterApplicationsTab() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -27,7 +28,7 @@ export default function RecruiterApplicationsTab() {
   })
 
   // Filter applications based on search term
-  const filteredApplications = applications.filter((app) => {
+  const filteredApplications = applications.filter((app: JobApplication) => {
     return (
       searchTerm === "" ||
       app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -37,7 +38,7 @@ export default function RecruiterApplicationsTab() {
   })
 
   // Get unique job titles for filter
-  const jobTitles = Array.from(new Set(applications.map((app) => app.jobTitle).filter(Boolean)))
+  const jobTitles = Array.from(new Set(applications.map((app: JobApplication) => app.jobTitle).filter(Boolean))) as string[];
 
   const getStatusBadge = (status: string) => {
     const statusConfig = APPLICATION_STATUSES.find((s) => s.value === status) || APPLICATION_STATUSES[0]
@@ -129,7 +130,7 @@ export default function RecruiterApplicationsTab() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredApplications.map((application) => (
+                filteredApplications.map((application: JobApplication) => (
                   <TableRow key={application.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">

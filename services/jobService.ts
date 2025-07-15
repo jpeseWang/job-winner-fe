@@ -1,69 +1,131 @@
 import axiosInstance from "@/lib/axios"
+import axiosServer from "@/lib/axiosServer";
 import type { Job, PaginatedResponse } from "@/types/interfaces"
-import type { JobStatus, JobType } from "@/types/enums"
-
-interface JobFilters {
-  keyword?: string
-  location?: string
-  category?: string
-  type?: JobType
-  page?: number
-  limit?: number
-  status?: JobStatus
-  featured?: boolean
-}
+import type { JobStatus } from "@/types/enums"
+import type { JobFilters } from "@/types/interfaces/job"
 
 export const jobService = {
-  // Get all jobs with optional filtering
-  async getJobs(filters: JobFilters = {}): Promise<PaginatedResponse<Job>> {
-    const params = new URLSearchParams()
+  async getJobs(filters: JobFilters = {}) {
+  const params = new URLSearchParams();
 
-    if (filters.keyword) params.append("keyword", filters.keyword)
-    if (filters.location) params.append("location", filters.location)
-    if (filters.category) params.append("category", filters.category)
-    if (filters.type) params.append("type", filters.type)
-    if (filters.status) params.append("status", filters.status)
-    if (filters.featured !== undefined) params.append("featured", filters.featured.toString())
-    if (filters.page) params.append("page", filters.page.toString())
-    if (filters.limit) params.append("limit", filters.limit.toString())
+  Object.entries(filters).forEach(([key, value]) => {
+    if (!value || (Array.isArray(value) && value.length === 0)) return;
+    params.append(key, Array.isArray(value) ? value.join(",") : String(value));
+  });
 
-    const response = await axiosInstance.get(`/jobs?${params.toString()}`)
-    return response.data
-  },
+  try {
+    const res = await axiosInstance.get(`/jobs?${params.toString()}`);
+    const fixedData = (res.data.data as any[]).map((j) =>
+      j.id ? j : j._id ? { ...j, id: j._id.toString() } : null
+    ).filter(Boolean);
 
-  // Get a specific job by ID
-  async getJobById(id: string): Promise<Job> {
-    const response = await axiosInstance.get(`/jobs/${id}`)
-    return response.data
-  },
+    return { ...res.data, data: fixedData };
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.error || "Failed to fetch jobs");
+  }
+},
 
-  // Create a new job
+  async getJobById(id: string, server = false): Promise<Job> {
+  try {
+    if (server) {
+      const res = await axiosServer.get(`${process.env.INTERNAL_API_URL}/jobs/${id}`);
+      const job = res.data;
+      return job.id ? job : { ...job, id: job._id?.toString?.() ?? "" };
+    } else {
+      const res = await axiosInstance.get(`/jobs/${id}`);
+      const job = res.data;
+      return job.id ? job : { ...job, id: job._id?.toString?.() ?? "" };
+    }
+  } catch (error: any) {
+    if (error?.response?.status === 404) {
+      throw new Error("Job not found");
+    }
+    throw new Error(error?.response?.data?.error || "Failed to fetch job");
+  }
+},
+
   async createJob(jobData: Partial<Job>): Promise<Job> {
-    const response = await axiosInstance.post("/jobs", jobData)
-    return response.data
+    try {
+      const res = await axiosInstance.post("/jobs", jobData)
+      return res.data
+    } catch (error: any) {
+      throw new Error(error?.response?.data?.error || "Failed to create job")
+    }
   },
 
-  // Update an existing job
   async updateJob(id: string, jobData: Partial<Job>): Promise<Job> {
-    const response = await axiosInstance.put(`/jobs/${id}`, jobData)
-    return response.data
+    try {
+      const res = await axiosInstance.put(`/jobs/${id}`, jobData)
+      return res.data
+    } catch (error: any) {
+      if (error?.response?.status === 404) {
+        throw new Error("Job not found for update")
+      }
+      throw new Error(error?.response?.data?.error || "Failed to update job")
+    }
   },
 
-  // Delete a job
   async deleteJob(id: string): Promise<{ success: boolean; message: string }> {
-    const response = await axiosInstance.delete(`/jobs/${id}`)
-    return response.data
+    try {
+      const res = await axiosInstance.delete(`/jobs/${id}`)
+      return res.data
+    } catch (error: any) {
+      if (error?.response?.status === 404) {
+        throw new Error("Job not found for deletion")
+      }
+      throw new Error(error?.response?.data?.error || "Failed to delete job")
+    }
   },
 
-  // Change job status
   async changeJobStatus(id: string, status: JobStatus): Promise<Job> {
-    const response = await axiosInstance.patch(`/jobs/${id}/status`, { status })
-    return response.data
+    try {
+      const res = await axiosInstance.patch(`/jobs/${id}/status`, { status })
+      return res.data
+    } catch (error: any) {
+      throw new Error(error?.response?.data?.error || "Failed to change job status")
+    }
   },
 
-  // Toggle featured status
   async toggleFeatured(id: string, featured: boolean): Promise<Job> {
-    const response = await axiosInstance.patch(`/jobs/${id}/featured`, { featured })
-    return response.data
+    try {
+      const res = await axiosInstance.patch(`/jobs/${id}/featured`, { featured })
+      return res.data
+    } catch (error: any) {
+      throw new Error(error?.response?.data?.error || "Failed to toggle featured")
+    }
   },
+
+  async getFilterMetadata() {
+    try {
+      const res = await axiosInstance.get("/meta/job-filters")
+      return res.data
+    } catch (error: any) {
+      throw new Error(error?.response?.data?.error || "Failed to load filter metadata")
+    }
+  },
+
+  async getJobOverview(): Promise<{ jobCount: number; companyCount: number; candidateCount: number }> {
+    try {
+      const res = await axiosInstance.get("/meta/overview")
+      return res.data
+    } catch (error: any) {
+      throw new Error(error?.response?.data?.error || "Failed to fetch job overview")
+    }
+  },
+
+  async getLatestJobs(limit = 5) {
+  try {
+    const res = await axiosInstance.get(`/jobs?sort=latest&limit=${limit}`)
+    
+    return (res.data.data as any[]).flatMap((j) =>
+      j.id
+        ? j                                 
+        : j._id
+          ? { ...j, id: j._id.toString() }    
+          : []                               
+    );
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.error || "Failed to load latest jobs")
+  }
+}
 }

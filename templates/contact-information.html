@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contact Confirmation - Job Winner</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f9fafb;
+        color: #374151;
+        line-height: 1.6;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #ffffff;
+      }
+      .header {
+        text-align: center;
+        padding: 20px 0;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      .logo {
+        width: 120px;
+        height: auto;
+      }
+      .content {
+        padding: 30px 20px;
+      }
+      .highlight {
+        background-color: #ecfdf5;
+        border-left: 4px solid #10b981;
+        padding: 10px 15px;
+        margin: 20px 0;
+        border-radius: 6px;
+      }
+      .footer {
+        text-align: center;
+        padding: 20px;
+        font-size: 12px;
+        color: #6b7280;
+        border-top: 1px solid #e5e7eb;
+      }
+      h1 {
+        color: #10b981;
+        margin-bottom: 10px;
+      }
+      a.button {
+        display: inline-block;
+        background-color: #10b981;
+        color: #ffffff;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: bold;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <img src="cid:jobwinnerlogo" alt="Logo" style="height: 60px" />
+      </div>
+
+      <div class="content">
+        <h1>We’ve received your message!</h1>
+        <p>Hello <strong>{{name}}</strong>,</p>
+
+        <p>
+          Thank you for contacting <strong>Job Winner</strong>. We truly
+          appreciate your interest and will respond to your inquiry as soon as
+          possible.
+        </p>
+
+        <div class="highlight">
+          <p><strong>Email:</strong> {{email}}</p>
+          <p><strong>Message:</strong> {{message}}</p>
+        </div>
+
+        <p>
+          While waiting for our response, feel free to explore our platform
+          where you can discover job opportunities, create a professional CV,
+          and easily manage your profile.
+        </p>
+
+        <div style="text-align: center">
+          <a href="https://jobwinner-dev.netlify.app/" class="button"
+            >Explore Job Winner</a
+          >
+        </div>
+
+        <p style="margin-top: 30px">Best regards,<br />The Job Winner Team</p>
+      </div>
+
+      <div class="footer">
+        <p>&copy; 2025 Job Winner. All rights reserved.</p>
+        <p>
+          5th Floor, FutureTech Building, 123 Cach Mang Street, Dist. 3, HCMC
+        </p>
+        <p>
+          <a href="https://jobwinner.vn/chinh-sach-bao-mat">Privacy Policy</a> |
+          <a href="https://jobwinner.vn/dieu-khoan-su-dung">Terms</a> |
+          <a href="https://jobwinner.vn/huy-dang-ky">Unsubscribe</a>
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,16 +1,17 @@
 "use client"
 
-import { useState } from "react"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useState, useEffect } from "react"
 import { formatDate } from "@/utils"
+import type { ICVTemplate } from "@/types/interfaces"
 
 interface CVPreviewProps {
   data: any[]
   generatedCV: any
+  template: ICVTemplate | null
 }
 
-export default function CVPreview({ data, generatedCV }: CVPreviewProps) {
-  const [template, setTemplate] = useState("modern")
+export default function CVPreview({ data, generatedCV, template }: CVPreviewProps) {
+  const [renderedHTML, setRenderedHTML] = useState<string>("")
 
   // Extract data from form sections
   const personalSection = data.find((section) => section.id === "personal")
@@ -28,13 +29,23 @@ export default function CVPreview({ data, generatedCV }: CVPreviewProps) {
   const phone = getFieldValue(personalSection, "phone")
   const location = getFieldValue(personalSection, "location")
   const summary = getFieldValue(personalSection, "summary")
-  const skills = getFieldValue(skillsSection, "skills-list")
+  const skillsList = getFieldValue(skillsSection, "skills-list")
+  const skills = skillsList
     .split(",")
     .map((skill: string) => skill.trim())
     .filter((skill: string) => skill)
 
   // Group experience fields into job entries
-  const experiences = []
+  interface Experience {
+    jobTitle: string
+    company: string
+    location: string
+    startDate: string
+    endDate: string
+    description: string
+  }
+
+  const experiences: Experience[] = []
   if (experienceSection) {
     const fieldCount = experienceSection.fields.length
     const jobCount = fieldCount / 6
@@ -62,256 +73,114 @@ export default function CVPreview({ data, generatedCV }: CVPreviewProps) {
     endDate: getFieldValue(educationSection, "end-date-edu"),
   }
 
-  if (!name && !generatedCV) {
+  useEffect(() => {
+    if (template && template.htmlTemplate) {
+      // Simple template rendering - in a real app, use a proper template engine
+      let html = template.htmlTemplate
+
+      // Replace personal details
+      html = html.replace(/{{name}}/g, name || "[Your Name]")
+      html = html.replace(/{{email}}/g, email || "[Your Email]")
+      html = html.replace(/{{phone}}/g, phone || "[Your Phone]")
+      html = html.replace(/{{location}}/g, location || "[Your Location]")
+      html = html.replace(/{{summary}}/g, summary || "[Your Professional Summary]")
+
+      // Replace education
+      html = html.replace(/{{degree}}/g, education.degree || "[Your Degree]")
+      html = html.replace(/{{institution}}/g, education.institution || "[Your Institution]")
+      html = html.replace(/{{educationLocation}}/g, education.location || "[Education Location]")
+      html = html.replace(
+        /{{educationStartDate}}/g,
+        education.startDate ? formatDate(education.startDate) : "[Start Date]",
+      )
+      html = html.replace(/{{educationEndDate}}/g, education.endDate ? formatDate(education.endDate) : "Present")
+
+      // Replace skills
+      html = html.replace(/{{skills}}/g, skills.join(", ") || "[Your Skills]")
+
+      // Handle initials for templates that use them
+      const initials = name
+        ? name
+          .split(" ")
+          .map((n: any) => n[0])
+          .join("")
+        : "JD"
+      html = html.replace(/{{initials}}/g, initials)
+
+      // Handle experience sections - this is a simplified version
+      // In a real app, you'd use a proper template engine like Handlebars
+      if (experiences.length > 0) {
+        let experienceHTML = ""
+        experiences.forEach((exp) => {
+          let expTemplate = html.match(/{{#each experience}}([\s\S]*?){{\/each}}/)?.[1] || ""
+
+          if (expTemplate) {
+            expTemplate = expTemplate.replace(/{{jobTitle}}/g, exp.jobTitle || "[Job Title]")
+            expTemplate = expTemplate.replace(/{{company}}/g, exp.company || "[Company]")
+            expTemplate = expTemplate.replace(/{{location}}/g, exp.location || "[Location]")
+            expTemplate = expTemplate.replace(
+              /{{startDate}}/g,
+              exp.startDate ? formatDate(exp.startDate) : "[Start Date]",
+            )
+            expTemplate = expTemplate.replace(/{{endDate}}/g, exp.endDate ? formatDate(exp.endDate) : "Present")
+            expTemplate = expTemplate.replace(/{{description}}/g, exp.description || "[Job Description]")
+
+            experienceHTML += expTemplate
+          }
+        })
+
+        html = html.replace(/{{#each experience}}[\s\S]*?{{\/each}}/g, experienceHTML)
+      } else {
+        html = html.replace(/{{#each experience}}[\s\S]*?{{\/each}}/g, "<p>[Add your work experience]</p>")
+      }
+
+      // Handle skills list with each
+      if (skills.length > 0) {
+        let skillsHTML = ""
+        const skillTemplate = html.match(/{{#each skills}}([\s\S]*?){{\/each}}/)?.[1] || ""
+
+        if (skillTemplate) {
+          skills.forEach((skill: any) => {
+            skillsHTML += skillTemplate.replace(/{{this}}/g, skill)
+          })
+
+          html = html.replace(/{{#each skills}}[\s\S]*?{{\/each}}/g, skillsHTML)
+        }
+      } else {
+        html = html.replace(/{{#each skills}}[\s\S]*?{{\/each}}/g, '<span class="skill">[Your Skills]</span>')
+      }
+
+      // Add CSS for the template
+      html = `
+        <style>
+        ${template.cssStyles}
+        </style>
+        ${html}
+      `
+
+      setRenderedHTML(html)
+    }
+  }, [template, name, email, phone, location, summary, skills, experiences])
+
+  if (!name && !generatedCV && !template) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-gray-500">
-        <p className="text-center">Fill in the form to see your CV preview</p>
+        <p className="text-center">Select a template and fill in the form to see your CV preview</p>
+      </div>
+    )
+  }
+
+  if (!template) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-gray-500">
+        <p className="text-center">Please select a CV template first</p>
       </div>
     )
   }
 
   return (
     <div className="space-y-4">
-      <Tabs value={template} onValueChange={setTemplate} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="modern">Modern</TabsTrigger>
-          <TabsTrigger value="classic">Classic</TabsTrigger>
-          <TabsTrigger value="creative">Creative</TabsTrigger>
-        </TabsList>
-      </Tabs>
-
-      <div className="p-6 bg-white shadow-sm">
-        {template === "modern" && (
-          <div className="space-y-6">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between border-b pb-6">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">{name}</h1>
-                <p className="text-gray-600 mt-1">{location}</p>
-              </div>
-              <div className="text-right space-y-1">
-                <p className="text-gray-700">{email}</p>
-                <p className="text-gray-700">{phone}</p>
-              </div>
-            </div>
-
-            {/* Summary */}
-            {summary && (
-              <div className="space-y-2">
-                <h2 className="text-lg font-semibold text-gray-900 border-b pb-1">Professional Summary</h2>
-                <p className="text-gray-700">{summary}</p>
-              </div>
-            )}
-
-            {/* Experience */}
-            {experiences.length > 0 && (
-              <div className="space-y-4">
-                <h2 className="text-lg font-semibold text-gray-900 border-b pb-1">Experience</h2>
-                {experiences.map((exp, index) => (
-                  <div key={index} className="space-y-1">
-                    <div className="flex justify-between">
-                      <h3 className="font-medium text-gray-900">{exp.jobTitle}</h3>
-                      <p className="text-gray-600 text-sm">
-                        {exp.startDate && formatDate(exp.startDate)} -{" "}
-                        {exp.endDate ? formatDate(exp.endDate) : "Present"}
-                      </p>
-                    </div>
-                    <p className="text-gray-700">
-                      {exp.company}, {exp.location}
-                    </p>
-                    <p className="text-gray-600 text-sm mt-1">{exp.description}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Education */}
-            {education.degree && (
-              <div className="space-y-4">
-                <h2 className="text-lg font-semibold text-gray-900 border-b pb-1">Education</h2>
-                <div className="space-y-1">
-                  <div className="flex justify-between">
-                    <h3 className="font-medium text-gray-900">{education.degree}</h3>
-                    <p className="text-gray-600 text-sm">
-                      {education.startDate && formatDate(education.startDate)} -{" "}
-                      {education.endDate ? formatDate(education.endDate) : "Present"}
-                    </p>
-                  </div>
-                  <p className="text-gray-700">
-                    {education.institution}, {education.location}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Skills */}
-            {skills.length > 0 && (
-              <div className="space-y-2">
-                <h2 className="text-lg font-semibold text-gray-900 border-b pb-1">Skills</h2>
-                <div className="flex flex-wrap gap-2">
-                  {skills.map((skill, index) => (
-                    <span key={index} className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-sm">
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {template === "classic" && (
-          <div className="space-y-6">
-            {/* Header */}
-            <div className="text-center border-b pb-6">
-              <h1 className="text-2xl font-bold text-gray-900">{name}</h1>
-              <div className="mt-2 flex flex-wrap justify-center gap-x-4 text-gray-600">
-                {email && <p>{email}</p>}
-                {phone && <p>{phone}</p>}
-                {location && <p>{location}</p>}
-              </div>
-            </div>
-
-            {/* Summary */}
-            {summary && (
-              <div className="space-y-2">
-                <h2 className="text-lg font-bold text-gray-900 uppercase">Professional Summary</h2>
-                <p className="text-gray-700">{summary}</p>
-              </div>
-            )}
-
-            {/* Experience */}
-            {experiences.length > 0 && (
-              <div className="space-y-4">
-                <h2 className="text-lg font-bold text-gray-900 uppercase">Experience</h2>
-                {experiences.map((exp, index) => (
-                  <div key={index} className="space-y-1">
-                    <h3 className="font-bold text-gray-900">{exp.jobTitle}</h3>
-                    <p className="font-medium text-gray-700">
-                      {exp.company}, {exp.location}
-                    </p>
-                    <p className="text-gray-600 italic">
-                      {exp.startDate && formatDate(exp.startDate)} - {exp.endDate ? formatDate(exp.endDate) : "Present"}
-                    </p>
-                    <p className="text-gray-600 mt-1">{exp.description}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Education */}
-            {education.degree && (
-              <div className="space-y-4">
-                <h2 className="text-lg font-bold text-gray-900 uppercase">Education</h2>
-                <div className="space-y-1">
-                  <h3 className="font-bold text-gray-900">{education.degree}</h3>
-                  <p className="font-medium text-gray-700">
-                    {education.institution}, {education.location}
-                  </p>
-                  <p className="text-gray-600 italic">
-                    {education.startDate && formatDate(education.startDate)} -{" "}
-                    {education.endDate ? formatDate(education.endDate) : "Present"}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Skills */}
-            {skills.length > 0 && (
-              <div className="space-y-2">
-                <h2 className="text-lg font-bold text-gray-900 uppercase">Skills</h2>
-                <p className="text-gray-700">{skills.join(", ")}</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {template === "creative" && (
-          <div className="grid grid-cols-3 gap-6">
-            {/* Sidebar */}
-            <div className="col-span-1 bg-teal-50 p-6 space-y-6">
-              <div className="flex flex-col items-center text-center">
-                <div className="w-24 h-24 bg-teal-200 rounded-full flex items-center justify-center text-teal-800 text-2xl font-bold mb-4">
-                  {name
-                    .split(" ")
-                    .map((n: string) => n[0])
-                    .join("")}
-                </div>
-                <h1 className="text-xl font-bold text-gray-900">{name}</h1>
-                <p className="text-gray-600 mt-1">{location}</p>
-              </div>
-
-              <div className="space-y-1 pt-4">
-                <h2 className="text-sm font-semibold text-teal-800 uppercase tracking-wider">Contact</h2>
-                {email && <p className="text-gray-700 text-sm">{email}</p>}
-                {phone && <p className="text-gray-700 text-sm">{phone}</p>}
-              </div>
-
-              {skills.length > 0 && (
-                <div className="space-y-2 pt-4">
-                  <h2 className="text-sm font-semibold text-teal-800 uppercase tracking-wider">Skills</h2>
-                  <div className="flex flex-wrap gap-2">
-                    {skills.map((skill, index) => (
-                      <span key={index} className="bg-teal-100 text-teal-800 px-2 py-1 rounded-full text-xs">
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Main Content */}
-            <div className="col-span-2 p-6 space-y-6">
-              {summary && (
-                <div className="space-y-2">
-                  <h2 className="text-lg font-semibold text-teal-800 border-b border-teal-200 pb-1">About Me</h2>
-                  <p className="text-gray-700">{summary}</p>
-                </div>
-              )}
-
-              {experiences.length > 0 && (
-                <div className="space-y-4">
-                  <h2 className="text-lg font-semibold text-teal-800 border-b border-teal-200 pb-1">Experience</h2>
-                  {experiences.map((exp, index) => (
-                    <div key={index} className="space-y-1">
-                      <div className="flex justify-between items-center">
-                        <h3 className="font-medium text-gray-900">{exp.jobTitle}</h3>
-                        <div className="bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full text-xs">
-                          {exp.startDate && formatDate(exp.startDate)} -{" "}
-                          {exp.endDate ? formatDate(exp.endDate) : "Present"}
-                        </div>
-                      </div>
-                      <p className="text-gray-700 font-medium">
-                        {exp.company}, {exp.location}
-                      </p>
-                      <p className="text-gray-600 text-sm mt-1">{exp.description}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {education.degree && (
-                <div className="space-y-4">
-                  <h2 className="text-lg font-semibold text-teal-800 border-b border-teal-200 pb-1">Education</h2>
-                  <div className="space-y-1">
-                    <div className="flex justify-between items-center">
-                      <h3 className="font-medium text-gray-900">{education.degree}</h3>
-                      <div className="bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full text-xs">
-                        {education.startDate && formatDate(education.startDate)} -{" "}
-                        {education.endDate ? formatDate(education.endDate) : "Present"}
-                      </div>
-                    </div>
-                    <p className="text-gray-700 font-medium">
-                      {education.institution}, {education.location}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
+      <div className="cv-preview-container" dangerouslySetInnerHTML={{ __html: renderedHTML }} />
     </div>
   )
 }
