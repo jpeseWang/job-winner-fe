@@ -7,26 +7,27 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
-import { Check, Crown, Briefcase, BarChart3, Shield, Search, Clock, Palette, FileText, MessageSquare, Users, Target, Eye, Globe, Lock, Star } from "lucide-react"
+import {
+  Check,
+  Crown,
+  Briefcase,
+  BarChart3,
+  Shield,
+  Search,
+  Clock,
+  Palette,
+  FileText,
+  MessageSquare,
+  Users,
+  Target,
+  Eye,
+  Globe,
+  Lock,
+  Star,
+} from "lucide-react"
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js"
 
 const recruiterPlans = [
-  {
-    id: "recruiter-free",
-    name: "Free",
-    price: { monthly: 0, yearly: 0 },
-    description: "Perfect for small businesses getting started",
-    badge: null,
-    features: [
-      { name: "5 job postings per month", included: true, icon: Briefcase },
-      { name: "Basic job analytics", included: true, icon: BarChart3 },
-      { name: "Standard support", included: true, icon: Shield },
-      { name: "Basic candidate search", included: true, icon: Search },
-      { name: "Job posting for 30 days", included: true, icon: Clock },
-    ],
-    cta: "Get Started Free",
-    popular: false,
-  },
   {
     id: "recruiter-basic",
     name: "Basic",
@@ -79,8 +80,6 @@ export default function UnlockPage() {
 
   const formatPrice = (price: { monthly: number; yearly: number }) => {
     const amount = isYearly ? price.yearly : price.monthly
-    if (amount === 0) return "Free"
-
     if (isYearly) {
       const monthlyEquivalent = Math.round(amount / 12)
       return `$${amount}/year ($${monthlyEquivalent}/mo)`
@@ -93,7 +92,7 @@ export default function UnlockPage() {
     setShowPaypal(false)
   }
 
-  const selectedPlanData = recruiterPlans.find(plan => plan.id === selectedPlan)
+  const selectedPlanData = recruiterPlans.find((plan) => plan.id === selectedPlan)
   const priceToPay = selectedPlanData ? (isYearly ? selectedPlanData.price.yearly : selectedPlanData.price.monthly) : 0
 
   return (
@@ -112,12 +111,10 @@ export default function UnlockPage() {
       </div>
 
       {/* Plans Section */}
-      <div className="max-w-7xl mx-auto px-4 py-16">
+      <div className="max-w-6xl mx-auto px-4 py-16">
         {/* Billing Toggle */}
         <div className="flex items-center justify-center space-x-4 mb-12">
-          <span className={`text-sm font-medium ${!isYearly ? "text-blue-600" : "text-gray-500"}`}>
-            Monthly
-          </span>
+          <span className={`text-sm font-medium ${!isYearly ? "text-blue-600" : "text-gray-500"}`}>Monthly</span>
           <Button
             variant="outline"
             size="sm"
@@ -128,8 +125,8 @@ export default function UnlockPage() {
           </Button>
         </div>
 
-        {/* Plans Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        {/* Plans Grid - Now 2 columns */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-12">
           {recruiterPlans.map((plan) => (
             <Card
               key={plan.id}
@@ -137,30 +134,26 @@ export default function UnlockPage() {
                 selectedPlan === plan.id
                   ? "ring-2 ring-blue-500 shadow-xl scale-105"
                   : plan.popular
-                  ? "ring-1 ring-blue-200 shadow-lg"
-                  : "hover:shadow-lg"
+                    ? "ring-1 ring-blue-200 shadow-lg"
+                    : "hover:shadow-lg"
               }`}
               onClick={() => handlePlanSelect(plan.id)}
             >
               {plan.badge && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <Badge className="bg-blue-600 text-white px-4 py-1">
-                    {plan.badge}
-                  </Badge>
+                  <Badge className="bg-blue-600 text-white px-4 py-1">{plan.badge}</Badge>
                 </div>
               )}
-
               <CardHeader className="text-center pb-6">
                 <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
                 <CardDescription className="text-gray-600 mb-4">{plan.description}</CardDescription>
                 <div className="text-4xl font-bold text-gray-900 mb-2">{formatPrice(plan.price)}</div>
-                {isYearly && plan.price.monthly > 0 && (
+                {isYearly && (
                   <Badge variant="outline" className="text-green-600 border-green-600">
                     Save 20%
                   </Badge>
                 )}
               </CardHeader>
-
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   {plan.features.map((feature, index) => (
@@ -179,7 +172,7 @@ export default function UnlockPage() {
 
         {/* Selected Plan Summary */}
         {selectedPlanData && (
-          <Card className="bg-blue-50 border-blue-200 mb-8">
+          <Card className="bg-blue-50 border-blue-200 mb-8 max-w-2xl mx-auto">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Star className="h-5 w-5 text-blue-600" />
@@ -194,34 +187,51 @@ export default function UnlockPage() {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button
-            variant="outline"
-            onClick={() => router.push("/dashboard/recruiter")}
-            className="min-w-[120px]"
-          >
+          <Button variant="outline" onClick={() => router.push("/dashboard/recruiter")} className="min-w-[120px]">
             Back to Dashboard
           </Button>
           {selectedPlanData && priceToPay > 0 && (
             <div className="min-w-[220px]">
-              <PayPalScriptProvider options={{ "client-id": "sb" }}>
+              <PayPalScriptProvider
+                options={{
+                  clientId: "ARYI_H9cVv4NbfslyZ24d3keT4RO0QLs6on2sPS4oNOZoDIE1Gy1i405HflcAP9pwTLNLoM-QDaV01gN",
+                }}
+              >
                 <PayPalButtons
                   style={{ layout: "vertical" }}
                   createOrder={(data, actions) => {
                     return actions.order.create({
-                      purchase_units: [{
-                        amount: { value: String(priceToPay), currency_code: "USD" }
-                      }]
+                      intent: "CAPTURE",
+                      purchase_units: [
+                        {
+                          amount: { value: String(priceToPay), currency_code: "USD" },
+                        },
+                      ],
                     })
                   }}
                   onApprove={async (data, actions) => {
-                    await actions.order.capture()
-                    // Gọi API update subscription
+                    await actions.order?.capture()
+                    // Call API to update subscription
                     if (session?.user?.id && selectedPlan) {
-                      await fetch("/api/subscription", {
+                      console.log("💸 [Frontend] Calling /api/subscription with:", {
+                        userId: session.user.id,
+                        planId: selectedPlan.replace("recruiter-", ""),
+                        role: "recruiter"
+                      })
+
+                      const res = await fetch("/api/subscription", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ userId: session.user.id, planId: selectedPlan }),
+                        body: JSON.stringify({
+                          userId: session.user.id,
+                          planId: selectedPlan.replace("recruiter-", ""),
+                          role: "recruiter"
+                        }),
                       })
+
+                      console.log("📥 [Frontend] API Response status:", res.status)
+                      const data = await res.json()
+                      console.log("📥 [Frontend] API Response body:", data)
                     }
                     toast({ title: "Success", description: "Payment successful!" })
                     router.push("/dashboard/recruiter/jobs/new")
@@ -232,24 +242,6 @@ export default function UnlockPage() {
                 />
               </PayPalScriptProvider>
             </div>
-          )}
-          {selectedPlanData && priceToPay === 0 && (
-            <Button
-              onClick={async () => {
-                if (session?.user?.id && selectedPlan) {
-                  await fetch("/api/subscription", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ userId: session.user.id, planId: selectedPlan }),
-                  })
-                }
-                toast({ title: "Success", description: "Unlocked Free Plan!" })
-                router.push("/dashboard/recruiter/jobs/new")
-              }}
-              className="min-w-[120px]"
-            >
-              Unlock Free
-            </Button>
           )}
         </div>
 
@@ -274,4 +266,4 @@ export default function UnlockPage() {
       </div>
     </div>
   )
-} 
+}
