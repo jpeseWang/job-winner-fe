@@ -380,7 +380,7 @@ export default function GenerateCVPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="cv-template" className="flex items-center gap-2">
               <Library className="h-4 w-4" />
               CV Template
@@ -393,14 +393,14 @@ export default function GenerateCVPage() {
               <Wand2 className="h-4 w-4" />
               AI Resume Builder
             </TabsTrigger>
-            <TabsTrigger value="proposal" className="flex items-center gap-2">
+            {/* <TabsTrigger value="proposal" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               Proposal
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               Settings
-            </TabsTrigger>
+            </TabsTrigger> */}
           </TabsList>
 
           <TabsContent value="cv-template" className="space-y-6">
@@ -619,7 +619,7 @@ export default function GenerateCVPage() {
             </div>
           </TabsContent>
 
-          <TabsContent value="proposal" className="space-y-6">
+          {/* <TabsContent value="proposal" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Proposal Generator</CardTitle>
@@ -629,9 +629,9 @@ export default function GenerateCVPage() {
                 <p className="text-center py-8">Proposal generator coming soon!</p>
               </CardContent>
             </Card>
-          </TabsContent>
+          </TabsContent> */}
 
-          <TabsContent value="settings" className="space-y-6">
+          {/* <TabsContent value="settings" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Settings</CardTitle>
@@ -641,7 +641,7 @@ export default function GenerateCVPage() {
                 <p className="text-center py-8">Settings panel coming soon!</p>
               </CardContent>
             </Card>
-          </TabsContent>
+          </TabsContent> */}
         </Tabs>
       </div>
     </main>
