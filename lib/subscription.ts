@@ -14,6 +14,28 @@ export async function getActiveSubscription(userId: string, role?: SubscriptionR
     role = user.role as SubscriptionRole 
   }
 
+  if (role === SubscriptionRole.ADMIN) {
+    console.log(`👑 User ${userId} is admin, skipping subscription.`)
+    return {
+      user: userId,
+      plan: "admin",
+      status: "active",
+      startDate: new Date(),
+      endDate: new Date("9999-12-31"), 
+      billingPeriod: "lifetime",
+      price: 0,
+      currency: "USD",
+      autoRenew: false,
+      paymentMethod: "none",
+      role: SubscriptionRole.ADMIN,
+      features: {
+        jobPostingsLimit: Infinity,
+        highlightJobs: true,
+        analyticsAccess: true
+      }
+    } as unknown as ISubscription
+  }
+
   try {
     const subscription = await Subscription.findOne({ user: userId, role })
 

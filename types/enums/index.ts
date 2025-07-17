@@ -78,7 +78,8 @@ export enum ETemplateCategory {
 
 export enum SubscriptionRole {
   RECRUITER = "recruiter",
-  JOB_SEEKER = "job_seeker"
+  JOB_SEEKER = "job_seeker",
+  ADMIN = "admin"
 }
 
 export enum SubscriptionPlan {
