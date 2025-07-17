@@ -107,6 +107,42 @@ export async function POST(request: Request) {
       await payment.save()
     }
 
+    // Setup subscription fields
+    const now = new Date()
+    const endDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000) 
+    let plan = SubscriptionPlan.FREE
+    let billingPeriod = BillingPeriod.MONTHLY
+    let expiresAt: Date | undefined = undefined
+    let price = 0
+    let paymentMethod = "free"
+    expiresAt = undefined
+
+    if (paymentId) {
+      const payment = await Payment.findById(paymentId)
+      if (!payment || payment.status !== PaymentStatus.COMPLETED || payment.type !== PaymentType.SUBSCRIPTION) {
+        return NextResponse.json({ error: "Invalid or incomplete payment" }, { status: 400 })
+      }
+
+      const { plan: paidPlan, billingPeriod: paidBilling } = payment.metadata
+      if (!paidPlan || !paidBilling) {
+        return NextResponse.json({ error: "Payment metadata missing plan or billing period" }, { status: 400 })
+      }
+
+      subscription.plan = paidPlan
+      subscription.billingPeriod = paidBilling
+      subscription.price = payment.amount
+      subscription.currency = payment.currency
+      subscription.paymentMethod = payment.paymentMethod
+      subscription.endDate =
+        paidBilling === BillingPeriod.MONTHLY
+          ? addDays(new Date(), 30)
+          : addDays(new Date(), 365)
+      await subscription.save()
+
+      payment.user = user._id
+      await payment.save()
+    }
+
     if (role === UserRole.JOB_SEEKER) {
       await Profile.create({
         user: user._id

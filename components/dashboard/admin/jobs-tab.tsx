@@ -23,7 +23,7 @@ import {
   Eye,
   Edit,
   Trash2,
-  CheckCircle2,
+  CheckCircle,
   XCircle,
   AlertTriangle,
   Star,
@@ -33,6 +33,7 @@ import {
 import { jobs, categories } from "@/lib/data"
 
 export default function AdminJobsTab() {
+  const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -55,7 +56,9 @@ export default function AdminJobsTab() {
       job.location.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesCategory = categoryFilter === "all" || job.category === categoryFilter
-    const matchesStatus = statusFilter === "all" || job.status === statusFilter
+    const matchesStatus = statusFilter === "all" || 
+      (statusFilter === "approved" && (job.status === "approved" || job.status === "active")) ||
+      job.status === statusFilter
 
     return matchesSearch && matchesCategory && matchesStatus
   })
@@ -63,9 +66,10 @@ export default function AdminJobsTab() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "approved":
+      case "active":
         return (
           <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 flex items-center">
-            <CheckCircle2 className="h-3 w-3 mr-1" />
+            <CheckCircle className="h-3 w-3 mr-1" />
             Approved
           </Badge>
         )
@@ -101,8 +105,7 @@ export default function AdminJobsTab() {
     if (reviewDecision === "reject") {
       console.log(`Rejection reason: ${rejectionReason}`)
     }
-    setIsReviewDialogOpen(false)
-  }
+  }, [selectedJob, reviewDecision, rejectionReason, toast])
 
   return (
     <div className="space-y-6">
