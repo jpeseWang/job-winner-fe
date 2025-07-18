@@ -1,4 +1,4 @@
-import type { UserRole, UserStatus, ETemplateCategory } from "@/types/enums"
+import type { UserRole, UserStatus } from "@/types/enums"
 
 export interface User {
   id: string

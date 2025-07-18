@@ -76,6 +76,12 @@ export enum ETemplateCategory {
   EXECUTIVE = "executive",
 }
 
+export enum SubscriptionRole {
+  RECRUITER = "recruiter",
+  JOB_SEEKER = "job_seeker",
+  ADMIN = "admin"
+}
+
 export enum SubscriptionPlan {
   FREE = "free",
   BASIC = "basic",

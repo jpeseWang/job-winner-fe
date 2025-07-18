@@ -1,8 +1,9 @@
 import mongoose, { type Document, Schema } from "mongoose"
-import { SubscriptionPlan, SubscriptionStatus, BillingPeriod } from "@/types/enums/index"
+import { SubscriptionPlan, SubscriptionStatus, BillingPeriod, SubscriptionRole } from "@/types/enums/index"
 
 export interface ISubscription extends Document {
   user: mongoose.Types.ObjectId
+  role: SubscriptionRole
   plan: SubscriptionPlan
   status: SubscriptionStatus
   startDate: Date
@@ -39,6 +40,11 @@ const SubscriptionSchema = new Schema<ISubscription>(
       ref: "User",
       required: true,
     },
+    role: {
+       type: String, 
+       enum: Object.values(SubscriptionRole),
+       required: true
+    },
     plan: {
       type: String,
       enum: Object.values(SubscriptionPlan),
@@ -65,6 +71,7 @@ const SubscriptionSchema = new Schema<ISubscription>(
     price: {
       type: Number,
       required: [true, "Please provide subscription price"],
+      default: 0,
     },
     currency: {
       type: String,
@@ -78,6 +85,7 @@ const SubscriptionSchema = new Schema<ISubscription>(
     paymentMethod: {
       type: String,
       required: [true, "Please provide payment method"],
+      default: "free",
     },
     paymentId: {
       type: String,
@@ -126,10 +134,11 @@ const SubscriptionSchema = new Schema<ISubscription>(
     },
     expiresAt: {
       type: Date,
-      default: null
     },
   },
   { timestamps: true },
 )
+
+SubscriptionSchema.index({ user: 1, role: 1 }, { unique: true })
 
 export default mongoose.models.Subscription || mongoose.model<ISubscription>("Subscription", SubscriptionSchema)

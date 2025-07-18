@@ -5,8 +5,14 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
 interface SubscriptionCardProps {
-  plan: "free" | "basic" | "premium"
+  plan: string
   className?: string
+}
+
+// Map plan từ backend về key chuẩn
+const normalizePlan = (plan: string): "free" | "basic" | "premium" => {
+  if (plan.startsWith("recruiter-")) return plan.replace("recruiter-", "") as "free" | "basic" | "premium"
+  return plan as "free" | "basic" | "premium"
 }
 
 const planConfig = {
@@ -46,7 +52,21 @@ const planConfig = {
 }
 
 export default function SubscriptionCard({ plan, className = "" }: SubscriptionCardProps) {
-  const config = planConfig[plan]
+  const normalizedPlan = normalizePlan(plan)
+  const config = planConfig[normalizedPlan]
+
+  if (!config) {
+    console.error(`❌ Invalid plan: "${plan}" passed to SubscriptionCard`)
+    return (
+      <Card className={`relative overflow-hidden border-2 border-red-200 bg-red-50 ${className}`}>
+        <CardContent className="p-4 sm:p-6">
+          <h3 className="text-lg font-semibold text-red-600">Unknown Plan</h3>
+          <p className="text-sm text-red-500 leading-relaxed">This plan is not supported by SubscriptionCard.</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
   const IconComponent = config.icon
 
   return (
@@ -79,12 +99,16 @@ export default function SubscriptionCard({ plan, className = "" }: SubscriptionC
           <div className={`h-1 w-full rounded-full bg-white border ${config.borderColor}`}>
             <div
               className={`h-full rounded-full transition-all duration-300 ${
-                plan === "free" ? "w-1/3 bg-blue-400" : plan === "basic" ? "w-2/3 bg-orange-400" : "w-full bg-purple-400"
+                normalizedPlan === "free"
+                  ? "w-1/3 bg-blue-400"
+                  : normalizedPlan === "basic"
+                  ? "w-2/3 bg-orange-400"
+                  : "w-full bg-purple-400"
               }`}
             />
           </div>
           <span className={`text-xs font-medium ${config.accentColor} whitespace-nowrap`}>
-            {plan === "free" ? "33%" : plan === "basic" ? "67%" : "100%"}
+            {normalizedPlan === "free" ? "33%" : normalizedPlan === "basic" ? "67%" : "100%"}
           </span>
         </div>
       </CardContent>
