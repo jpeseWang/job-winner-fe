@@ -1,12 +1,13 @@
-import { notFound, redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { UserRole } from "@/types/enums";
-import { getTimeAgo } from "@/utils/getTimeAgo";
+"use client";
+
+import { useEffect, useState } from "react";
+import { redirect } from "next/navigation";
 import JobApplicationForm from "@/components/jobs/job-application-form";
+import JobCard from "@/components/job-card";
+import { formatSalary } from "@/utils/formatters";
+import { getTimeAgo } from "@/utils/getTimeAgo";
+import { useAuth } from "@/hooks/use-auth";
 import { jobService } from "@/services/jobService";
-import JobCard from "@/components/job-card"
-import { formatSalary } from "@/utils/formatters"
 
 interface ApplyJobPageProps {
   params: {
@@ -14,20 +15,23 @@ interface ApplyJobPageProps {
   };
 }
 
-export default async function ApplyJobPage({ params }: ApplyJobPageProps) {
-  const session = await getServerSession(authOptions);
+export default function ApplyJobPage({ params }: ApplyJobPageProps) {
+  const { user } = useAuth();
+  const [job, setJob] = useState<any>(null);
 
-  if (!session) {
-    redirect("/auth/login?unauthorized=1");
-  }
+  useEffect(() => {
+    if (!user) {
+      redirect("/auth/login?unauthorized=1");
+      return;
+    }
+    jobService.getJobById(params.id, true).then(setJob);
+  }, [user, params.id]);
 
-  const job = await jobService.getJobById(params.id, true);
-  if (!job) notFound();
+  if (!job) return <div>Loading...</div>;
 
   return (
     <main className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Job Info Header */}
         <div className="mb-8">
           <JobCard
             id={job.id}
@@ -43,7 +47,6 @@ export default async function ApplyJobPage({ params }: ApplyJobPageProps) {
             hideButton={true}
           />
         </div>
-        {/* Application Form */}
         <JobApplicationForm job={job} />
       </div>
     </main>
