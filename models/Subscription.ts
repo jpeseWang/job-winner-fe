@@ -1,28 +1,9 @@
 import mongoose, { type Document, Schema } from "mongoose"
-
-export enum SubscriptionPlan {
-  FREE = "free",
-  BASIC = "basic",
-  PREMIUM = "premium",
-  ENTERPRISE = "enterprise",
-}
-
-export enum SubscriptionStatus {
-  ACTIVE = "active",
-  CANCELED = "canceled",
-  EXPIRED = "expired",
-  PAST_DUE = "past_due",
-  PENDING = "pending",
-}
-
-export enum BillingPeriod {
-  MONTHLY = "monthly",
-  QUARTERLY = "quarterly",
-  ANNUAL = "annual",
-}
+import { SubscriptionPlan, SubscriptionStatus, BillingPeriod, SubscriptionRole } from "@/types/enums/index"
 
 export interface ISubscription extends Document {
   user: mongoose.Types.ObjectId
+  role: SubscriptionRole
   plan: SubscriptionPlan
   status: SubscriptionStatus
   startDate: Date
@@ -49,6 +30,7 @@ export interface ISubscription extends Document {
   updatedAt: Date
   lastBillingDate?: Date
   nextBillingDate?: Date
+  expiresAt?: Date
 }
 
 const SubscriptionSchema = new Schema<ISubscription>(
@@ -57,6 +39,11 @@ const SubscriptionSchema = new Schema<ISubscription>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
+    },
+    role: {
+       type: String, 
+       enum: Object.values(SubscriptionRole),
+       required: true
     },
     plan: {
       type: String,
@@ -84,6 +71,7 @@ const SubscriptionSchema = new Schema<ISubscription>(
     price: {
       type: Number,
       required: [true, "Please provide subscription price"],
+      default: 0,
     },
     currency: {
       type: String,
@@ -97,6 +85,7 @@ const SubscriptionSchema = new Schema<ISubscription>(
     paymentMethod: {
       type: String,
       required: [true, "Please provide payment method"],
+      default: "free",
     },
     paymentId: {
       type: String,
@@ -143,8 +132,13 @@ const SubscriptionSchema = new Schema<ISubscription>(
     nextBillingDate: {
       type: Date,
     },
+    expiresAt: {
+      type: Date,
+    },
   },
   { timestamps: true },
 )
+
+SubscriptionSchema.index({ user: 1, role: 1 }, { unique: true })
 
 export default mongoose.models.Subscription || mongoose.model<ISubscription>("Subscription", SubscriptionSchema)

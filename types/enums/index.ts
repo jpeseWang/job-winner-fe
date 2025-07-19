@@ -27,19 +27,6 @@ export enum JobStatus {
   REJECTED = "rejected",
 }
 
-export enum ApplicationStatus {
-  PENDING = "pending",
-  REVIEWED = "reviewed",
-  INTERVIEWED = "interviewed",
-  HIRED = "hired",
-  REJECTED = "rejected",
-}
-
-export enum SortOrder {
-  ASC = "asc",
-  DESC = "desc",
-}
-
 export enum JobCategory {
   TECHNOLOGY = "Technology",
   TELECOMMUNICATIONS = "Telecommunications",
@@ -59,19 +46,25 @@ export enum JobLocation {
   CAMLE = "Cam Le"
 }
 
+export enum ApplicationStatus {
+  PENDING = "pending",
+  REVIEWED = "reviewed",
+  INTERVIEWED = "interviewed",
+  HIRED = "hired",
+  REJECTED = "rejected",
+}
+
+export enum SortOrder {
+  ASC = "asc",
+  DESC = "desc",
+}
+
 export enum ExperienceLevel {
   ENTRY = "Entry Level",
   MID = "Mid Level",
   SENIOR = "Senior Level",
   LEAD = "Lead",
   MANAGER = "Manager",
-}
-
-export enum SubscriptionTier {
-  FREE = "free",
-  BASIC = "basic",
-  PREMIUM = "premium",
-  ENTERPRISE = "enterprise",
 }
 
 export enum ETemplateCategory {
@@ -81,4 +74,45 @@ export enum ETemplateCategory {
   MODERN = "modern",
   ACADEMIC = "academic",
   EXECUTIVE = "executive",
+}
+
+export enum SubscriptionRole {
+  RECRUITER = "recruiter",
+  JOB_SEEKER = "job_seeker",
+  ADMIN = "admin"
+}
+
+export enum SubscriptionPlan {
+  FREE = "free",
+  BASIC = "basic",
+  PREMIUM = "premium",
+  ENTERPRISE = "enterprise",
+}
+
+export enum SubscriptionStatus {
+  ACTIVE = "active",
+  CANCELED = "canceled",
+  EXPIRED = "expired",
+  PAST_DUE = "past_due",
+  PENDING = "pending",
+}
+
+export enum BillingPeriod {
+  MONTHLY = "monthly",
+  QUARTERLY = "quarterly",
+  ANNUAL = "annual",
+}
+
+export enum PaymentStatus {
+  PENDING = "pending",
+  COMPLETED = "completed",
+  FAILED = "failed",
+  REFUNDED = "refunded",
+}
+
+export enum PaymentType {
+  SUBSCRIPTION = "subscription",
+  TEMPLATE = "template",
+  FEATURE = "feature",
+  OTHER = "other",
 }

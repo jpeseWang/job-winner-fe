@@ -3,11 +3,15 @@ import dbConnect from "@/lib/db"
 import User from "@/models/User"
 import { sendVerificationEmail } from "@/lib/email"
 import crypto from "crypto"
-import { UserRole } from "@/types/enums"
+import { UserRole, SubscriptionPlan, SubscriptionStatus, BillingPeriod, PaymentStatus, PaymentType, SubscriptionRole } from "@/types/enums"
 import Profile from "@/models/Profile"
+import Subscription from "@/models/Subscription"
+import Payment from "@/models/Payment"
+import { addDays } from "date-fns"
+
 export async function POST(request: Request) {
   try {
-    const { name, email, password, role = UserRole.JOB_SEEKER, company } = await request.json()
+    const { name, email, password, role = UserRole.JOB_SEEKER, company, paymentId } = await request.json()
 
     // Validate required fields
     if (!name || !email || !password) {
@@ -49,33 +53,101 @@ export async function POST(request: Request) {
     const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000)
 
     // Create user
-    const userData: any = {
+    const user = new User({
       name: name.trim(),
       email: email.toLowerCase().trim(),
       password,
       role,
+      company: role === UserRole.RECRUITER ? company?.trim() : undefined,
       verificationToken,
       verificationExpires,
       isVerified: false,
       isActive: true,
-    }
-
-    // Add company for recruiters
-    if (role === UserRole.RECRUITER && company) {
-      userData.company = company.trim()
-    }
-
-    const user = await User.create({
-      ...userData,
     })
+    await user.save()
+
+    // 🎁 Create default FREE subscription for this role
+    let subscription = await Subscription.create({
+      user: user._id, 
+      role, 
+      plan: SubscriptionPlan.FREE,
+      status: SubscriptionStatus.ACTIVE,
+      startDate: new Date(),
+      endDate: addDays(new Date(), 30), 
+      billingPeriod: BillingPeriod.MONTHLY,
+      price: 0,
+      currency: "USD",
+      autoRenew: true,
+      paymentMethod: "free",
+    })
+
+    if (paymentId) {
+      const payment = await Payment.findById(paymentId)
+      if (!payment || payment.status !== PaymentStatus.COMPLETED || payment.type !== PaymentType.SUBSCRIPTION) {
+        return NextResponse.json({ error: "Invalid or incomplete payment" }, { status: 400 })
+      }
+
+      const { plan: paidPlan, billingPeriod: paidBilling } = payment.metadata
+      if (!paidPlan || !paidBilling) {
+        return NextResponse.json({ error: "Payment metadata missing plan or billing period" }, { status: 400 })
+      }
+
+      subscription.plan = paidPlan
+      subscription.billingPeriod = paidBilling
+      subscription.price = payment.amount
+      subscription.currency = payment.currency
+      subscription.paymentMethod = payment.paymentMethod
+      subscription.endDate =
+        paidBilling === BillingPeriod.MONTHLY
+          ? addDays(new Date(), 30)
+          : addDays(new Date(), 365)
+      await subscription.save()
+
+      payment.user = user._id
+      await payment.save()
+    }
+
+    // Setup subscription fields
+    const now = new Date()
+    const endDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000) 
+    let plan = SubscriptionPlan.FREE
+    let billingPeriod = BillingPeriod.MONTHLY
+    let expiresAt: Date | undefined = undefined
+    let price = 0
+    let paymentMethod = "free"
+    expiresAt = undefined
+
+    if (paymentId) {
+      const payment = await Payment.findById(paymentId)
+      if (!payment || payment.status !== PaymentStatus.COMPLETED || payment.type !== PaymentType.SUBSCRIPTION) {
+        return NextResponse.json({ error: "Invalid or incomplete payment" }, { status: 400 })
+      }
+
+      const { plan: paidPlan, billingPeriod: paidBilling } = payment.metadata
+      if (!paidPlan || !paidBilling) {
+        return NextResponse.json({ error: "Payment metadata missing plan or billing period" }, { status: 400 })
+      }
+
+      subscription.plan = paidPlan
+      subscription.billingPeriod = paidBilling
+      subscription.price = payment.amount
+      subscription.currency = payment.currency
+      subscription.paymentMethod = payment.paymentMethod
+      subscription.endDate =
+        paidBilling === BillingPeriod.MONTHLY
+          ? addDays(new Date(), 30)
+          : addDays(new Date(), 365)
+      await subscription.save()
+
+      payment.user = user._id
+      await payment.save()
+    }
 
     if (role === UserRole.JOB_SEEKER) {
       await Profile.create({
-        user: user._id,
-
+        user: user._id
       })
     }
-
 
     // Gửi email xác thực
     try {
@@ -84,7 +156,6 @@ export async function POST(request: Request) {
       console.error("Failed to send verification email:", emailError)
     }
 
-    // Return success response (exclude sensitive data)
     return NextResponse.json(
       {
         message: "User registered successfully",
@@ -94,6 +165,13 @@ export async function POST(request: Request) {
           email: user.email,
           role: user.role,
           isVerified: user.isVerified,
+          subscription: {
+            plan: subscription.plan,
+            role: subscription.role,
+            status: subscription.status,
+            startDate: subscription.startDate,
+            endDate: subscription.endDate,
+          },
         },
       },
       { status: 201 },

@@ -47,7 +47,7 @@ axiosInstance.interceptors.response.use(
         console.error("Resource not found")
       } else if (error.response.status === 500) {
         // Handle server error
-        console.error("Server error")
+        console.error("Server error:", error.response.data)
       }
     } else if (error.request) {
       // The request was made but no response was received

@@ -15,6 +15,8 @@ import AnalyticsTab from "@/components/dashboard/recruiter/analytics-tab"
 import { useAuth } from "@/hooks/use-auth"
 import { companyService } from "@/services/companyService"
 import { jobService } from "@/services"
+import SubscriptionCard from "@/components/dashboard/common/SubscriptionCard"
+import { useSession } from "next-auth/react"
 
 interface Job {
   _id: string
@@ -30,6 +32,8 @@ interface Job {
 }
 
 export default function RecruiterDashboard() {
+  const { data: session } = useSession()
+  const plan = session?.user?.subscription?.plan ?? "free"
   const { toast } = useToast()
   const { user } = useAuth()
   const [jobs, setJobs] = useState<Job[]>([])
@@ -82,8 +86,14 @@ export default function RecruiterDashboard() {
     <main className="flex-1 space-y-4 p-8 pt-6">
 
       {/* Stats Overview */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
+      <div className="grid gap-4 md:grid-cols-4">
+        {/* Subscription Card - Đứng đầu */}
+        <SubscriptionCard
+          plan={plan as "free" | "basic" | "premium"}
+          className="h-full"
+        />
+
+        <Card className="h-full">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Jobs</CardTitle>
             <Briefcase className="h-4 w-4 text-muted-foreground" />
@@ -95,7 +105,7 @@ export default function RecruiterDashboard() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="h-full">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Applications</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
@@ -107,7 +117,7 @@ export default function RecruiterDashboard() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="h-full">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Jobs</CardTitle>
             <Eye className="h-4 w-4 text-muted-foreground" />

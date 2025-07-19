@@ -19,12 +19,8 @@ export default function RecruiterDashboardHeader() {
   useEffect(() => {
     const fetchMyCompany = async () => {
       try {
-
         if (!userId) return
-
         const res = await companyService.getCompanyById(userId)
-
-
         setMyCompany(res)
       } catch (err) {
         console.error(err)
