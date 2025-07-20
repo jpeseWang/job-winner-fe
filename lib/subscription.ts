@@ -11,7 +11,7 @@ export async function getActiveSubscription(userId: string, role?: SubscriptionR
   if (!role) {
     const user = await User.findById(userId)
     if (!user) throw new Error(`User ${userId} not found`)
-    role = user.role as SubscriptionRole 
+    role = user.role as SubscriptionRole
   }
 
   if (role === SubscriptionRole.ADMIN) {
@@ -21,7 +21,7 @@ export async function getActiveSubscription(userId: string, role?: SubscriptionR
       plan: "admin",
       status: "active",
       startDate: new Date(),
-      endDate: new Date("9999-12-31"), 
+      endDate: new Date("9999-12-31"),
       billingPeriod: "lifetime",
       price: 0,
       currency: "USD",
@@ -80,7 +80,7 @@ export function checkPostingPermission(subscription: ISubscription): {
     console.log("✅ [checkPostingPermission] Can post job: true")
     return { canPostJob: true, reason: "OK", quotaLeft }
   }
-  
+
   console.log("❌ [checkPostingPermission] Can post job: false")
   return {
     canPostJob: false,
@@ -193,8 +193,13 @@ export function getJobDurationForPlan(plan: SubscriptionPlan): number {
  * Create fallback FREE subscription if user has none
  */
 async function getFreeSubscriptionFallback(userId: string, role: SubscriptionRole): Promise<ISubscription> {
+  if (!userId) {
+    throw new Error('Cannot create fallback subscription: userId is null')
+  }
+  console.log(`Creating fallback FREE subscription for user ${userId} (${role})`)
   const freeSub = await Subscription.create({
     user: userId,
+    userId,
     role,
     plan: SubscriptionPlan.FREE,
     usageStats: { jobPostings: 0, cvDownloads: 0, featuredJobs: 0, premiumTemplates: 0 },
