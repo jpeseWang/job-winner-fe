@@ -164,13 +164,13 @@ export function resetQuota(subscription: ISubscription): void {
  */
 export function getPlanJobLimit(plan: SubscriptionPlan): number {
   switch (plan) {
-    case SubscriptionPlan.FREE: 
+    case SubscriptionPlan.FREE:
       return 5
-    case SubscriptionPlan.BASIC: 
+    case SubscriptionPlan.BASIC:
       return 20
-    case SubscriptionPlan.PREMIUM: 
+    case SubscriptionPlan.PREMIUM:
       return Infinity
-    default: 
+    default:
       return 5
   }
 }
@@ -185,7 +185,7 @@ export function getJobDurationForPlan(plan: SubscriptionPlan): number {
     case SubscriptionPlan.PREMIUM:
       return 90
     default:
-      return 30 
+      return 30
   }
 }
 
