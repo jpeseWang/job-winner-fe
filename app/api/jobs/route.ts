@@ -1,11 +1,20 @@
 import { NextResponse, NextRequest } from "next/server"
 import { z } from "zod"
 import Job from "@/models/Job"
+import Company from "@/models/Company"
 import dbConnect from "@/lib/db"
 import { validateJob } from "@/utils/validators"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { UserRole } from "@/types/enums"
+import { UserRole, SubscriptionRole  } from "@/types/enums"
+import { addDays } from "date-fns"
+import {
+  getActiveSubscription,
+  checkPostingPermission,
+  incrementJobPosting,
+  getJobDurationForPlan,
+} from "@/lib/subscription"
+import { JobStatus, SubscriptionPlan } from "@/types/enums"
 
 export async function GET(req: NextRequest) {
   try {
@@ -85,20 +94,75 @@ export async function POST(request: Request) {
 
     const session = await getServerSession(authOptions)
     if (!session || session.user.role !== UserRole.RECRUITER) {
+      console.warn("❌ Unauthorized: user not recruiter or session missing")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    // ✅ Lấy subscription và check quyền đăng
+    const subscription = await getActiveSubscription(session.user.id, SubscriptionRole.RECRUITER)
+    console.log("📦 [POST /api/jobs] Subscription:", subscription)
+    const permission = checkPostingPermission(subscription)
+    console.log("📦 [POST /api/jobs] Permission Result:", permission)
+
+    if (!permission.canPostJob) {
+      return NextResponse.json({
+        error: permission.reason
+      }, { status: 403 })
+    }
+
+    // ✅ Kiểm tra recruiter đã đăng ký company profile chưa (lấy từ collection companies)
+    const company = await Company.findOne({ owner: session.user.id })
+    if (!company) {
+      console.warn("❌ Company profile not found: must register company before posting jobs")
+      return NextResponse.json({
+        error: "You must register your company profile before posting jobs."
+      }, { status: 400 })
+    }
+
+    console.log("✅ Company profile found:", {
+      companyName: company.name,
+      companyId: company._id,
+      logoUrl: company.logo
+    })
+
     const body = await request.json()
-    const { data: validatedData, errors } = validateJob(body)
+    const enrichedBody = {
+      ...body,
+      company: company.name,
+      companyId: company._id.toString(), // Convert ObjectId to string for validation
+      companyLogo: company.logo || "https://example.com/default-logo.png", // Default logo if empty
+    }
+
+    console.log("📥 [POST /api/jobs] Enriched body:", enrichedBody)
+
+    const { data: validatedData, errors } = validateJob(enrichedBody)
     if (errors) {
+      console.error("❌ Validation failed:", errors)
       return NextResponse.json({ error: errors }, { status: 400 })
     }
 
-    const newJob = await Job.create({
+    // 📝 Set job expiry based on plan
+    const durationDays = getJobDurationForPlan(subscription.plan)
+    const now = new Date()
+    const expiresAt = addDays(now, durationDays)
+    const isFeatured = subscription.plan !== SubscriptionPlan.FREE
+
+    const jobData = {
       ...validatedData,
       recruiter: session.user.id,
-      status: "pending",
-    })
+      publishedAt: now,
+      expiresAt,
+      isFeatured,
+      status: JobStatus.PENDING,
+    }
+
+    console.log("📝 [POST /api/jobs] Final job data:", jobData)
+
+    const newJob = await Job.create(jobData)
+
+    // 👇 Tăng usageStats sau khi tạo thành công
+    await incrementJobPosting(session.user.id, SubscriptionRole.RECRUITER)
+    console.log("✅ Job created successfully:", newJob._id)
 
     return NextResponse.json(newJob, { status: 201 })
   } catch (error) {

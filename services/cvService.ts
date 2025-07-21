@@ -35,9 +35,10 @@ export const saveCV = async (cvData: any): Promise<any> => {
   }
 }
 
-export const getUserCVs = async (userId: string): Promise<any[]> => {
+export const getUserCVs = async (userId: string, params?: any): Promise<any> => {
   try {
-    const response = await axiosInstance.get(`/cv/user/${userId}`)
+    const queryParams = new URLSearchParams(params).toString()
+    const response = await axiosInstance.get(`/cv/user/${userId}?${queryParams}`)
     return response.data
   } catch (error) {
     console.error("Error fetching user CVs:", error)
@@ -48,7 +49,7 @@ export const getUserCVs = async (userId: string): Promise<any[]> => {
 export const getCVById = async (cvId: string): Promise<any> => {
   try {
     const response = await axiosInstance.get(`/cv/${cvId}`)
-    return response.data
+    return response.data.data
   } catch (error) {
     console.error("Error fetching CV:", error)
     throw new Error("Failed to fetch CV")
@@ -67,7 +68,7 @@ export const deleteCV = async (cvId: string): Promise<void> => {
 export const shareCV = async (cvId: string): Promise<{ shareUrl: string }> => {
   try {
     const response = await axiosInstance.post(`/cv/${cvId}/share`)
-    return response.data
+    return response.data.data
   } catch (error) {
     console.error("Error sharing CV:", error)
     throw new Error("Failed to share CV")
@@ -91,7 +92,7 @@ export const generateCVWithAI = async (prompt: string, templateId: string, recom
       templateId,
       recommendations,
     })
-    return response.data
+    return response.data.data
   } catch (error) {
     console.error("Error generating CV with AI:", error)
     throw new Error("Failed to generate CV with AI")

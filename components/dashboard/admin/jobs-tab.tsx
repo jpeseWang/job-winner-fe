@@ -124,8 +124,8 @@ export default function AdminJobsTab() {
           description: "Job approved successfully!",
         })
       } else if (reviewDecision === "reject") {
-        await jobService.updateJob(selectedJob.id, { status: JobStatus.REJECTED, rejectionReason })
-        setJobsData(prev => prev.map((job) => (job.id === selectedJob.id ? { ...job, status: JobStatus.REJECTED, rejectionReason } : job)))
+        await jobService.updateJob(selectedJob.id, { status: JobStatus.REJECTED })
+        setJobsData(prev => prev.map((job) => (job.id === selectedJob.id ? { ...job, status: JobStatus.REJECTED } : job)))
         toast({
           title: "Success",
           description: "Job rejected successfully!",

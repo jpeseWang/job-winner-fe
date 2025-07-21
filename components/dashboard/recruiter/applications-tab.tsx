@@ -135,7 +135,7 @@ export default function RecruiterApplicationsTab() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Image
-                          src={application.candidatePhoto || DEFAULT_AVATAR}
+                          src={application.candidatePhoto || "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small_2x/default-avatar-icon-of-social-media-user-vector.jpg"}
                           alt={application.name}
                           width={40}
                           height={40}

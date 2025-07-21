@@ -1,6 +1,6 @@
 import mongoose, { type Document, Schema } from "mongoose"
 import bcrypt from "bcryptjs"
-import { UserRole, SubscriptionTier } from "@/types/enums/index"
+import { UserRole } from "@/types/enums/index"
 
 export interface IUser extends Document {
   name: string
@@ -18,13 +18,7 @@ export interface IUser extends Document {
   lastLogin?: Date
   isActive: boolean
   company?: string
-  subscription: {
-    tier: SubscriptionTier
-    startDate?: Date
-    endDate?: Date
-    isActive: boolean
-    paymentMethod?: string
-  }
+  subscription: mongoose.Types.ObjectId
   comparePassword(candidatePassword: string): Promise<boolean>
 }
 
@@ -83,18 +77,8 @@ const UserSchema = new Schema<IUser>(
       },
     },
     subscription: {
-      tier: {
-        type: String,
-        enum: Object.values(SubscriptionTier),
-        default: SubscriptionTier.FREE,
-      },
-      startDate: Date,
-      endDate: Date,
-      isActive: {
-        type: Boolean,
-        default: true,
-      },
-      paymentMethod: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Subscription",
     },
   },
   { timestamps: true },

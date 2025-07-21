@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Loader2, Plus, Trash2, Building2, AlertCircle, Lock, Crown } from "lucide-react"
+import { Loader2, Plus, Trash2, Building2, AlertCircle, Lock, Crown, Star } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { JobLocation, JobCategory, JobType, ExperienceLevel } from "@/types/enums"
 import { useCompanyById } from "@/hooks/use-company"
@@ -22,9 +22,23 @@ import { useSubscription } from "@/hooks/useSubscription"
 import toast from "react-hot-toast"
 
 export default function NewJobPage() {
+  const planStyles: Record<string, { color: string; icon: JSX.Element }> = {
+    free: {
+      color: "text-blue-600 bg-blue-50 border-blue-200",
+      icon: <Lock className="h-4 w-4 text-blue-600" />,
+    },
+    basic: {
+      color: "text-orange-600 bg-orange-50 border-orange-200",
+      icon: <Star className="h-4 w-4 text-orange-600" />,
+    },
+    premium: {
+      color: "text-purple-600 bg-purple-50 border-purple-200",
+      icon: <Crown className="h-4 w-4 text-purple-600" />,
+    },
+  }
+
   const router = useRouter()
   const { data: session } = useSession()
-  // const { toast } = useToast()
   const { company, isLoading: companyLoading, isError: companyError, hasCompany } = useCompanyById(session?.user?.id || "")
   const { subscription, isLoading: subscriptionLoading } = useSubscription()
 
@@ -33,6 +47,7 @@ export default function NewJobPage() {
   const [benefits, setBenefits] = useState<string[]>([""])
   const [responsibilities, setResponsibilities] = useState<string[]>([""])
   const [skills, setSkills] = useState<string[]>([""])
+  const [loadingSubscription, setLoadingSubscription] = useState(true)
 
   const [formData, setFormData] = useState({
     title: "",
@@ -50,6 +65,32 @@ export default function NewJobPage() {
     companyLogo: "",
   })
 
+  // Fetch subscription status
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      try {
+        const res = await fetch(`/api/subscription?userId=${session?.user?.id}&role=recruiter`)
+        if (!res.ok) throw new Error(`HTTP error ${res.status}`)
+        const data = await res.json()
+        console.log("🟢 [Frontend] Subscription API Response:", data)
+
+        if (!data.canPostJob) {
+          console.warn("🟠 No permission to post job, redirecting...")
+          toast.error(data.reason)
+          router.push("/dashboard/recruiter/unlock")
+        }
+      } catch (err) {
+        console.error("Failed to fetch subscription:", err)
+        toast.error("Failed to check subscription. Redirecting...")
+        router.push("/dashboard/recruiter/unlock")
+      } finally {
+        setLoadingSubscription(false)
+      }
+    }
+
+    if (session?.user?.id) fetchSubscription()
+  }, [session, router, toast])
+
   // Auto-populate company data when company is loaded
   useEffect(() => {
     if (company && !formData.company) {
@@ -62,6 +103,14 @@ export default function NewJobPage() {
       }))
     }
   }, [company, session, formData.company])
+
+  let rawPlan = "free"
+  let planStyle = planStyles.free
+
+  if (subscription) {
+    rawPlan = (subscription.planId)?.replace(/^recruiter-/, "") || "free"
+    planStyle = planStyles[rawPlan] || planStyles.free
+  }
 
   const handleAddRequirement = () => {
     setRequirements([...requirements, ""])
@@ -138,9 +187,11 @@ export default function NewJobPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log("🟢 Submitting job with subscription:", subscription)
     
     // Check if user can post job
     if (!subscription?.canPostJob) {
+      console.warn("🟠 No permission to post job, redirecting...")
       router.push("/dashboard/recruiter/unlock")
       return
     }
@@ -212,25 +263,23 @@ export default function NewJobPage() {
 
   console.log("formData:", formData)
   // Show loading state while fetching company
-  if (companyLoading) {
+  if (companyLoading || loadingSubscription) {
     return (
       <main className="max-w-4xl mx-auto py-8 px-4">
-        <div className="space-y-6">
-          <Skeleton className="h-8 w-64" />
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-32" />
-              <Skeleton className="h-4 w-96" />
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-              </div>
-              <Skeleton className="h-32 w-full" />
-            </CardContent>
-          </Card>
-        </div>
+        <Skeleton className="h-8 w-64" />
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-4 w-96" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <Skeleton className="h-32 w-full" />
+          </CardContent>
+        </Card>
       </main>
     )
   }
@@ -279,7 +328,7 @@ export default function NewJobPage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between p-4 bg-white rounded-lg">
                 <div>
-                  <p className="font-medium">Current Plan: {subscription?.planName}</p>
+                  <p className="font-medium">Current Plan: {subscription?.planId}</p>
                   <p className="text-sm text-gray-600">
                     {subscription?.jobPostingsUsed} / {subscription?.jobPostingsLimit === -1 ? "Unlimited" : subscription?.jobPostingsLimit} jobs posted
                   </p>
@@ -312,11 +361,13 @@ export default function NewJobPage() {
         {subscription && (
           <div className="flex items-center gap-2 text-sm">
             <span className="text-gray-600">Plan:</span>
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-              {subscription.planName}
+            <Badge variant="outline" className={`${planStyle.color} flex items-center gap-1`}>
+              {planStyle.icon}
+              {rawPlan.toUpperCase()}
             </Badge>
             <span className="text-gray-600">
-              ({subscription.jobPostingsUsed} / {subscription.jobPostingsLimit === -1 ? "∞" : subscription.jobPostingsLimit})
+              ({subscription.jobPostingsUsed} / 
+              {["Unlimited", -1, Infinity, null].includes(subscription.jobPostingsLimit) ? "∞" : subscription.jobPostingsLimit})
             </span>
           </div>
         )}
@@ -571,15 +622,6 @@ export default function NewJobPage() {
                     onChange={handleInputChange}
                   />
                 </div>
-              </div>
-
-              <div className="flex items-center space-x-2 pt-4">
-                <Switch
-                  id="featured"
-                  checked={formData.featured}
-                  onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, featured: checked }))}
-                />
-                <Label htmlFor="featured">Feature this job (highlighted in search results)</Label>
               </div>
             </CardContent>
           </Card>
