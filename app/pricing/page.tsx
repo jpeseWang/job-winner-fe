@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -33,6 +33,11 @@ import {
   Target,
   Globe,
 } from "lucide-react"
+import { addMonths, addYears } from 'date-fns'
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/use-toast";
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js"
 
 const recruiterPlans = [
   {
@@ -146,8 +151,23 @@ const jobSeekerPlans = [
 ]
 
 export default function PricingPage() {
+  const { data: session } = useSession();
+  const router = useRouter();
+  const { toast } = useToast();
   const [isYearly, setIsYearly] = useState(false)
   const [activeTab, setActiveTab] = useState("recruiters")
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
+
+  const plans = activeTab === "recruiters" ? recruiterPlans : jobSeekerPlans;
+  const visiblePlans = session ? plans.filter(plan => plan.price.monthly > 0) : plans;
+  const selectedPlanData = visiblePlans.find(plan => plan.id === selectedPlan);
+  const priceToPay = selectedPlanData ? (isYearly ? selectedPlanData.price.yearly : selectedPlanData.price.monthly) : 0;
+
+  useEffect(() => {
+    if (session && visiblePlans.length > 0 && !selectedPlan) {
+      setSelectedPlan(visiblePlans[0].id)
+    }
+  }, [session, visiblePlans, selectedPlan])
 
   const formatPrice = (price: { monthly: number; yearly: number }) => {
     const amount = isYearly ? price.yearly : price.monthly
@@ -165,6 +185,23 @@ export default function PricingPage() {
     const yearlyTotal = price.monthly * 12
     const savings = yearlyTotal - price.yearly
     return Math.round((savings / yearlyTotal) * 100)
+  }
+
+  const getSubscriptionFields = () => {
+    if (!session?.user) return {};
+    const now = new Date();
+    const isRecruiter = activeTab === 'recruiters';
+    const role = isRecruiter ? 'recruiter' : 'jobseeker';
+    const status = 'active';
+    const startDate = now;
+    const endDate = isYearly ? addYears(now, 1) : addMonths(now, 1);
+    const billingPeriod = isYearly ? 'yearly' : 'monthly';
+    const price = priceToPay;
+    const currency = 'USD';
+    const autoRenew = true;
+    const paymentMethod = priceToPay > 0 ? 'paypal' : 'free';
+    const features = (selectedPlanData?.features?.map((f: { name: string }) => f.name)) || [];
+    return { role, status, startDate, endDate, billingPeriod, price, currency, autoRenew, paymentMethod, features };
   }
 
   return (
@@ -218,154 +255,288 @@ export default function PricingPage() {
 
           {/* Recruiter Plans */}
           <TabsContent value="recruiters">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-              {recruiterPlans.map((plan) => (
-                <Card
-                  key={plan.id}
-                  className={`relative ${plan.popular ? "ring-2 ring-blue-500 shadow-xl scale-105" : "shadow-lg"} transition-all duration-300 hover:shadow-xl`}
-                >
-                  {plan.badge && (
-                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <Badge className="bg-blue-600 text-white px-4 py-1">{plan.badge}</Badge>
-                    </div>
-                  )}
-
-                  <CardHeader className="text-center pb-8">
-                    <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
-                    <CardDescription className="text-gray-600 mb-4">{plan.description}</CardDescription>
-                    <div className="text-4xl font-bold text-gray-900 mb-2">{formatPrice(plan.price)}</div>
-                    {isYearly && plan.price.monthly > 0 && (
-                      <Badge variant="outline" className="text-green-600 border-green-600">
-                        Save {getSavings(plan.price)}%
-                      </Badge>
-                    )}
-                  </CardHeader>
-
-                  <CardContent className="space-y-4">
-                    <div className="space-y-3 mb-8">
-                      {plan.features.map((feature, index) => (
-                        <div key={index} className="flex items-center space-x-3">
-                          <div
-                            className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${
-                              feature.included ? "bg-green-100" : "bg-gray-100"
-                            }`}
-                          >
-                            {feature.included ? (
-                              <Check className="h-3 w-3 text-green-600" />
-                            ) : (
-                              <X className="h-3 w-3 text-gray-400" />
-                            )}
-                          </div>
-                          <feature.icon className={`h-4 w-4 ${feature.included ? "text-blue-600" : "text-gray-400"}`} />
-                          <span className={`text-sm ${feature.included ? "text-gray-900" : "text-gray-500"}`}>
-                            {feature.name}
-                          </span>
+            {!session ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+                {recruiterPlans.map((plan) => (
+                  <a
+                    key={plan.id}
+                    href="/auth/register?role=recruiter"
+                    style={{ textDecoration: 'none' }}
+                  >
+                    <Card className="relative cursor-pointer transition-all duration-200 hover:shadow-lg">
+                      {plan.badge && (
+                        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                          <Badge className="bg-blue-600 text-white px-4 py-1">{plan.badge}</Badge>
                         </div>
-                      ))}
-                    </div>
-
-                    <Button
-                      asChild
-                      className={`w-full ${plan.popular ? "bg-blue-600 hover:bg-blue-700" : ""}`}
-                      variant={plan.popular ? "default" : "outline"}
-                      disabled={isYearly && plan.price.yearly === 0}
-                    >
-                      {isYearly && plan.price.yearly === 0 ? (
-                        <span className="text-gray-400">Only Available on Monthly</span>
-                      ) : (
-                        <Link
-                          href={
-                            plan.id === "recruiter-free"
-                              ? "/auth/register"
-                              : `/checkout?plan=${plan.id}&billing=${isYearly ? "yearly" : "monthly"}`
-                          }
-                        >
-                          {plan.cta}
-                        </Link>
                       )}
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                      <CardHeader className="text-center pb-8">
+                        <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
+                        <CardDescription className="text-gray-600 mb-4">{plan.description}</CardDescription>
+                        <div className="text-4xl font-bold text-gray-900 mb-2">{formatPrice(plan.price)}</div>
+                        {isYearly && plan.price.monthly > 0 && (
+                          <Badge variant="outline" className="text-green-600 border-green-600">
+                            Save {getSavings(plan.price)}%
+                          </Badge>
+                        )}
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-3 mb-8">
+                          {plan.features.map((feature, index) => (
+                            <div key={index} className="flex items-center space-x-3">
+                              <div
+                                className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${
+                                  feature.included ? "bg-green-100" : "bg-gray-100"
+                                }`}
+                              >
+                                {feature.included ? (
+                                  <Check className="h-3 w-3 text-green-600" />
+                                ) : (
+                                  <X className="h-3 w-3 text-gray-400" />
+                                )}
+                              </div>
+                              <feature.icon className={`h-4 w-4 ${feature.included ? "text-blue-600" : "text-gray-400"}`} />
+                              <span className={`text-sm ${feature.included ? "text-gray-900" : "text-gray-500"}`}>
+                                {feature.name}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </a>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+                {visiblePlans.map((plan) => (
+                  <Card
+                    key={plan.id}
+                    className={`relative cursor-pointer transition-all duration-200 ${selectedPlan === plan.id ? "ring-2 ring-blue-500 shadow-xl scale-105" : plan.popular ? "ring-1 ring-blue-200 shadow-lg" : "hover:shadow-lg"}`}
+                    onClick={() => setSelectedPlan(plan.id)}
+                  >
+                    {plan.badge && (
+                      <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                        <Badge className="bg-blue-600 text-white px-4 py-1">{plan.badge}</Badge>
+                      </div>
+                    )}
+                    <CardHeader className="text-center pb-8">
+                      <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
+                      <CardDescription className="text-gray-600 mb-4">{plan.description}</CardDescription>
+                      <div className="text-4xl font-bold text-gray-900 mb-2">{formatPrice(plan.price)}</div>
+                      {isYearly && plan.price.monthly > 0 && (
+                        <Badge variant="outline" className="text-green-600 border-green-600">
+                          Save {getSavings(plan.price)}%
+                        </Badge>
+                      )}
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-3 mb-8">
+                        {plan.features.map((feature, index) => (
+                          <div key={index} className="flex items-center space-x-3">
+                            <div
+                              className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${
+                                feature.included ? "bg-green-100" : "bg-gray-100"
+                              }`}
+                            >
+                              {feature.included ? (
+                                <Check className="h-3 w-3 text-green-600" />
+                              ) : (
+                                <X className="h-3 w-3 text-gray-400" />
+                              )}
+                            </div>
+                            <feature.icon className={`h-4 w-4 ${feature.included ? "text-blue-600" : "text-gray-400"}`} />
+                            <span className={`text-sm ${feature.included ? "text-gray-900" : "text-gray-500"}`}>
+                              {feature.name}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           {/* Job Seeker Plans */}
           <TabsContent value="jobseekers">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-16">
-              {jobSeekerPlans.map((plan) => (
-                <Card
-                  key={plan.id}
-                  className={`relative ${plan.popular ? "ring-2 ring-purple-500 shadow-xl scale-105" : "shadow-lg"} transition-all duration-300 hover:shadow-xl`}
-                >
-                  {plan.badge && (
-                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <Badge className="bg-purple-600 text-white px-4 py-1">{plan.badge}</Badge>
-                    </div>
-                  )}
-
-                  <CardHeader className="text-center pb-8">
-                    <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
-                    <CardDescription className="text-gray-600 mb-4">{plan.description}</CardDescription>
-                    <div className="text-4xl font-bold text-gray-900 mb-2">{formatPrice(plan.price)}</div>
-                    {isYearly && plan.price.monthly > 0 && (
-                      <Badge variant="outline" className="text-green-600 border-green-600">
-                        Save {getSavings(plan.price)}%
-                      </Badge>
-                    )}
-                  </CardHeader>
-
-                  <CardContent className="space-y-4">
-                    <div className="space-y-3 mb-8">
-                      {plan.features.map((feature, index) => (
-                        <div key={index} className="flex items-center space-x-3">
-                          <div
-                            className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${
-                              feature.included ? "bg-green-100" : "bg-gray-100"
-                            }`}
-                          >
-                            {feature.included ? (
-                              <Check className="h-3 w-3 text-green-600" />
-                            ) : (
-                              <X className="h-3 w-3 text-gray-400" />
-                            )}
-                          </div>
-                          <feature.icon
-                            className={`h-4 w-4 ${feature.included ? "text-purple-600" : "text-gray-400"}`}
-                          />
-                          <span className={`text-sm ${feature.included ? "text-gray-900" : "text-gray-500"}`}>
-                            {feature.name}
-                          </span>
+            {!session ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-16">
+                {jobSeekerPlans.map((plan) => (
+                  <a
+                    key={plan.id}
+                    href="/auth/register?role=jobseeker"
+                    style={{ textDecoration: 'none' }}
+                  >
+                    <Card className="relative cursor-pointer transition-all duration-200 hover:shadow-lg">
+                      {plan.badge && (
+                        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                          <Badge className="bg-purple-600 text-white px-4 py-1">{plan.badge}</Badge>
                         </div>
-                      ))}
-                    </div>
-
-                    <Button
-                      asChild
-                      className={`w-full ${plan.popular ? "bg-purple-600 hover:bg-purple-700" : ""}`}
-                      variant={plan.popular ? "default" : "outline"}
-                      disabled={isYearly && plan.price.yearly === 0}
-                    >
-                      {isYearly && plan.price.yearly === 0 ? (
-                        <span className="text-gray-400">Only Available on Monthly</span>
-                      ) : (
-                        <Link
-                          href={
-                            plan.id === "jobseeker-free"
-                              ? "/auth/register"
-                              : `/checkout?plan=${plan.id}&billing=${isYearly ? "yearly" : "monthly"}`
-                          }
-                        >
-                          {plan.cta}
-                        </Link>
                       )}
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                      <CardHeader className="text-center pb-8">
+                        <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
+                        <CardDescription className="text-gray-600 mb-4">{plan.description}</CardDescription>
+                        <div className="text-4xl font-bold text-gray-900 mb-2">{formatPrice(plan.price)}</div>
+                        {isYearly && plan.price.monthly > 0 && (
+                          <Badge variant="outline" className="text-green-600 border-green-600">
+                            Save {getSavings(plan.price)}%
+                          </Badge>
+                        )}
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-3 mb-8">
+                          {plan.features.map((feature, index) => (
+                            <div key={index} className="flex items-center space-x-3">
+                              <div
+                                className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${
+                                  feature.included ? "bg-green-100" : "bg-gray-100"
+                                }`}
+                              >
+                                {feature.included ? (
+                                  <Check className="h-3 w-3 text-green-600" />
+                                ) : (
+                                  <X className="h-3 w-3 text-gray-400" />
+                                )}
+                              </div>
+                              <feature.icon
+                                className={`h-4 w-4 ${feature.included ? "text-purple-600" : "text-gray-400"}`}
+                              />
+                              <span className={`text-sm ${feature.included ? "text-gray-900" : "text-gray-500"}`}>
+                                {feature.name}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </a>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-16">
+                {visiblePlans.map((plan) => (
+                  <Card
+                    key={plan.id}
+                    className={`relative cursor-pointer transition-all duration-200 ${selectedPlan === plan.id ? "ring-2 ring-purple-500 shadow-xl scale-105" : plan.popular ? "ring-1 ring-purple-200 shadow-lg" : "hover:shadow-lg"}`}
+                    onClick={() => setSelectedPlan(plan.id)}
+                  >
+                    {plan.badge && (
+                      <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                        <Badge className="bg-purple-600 text-white px-4 py-1">{plan.badge}</Badge>
+                      </div>
+                    )}
+                    <CardHeader className="text-center pb-8">
+                      <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
+                      <CardDescription className="text-gray-600 mb-4">{plan.description}</CardDescription>
+                      <div className="text-4xl font-bold text-gray-900 mb-2">{formatPrice(plan.price)}</div>
+                      {isYearly && plan.price.monthly > 0 && (
+                        <Badge variant="outline" className="text-green-600 border-green-600">
+                          Save {getSavings(plan.price)}%
+                        </Badge>
+                      )}
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-3 mb-8">
+                        {plan.features.map((feature, index) => (
+                          <div key={index} className="flex items-center space-x-3">
+                            <div
+                              className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${
+                                feature.included ? "bg-green-100" : "bg-gray-100"
+                              }`}
+                            >
+                              {feature.included ? (
+                                <Check className="h-3 w-3 text-green-600" />
+                              ) : (
+                                <X className="h-3 w-3 text-gray-400" />
+                              )}
+                            </div>
+                            <feature.icon
+                              className={`h-4 w-4 ${feature.included ? "text-purple-600" : "text-gray-400"}`}
+                            />
+                            <span className={`text-sm ${feature.included ? "text-gray-900" : "text-gray-500"}`}>
+                              {feature.name}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
+
+        {session && selectedPlanData && (
+          <div className="flex flex-col items-center gap-6">
+            <Card className="bg-blue-50 border-blue-200 mb-8 max-w-lg w-full">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Star className="h-5 w-5 text-blue-600" />
+                  Selected Plan: {selectedPlanData.name}
+                </CardTitle>
+                <CardDescription>
+                  {formatPrice(selectedPlanData.price)} - {selectedPlanData.description}
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            {priceToPay > 0 ? (
+              <div className="min-w-[220px]">
+                <PayPalScriptProvider options={{ clientId: "ARYI_H9cVv4NbfslyZ24d3keT4RO0QLs6on2sPS4oNOZoDIE1Gy1i405HflcAP9pwTLNLoM-QDaV01gN" }}>
+                  <PayPalButtons
+                    style={{ layout: "vertical" }}
+                    createOrder={(data, actions) => {
+                      return actions.order.create({
+                        intent: "CAPTURE",
+                        purchase_units: [{
+                          amount: { value: String(priceToPay), currency_code: "USD" }
+                        }]
+                      })
+                    }}
+                    onApprove={async (data, actions) => {
+                      await actions.order?.capture()
+                      // Gọi API update subscription
+                      if (session?.user?.id && selectedPlan) {
+                        const planShort = selectedPlan.replace('recruiter-', '').replace('jobseeker-', '').toLowerCase();
+                        const role = activeTab === 'recruiters' ? 'recruiter' : 'jobseeker';
+                        await fetch("/api/subscription", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ userId: session.user.id, plan: planShort, role }),
+                        })
+                      }
+                      toast({ title: "Success", description: "Payment successful!" })
+                      router.push("/dashboard")
+                    }}
+                    onError={() => {
+                      toast({ title: "Error", description: "Payment failed. Please try again.", variant: "destructive" })
+                    }}
+                  />
+                </PayPalScriptProvider>
+              </div>
+            ) : (
+              <Button
+                onClick={async () => {
+                  if (session?.user?.id && selectedPlan) {
+                    const planShort = selectedPlan.replace('recruiter-', '').replace('jobseeker-', '').toLowerCase();
+                    const role = activeTab === 'recruiters' ? 'recruiter' : 'jobseeker';
+                    await fetch("/api/subscription", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ userId: session.user.id, plan: planShort, role }),
+                    })
+                  }
+                  toast({ title: "Success", description: "Unlocked Free Plan!" })
+                  router.push("/dashboard")
+                }}
+                className="min-w-[120px]"
+              >
+                Unlock Free
+              </Button>
+            )}
+          </div>
+        )}
 
         {/* Feature Comparison */}
         <PricingComparison activeTab={activeTab} />
