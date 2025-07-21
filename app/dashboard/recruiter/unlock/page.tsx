@@ -213,6 +213,12 @@ export default function UnlockPage() {
                     await actions.order?.capture()
                     // Call API to update subscription
                     if (session?.user?.id && selectedPlan) {
+                      console.log("💸 [Frontend] Calling /api/subscription with:", {
+                        userId: session.user.id,
+                        planId: selectedPlan.replace("recruiter-", ""),
+                        role: "recruiter"
+                      })
+
                       const res = await fetch("/api/subscription", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -222,6 +228,8 @@ export default function UnlockPage() {
                           role: "recruiter"
                         }),
                       })
+
+                      console.log("📥 [Frontend] API Response status:", res.status)
                       const data = await res.json()
                       console.log("📥 [Frontend] API Response body:", data)
                     }

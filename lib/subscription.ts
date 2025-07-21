@@ -131,7 +131,6 @@ export async function extendActiveJobs(userId: string, plan: SubscriptionPlan): 
   }
 }
 
-
 /**
  * Reset subscription to FREE
  */
@@ -193,13 +192,8 @@ export function getJobDurationForPlan(plan: SubscriptionPlan): number {
  * Create fallback FREE subscription if user has none
  */
 async function getFreeSubscriptionFallback(userId: string, role: SubscriptionRole): Promise<ISubscription> {
-  if (!userId) {
-    throw new Error('Cannot create fallback subscription: userId is null')
-  }
-  console.log(`Creating fallback FREE subscription for user ${userId} (${role})`)
   const freeSub = await Subscription.create({
     user: userId,
-    userId,
     role,
     plan: SubscriptionPlan.FREE,
     usageStats: { jobPostings: 0, cvDownloads: 0, featuredJobs: 0, premiumTemplates: 0 },

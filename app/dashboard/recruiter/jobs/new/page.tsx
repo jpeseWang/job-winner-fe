@@ -108,7 +108,7 @@ export default function NewJobPage() {
   let planStyle = planStyles.free
 
   if (subscription) {
-    rawPlan = (subscription.planId)?.replace(/^recruiter-/, "") || "free"
+    rawPlan = (subscription.planName || subscription.plan)?.replace(/^recruiter-/, "") || "free"
     planStyle = planStyles[rawPlan] || planStyles.free
   }
 
