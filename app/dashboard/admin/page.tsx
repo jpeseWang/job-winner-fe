@@ -7,6 +7,7 @@ import AdminSettingsTab from "@/components/dashboard/admin/settings-tab"
 import AdminTemplatesTab from "@/components/dashboard/admin/templates-tab"
 import AdminReportsTab from "@/components/dashboard/admin/reports-tab"
 import AdminBlogTab from "@/components/dashboard/admin/blog-tab"
+import AdminCompanyManagerPage from "./companies/page"
 
 export default function AdminDashboardPage() {
   return (
@@ -18,7 +19,8 @@ export default function AdminDashboardPage() {
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="jobs">Jobs</TabsTrigger>
             <TabsTrigger value="templates">Templates</TabsTrigger>
-            <TabsTrigger value="reports">Reports</TabsTrigger>
+            {/* <TabsTrigger value="reports">Reports</TabsTrigger> */}
+            <TabsTrigger value="companies">Companies</TabsTrigger>
             <TabsTrigger value="blogs">Blogs</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
@@ -49,6 +51,13 @@ export default function AdminDashboardPage() {
 
           <TabsContent value="settings">
             <AdminSettingsTab />
+          </TabsContent>
+
+
+          <TabsContent value="companies">
+
+
+            <AdminCompanyManagerPage />
           </TabsContent>
         </Tabs>
       </div>
