@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -10,12 +11,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/components/ui/use-toast"
-import { ChevronLeft, ChevronRight, Plus, Trash2, Download, Share, FileText, Wand2, Library } from "lucide-react"
+import { ChevronLeft, ChevronRight, Plus, Trash2, Download, Share, FileText, Wand2, Library, Loader2, Lock, Star, Crown } from "lucide-react"
 import CVTemplateLibrary from "@/components/cv/cv-template-library"
 import CVPreview from "@/components/cv/cv-preview"
 import { generateCV, generateFieldContent } from "@/services/cvService"
 import type { ICVTemplate } from "@/types/interfaces"
 import toast from "react-hot-toast"
+import { Badge } from "@/components/ui/badge"
 // @ts-ignore
 import html2pdf from 'html2pdf.js';
 import { useRef } from "react";
@@ -36,6 +38,21 @@ interface FormField {
 }
 
 export default function GenerateCVPage() {
+  const planStyles: Record<string, { color: string; icon: JSX.Element }> = {
+    free: {
+      color: "text-blue-600 bg-blue-50 border-blue-200",
+      icon: <Lock className="h-4 w-4 text-blue-600" />,
+    },
+    premium: {
+      color: "text-purple-600 bg-purple-50 border-purple-200",
+      icon: <Crown className="h-4 w-4 text-purple-600" />,
+    },
+  }
+
+  const router = useRouter()
+  const { data: session } = useSession()
+  const [subscription, setSubscription] = useState<any>(null)
+  const [loadingSubscription, setLoadingSubscription] = useState(true)
 
   const [activeTab, setActiveTab] = useState("cv-template")
   const [currentStep, setCurrentStep] = useState(0)
@@ -114,6 +131,41 @@ export default function GenerateCVPage() {
   ])
 
   const { user } = useAuth()
+
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      try {
+        const res = await fetch(`/api/subscription?userId=${session?.user?.id}&role=job_seeker`)
+        if (!res.ok) throw new Error(`HTTP error ${res.status}`)
+        const data = await res.json()
+
+        console.log("🟢 [GenerateCVPage] Subscription API Response:", data)
+        setSubscription(data)
+
+        if (!data.canCreateCV) {
+          console.warn("🟠 No permission to generate cv, redirecting...")
+          toast.error(data.createCVReason)
+          router.push("/dashboard/job-seeker/unlock")
+        }
+      } catch (err) {
+        console.error("Failed to fetch subscription:", err)
+        toast.error("Failed to check subscription. Redirecting...")
+        router.push("/dashboard/job-seeker/unlock")
+      } finally {
+        setLoadingSubscription(false)
+      }
+    }
+
+    if (session?.user?.id) fetchSubscription()
+  }, [session?.user?.id, router])
+
+  let rawPlan = "free"
+  let planStyle = planStyles.free
+
+  if (subscription) {
+    rawPlan = subscription.plan.replace(/^job_seeker-/, "") || "free"
+    planStyle = planStyles[rawPlan] || planStyles.free
+  }
 
   const handleFieldChange = (sectionId: string, fieldId: string, value: string) => {
     setSections((prevSections) =>
@@ -377,6 +429,19 @@ export default function GenerateCVPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Generate Your CV</h1>
           <p className="text-gray-600">Create a professional CV in minutes with our easy-to-use builder</p>
+          {subscription && (
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-gray-600">Plan:</span>
+              <Badge variant="outline" className={`${planStyle.color} flex items-center gap-1`}>
+                {planStyle.icon}
+                {rawPlan.toUpperCase()}
+              </Badge>
+              <span className="text-gray-600">
+                ({subscription.cvCreated} / 
+                {["Unlimited", -1, Infinity, null].includes(subscription.cvLimit) ? "∞" : subscription.cvLimit})
+              </span>
+            </div>
+          )}
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">

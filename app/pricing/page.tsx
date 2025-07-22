@@ -126,8 +126,8 @@ const jobSeekerPlans = [
     id: "jobseeker-premium",
     name: "Premium",
     price: { monthly: 19, yearly: 190 },
-    description: "Advanced features to accelerate your career growth",
-    badge: "Recommended",
+    description: "Apply for unlimited jobs and create unlimited CVs.",
+    badge: "Best Value",
     features: [
       { name: "Access to all premium CV templates", included: true, icon: Crown },
       { name: "Featured proposals (5x visibility)", included: true, icon: Star },
