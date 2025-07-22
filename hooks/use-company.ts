@@ -8,7 +8,7 @@ export function useCompany() {
         error,
         isLoading,
         mutate,
-    } = useSWR<Company>("/api/companies/my-company", companyService.getMyCompany, {
+    } = useSWR<Company>("/api/company/my-company", companyService.getMyCompany, {
         revalidateOnFocus: false,
         revalidateOnReconnect: true,
         errorRetryCount: 3,

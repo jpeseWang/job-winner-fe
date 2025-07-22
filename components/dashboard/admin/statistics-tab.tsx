@@ -82,7 +82,7 @@ export default function AdminStatisticsTab() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">Total Users</p>
-                <h3 className="text-2xl font-bold mt-1">15,420</h3>
+                <h3 className="text-2xl font-bold mt-1">67</h3>
                 <div className="flex items-center mt-1 text-xs text-green-600">
                   <TrendingUp className="h-3 w-3 mr-1" />
                   <span>+12% from last month</span>
@@ -100,7 +100,7 @@ export default function AdminStatisticsTab() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">Active Jobs</p>
-                <h3 className="text-2xl font-bold mt-1">5,230</h3>
+                <h3 className="text-2xl font-bold mt-1">45</h3>
                 <div className="flex items-center mt-1 text-xs text-green-600">
                   <TrendingUp className="h-3 w-3 mr-1" />
                   <span>+8% from last month</span>
@@ -118,7 +118,7 @@ export default function AdminStatisticsTab() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">Applications</p>
-                <h3 className="text-2xl font-bold mt-1">42,680</h3>
+                <h3 className="text-2xl font-bold mt-1">176</h3>
                 <div className="flex items-center mt-1 text-xs text-green-600">
                   <TrendingUp className="h-3 w-3 mr-1" />
                   <span>+15% from last month</span>
@@ -136,7 +136,7 @@ export default function AdminStatisticsTab() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">Revenue</p>
-                <h3 className="text-2xl font-bold mt-1">$285,600</h3>
+                <h3 className="text-2xl font-bold mt-1">$265</h3>
                 <div className="flex items-center mt-1 text-xs text-red-600">
                   <TrendingDown className="h-3 w-3 mr-1" />
                   <span>-3% from last month</span>

@@ -1,6 +1,6 @@
 import mongoose, { type Document, Schema } from "mongoose"
 import bcrypt from "bcryptjs"
-import { UserRole } from "@/types/enums/index"
+import { UserRole, UserStatus } from "@/types/enums/index"
 
 export interface IUser extends Document {
   name: string
@@ -16,7 +16,7 @@ export interface IUser extends Document {
   createdAt: Date
   updatedAt: Date
   lastLogin?: Date
-  isActive: boolean
+  status: "active" | "inactive" | "banned" // <-- thay thế isActive
   company?: string
   subscription: mongoose.Types.ObjectId
   comparePassword(candidatePassword: string): Promise<boolean>
@@ -34,7 +34,7 @@ const UserSchema = new Schema<IUser>(
       type: String,
       required: [true, "Please provide an email"],
       match: [
-        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
         "Please provide a valid email",
       ],
       unique: true,
@@ -44,7 +44,6 @@ const UserSchema = new Schema<IUser>(
     password: {
       type: String,
       required: function (this: IUser) {
-        // Password is not required for OAuth users
         return !this.profilePicture || this.profilePicture.indexOf("googleusercontent") === -1
       },
       minlength: [6, "Password must be at least 6 characters"],
@@ -65,23 +64,31 @@ const UserSchema = new Schema<IUser>(
     verificationExpires: Date,
     resetPasswordToken: String,
     resetPasswordExpires: Date,
-    lastLogin: Date,
-    isActive: {
-      type: Boolean,
-      default: true,
+    lastLogin: {
+      type: Date,
+      default: Date.now,
     },
+
+    status: {
+      type: String,
+      enum: Object.values(UserStatus),
+      default: UserStatus.ACTIVE,
+    },
+
+
     company: {
       type: String,
       required: function (this: IUser) {
         return this.role === UserRole.RECRUITER
       },
     },
+
     subscription: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Subscription",
     },
   },
-  { timestamps: true },
+  { timestamps: true }
 )
 
 // Hash password before saving

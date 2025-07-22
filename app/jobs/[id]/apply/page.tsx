@@ -1,33 +1,69 @@
-import { notFound, redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { UserRole } from "@/types/enums";
-import { getTimeAgo } from "@/utils/getTimeAgo";
-import JobApplicationForm from "@/components/jobs/job-application-form";
-import { jobService } from "@/services/jobService";
+"use client"
+
+import { useEffect, useState } from "react"
+import { redirect } from "next/navigation"
+import JobApplicationForm from "@/components/jobs/job-application-form"
 import JobCard from "@/components/job-card"
 import { formatSalary } from "@/utils/formatters"
+import { getTimeAgo } from "@/utils/getTimeAgo"
+import { useAuth } from "@/hooks/use-auth"
+import { jobService } from "@/services/jobService"
+import { useRouter } from "next/navigation"
+import toast from "react-hot-toast"
 
 interface ApplyJobPageProps {
   params: {
-    id: string;
-  };
+    id: string
+  }
 }
 
-export default async function ApplyJobPage({ params }: ApplyJobPageProps) {
-  const session = await getServerSession(authOptions);
+export default function ApplyJobPage({ params }: ApplyJobPageProps) {
+  const { user } = useAuth()
+  const [job, setJob] = useState<any>(null)
+  const [subscriptionChecked, setSubscriptionChecked] = useState(false)
+  const router = useRouter()
 
-  if (!session) {
-    redirect("/auth/login?unauthorized=1");
-  }
+  useEffect(() => {
+    if (!user) {
+      redirect("/auth/login?unauthorized=1")
+      return
+    }
 
-  const job = await jobService.getJobById(params.id, true);
-  if (!job) notFound();
+    const checkSubscription = async () => {
+      try {
+        const response = await fetch(`/api/subscription?userId=${user.id}&role=job_seeker`)
+        if (!response.ok) throw new Error(`HTTP error ${response.status}`)
+        const data = await response.json()
+
+        console.log("📦 [ApplyJobPage] Subscription check:", data)
+
+        if (!data.canApply) {
+          toast.error(data.applyReason)
+          router.push("/dashboard/job-seeker/unlock")
+        }
+      } catch (error) {
+        console.error("❌ Error checking subscription:", error)
+        toast.error("Failed to check subscription. Redirecting...")
+        redirect("/dashboard/job-seeker/unlock")
+      } finally {
+        setSubscriptionChecked(true)
+      }
+    }
+
+    checkSubscription()
+  }, [user])
+
+  useEffect(() => {
+    if (subscriptionChecked) {
+      jobService.getJobById(params.id, true).then(setJob)
+    }
+  }, [subscriptionChecked, params.id])
+
+  if (!subscriptionChecked || !job) return <div className="p-8 text-center">Loading...</div>
 
   return (
     <main className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Job Info Header */}
         <div className="mb-8">
           <JobCard
             id={job.id}
@@ -43,9 +79,8 @@ export default async function ApplyJobPage({ params }: ApplyJobPageProps) {
             hideButton={true}
           />
         </div>
-        {/* Application Form */}
         <JobApplicationForm job={job} />
       </div>
     </main>
-  );
+  )
 }

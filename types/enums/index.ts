@@ -6,8 +6,7 @@ export enum UserRole {
 
 export enum UserStatus {
   ACTIVE = "active",
-  PENDING = "pending",
-  SUSPENDED = "suspended",
+  BANNED = "banned",
 }
 
 export enum JobType {
@@ -74,6 +73,12 @@ export enum ETemplateCategory {
   MODERN = "modern",
   ACADEMIC = "academic",
   EXECUTIVE = "executive",
+}
+
+export enum SubscriptionRole {
+  RECRUITER = "recruiter",
+  JOB_SEEKER = "job_seeker",
+  ADMIN = "admin"
 }
 
 export enum SubscriptionPlan {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -16,11 +16,10 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { toast } from "@/components/ui/use-toast"
 import { ImageUpload } from "@/components/ui/image-upload"
-import { FileText, User, Mail, Phone, MapPin, Briefcase, CheckCircle, ArrowLeft, ArrowRight, Send } from "lucide-react"
+import { FileText, User, Mail, Phone, MapPin, Briefcase, CheckCircle, ArrowLeft, ArrowRight, Send, Crown, Lock } from "lucide-react"
 import type { Job } from "@/types/interfaces"
-import { applicationService } from "@/services/applicationService";
+import { applicationService } from "@/services/applicationService"
 import { notificationService } from "@/services/notificationService"
-import { useEffect } from "react"
 import { userService } from "@/services/userService"
 
 const applicationSchema = z.object({
@@ -109,6 +108,7 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [skillInput, setSkillInput] = useState("")
+  const [subscription, setSubscription] = useState<any>(null)
   // const [portfolioInput, setPortfolioInput] = useState("")
 
   const form = useForm<ApplicationFormData>({
@@ -124,6 +124,27 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
       agreeToTerms: false,
     },
   })
+
+  useEffect(() => {
+    async function fetchSubscription() {
+      try {
+        const res = await fetch(`/api/subscription?userId=${session?.user?.id}&role=job_seeker`)
+        if (!res.ok) throw new Error(`HTTP error ${res.status}`)
+        const data = await res.json()
+        setSubscription(data)
+        console.log("📦 [JobApplicationForm] Subscription:", data)
+      } catch (error) {
+        console.error("❌ Failed to fetch subscription:", error)
+        toast({
+          title: "Subscription Error",
+          description: "Could not load subscription details.",
+          variant: "destructive",
+        })
+      }
+    }
+
+    if (session?.user?.id) fetchSubscription()
+  }, [session?.user?.id])
 
   useEffect(() => {
   async function loadProfile() {
@@ -678,6 +699,25 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
             Step {currentStep} of {totalSteps}
           </div>
         </div>
+        {/* Display subscription info */}
+        {subscription && (
+          <div className="flex items-center justify-between mb-4 p-3 border rounded bg-gray-50">
+            <div className="flex items-center gap-2">
+              {subscription.plan.includes("premium") ? (
+                <Crown className="h-5 w-5 text-purple-600" />
+              ) : (
+                <Lock className="h-5 w-5 text-blue-600" />
+              )}
+              <span className="font-medium text-gray-700">
+                Plan: {subscription.plan.replace("job_seeker-", "").toUpperCase()}
+              </span>
+            </div>
+            <span className="text-sm text-gray-600">
+              Applications used:  ({subscription.applicationsUsed} / 
+              {["Unlimited", -1, Infinity, null].includes(subscription.applicationsLimit) ? "∞" : subscription.applicationsLimit})
+            </span>
+          </div>
+        )}
         <Progress value={progress} className="h-2" />
       </div>
 

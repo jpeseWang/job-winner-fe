@@ -218,7 +218,7 @@ export default function Home() {
               experience.
             </p>
             <Link
-              href="/upload-cv"
+              href="/dashboard/job-seeker/upload-cv"
               className="bg-teal-500 text-white px-6 py-3 rounded-md hover:bg-teal-600 transition"
             >
               Upload Your CV

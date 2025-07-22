@@ -49,7 +49,7 @@ export default function CVMarketplacePage() {
                 <div className="absolute -bottom-6 -right-6 w-full h-full bg-white/10 rounded-lg"></div>
                 <div className="relative bg-white p-6 rounded-lg shadow-xl">
                   <img
-                    src="https://plus.unsplash.com/premium_photo-1661375060153-6ebb720a1ee8?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                    src="/placeholder.svg?height=400&width=300"
                     alt="CV Template Preview"
                     className="w-full h-auto rounded"
                   />
@@ -72,7 +72,7 @@ export default function CVMarketplacePage() {
               <Input placeholder="Search templates..." className="pl-10 w-full" />
             </div>
             <div className="flex items-center gap-2 w-full md:w-auto">
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button variant="outline" className="flex items-center gap-2 bg-transparent">
                 <Filter size={16} />
                 <span>Filters</span>
               </Button>
