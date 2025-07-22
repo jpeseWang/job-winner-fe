@@ -8,7 +8,7 @@ export default function AdminDashboardHeader() {
 
   const navItems = [
     { name: "Dashboard", href: "/dashboard/admin" },
-    { name: "Company Management", href: "/dashboard/admin/companies" },
+    // { name: "Company Management", href: "/dashboard/admin/companies" },
     { name: "Contact Management", href: "/dashboard/admin/contacts" },
     { name: "User Management", href: "/dashboard/admin/manage-users" },
   ];
@@ -37,11 +37,10 @@ export default function AdminDashboardHeader() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                      isActive
+                    className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${isActive
                         ? "border-teal-500 text-gray-900"
                         : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-                    }`}
+                      }`}
                   >
                     {item.name}
                   </Link>

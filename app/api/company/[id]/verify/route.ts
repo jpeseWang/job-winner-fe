@@ -3,16 +3,16 @@ import dbConnect from "@/lib/db"
 import Company from "@/models/Company"
 import User from "@/models/User"
 import mongoose from "mongoose"
+import { UserRole } from "@/types/enums"
 
 export async function PATCH(
   req: Request,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     await dbConnect()
 
-    const { params } = await context
-    const id = params.id
+    const id = (await context.params).id
 
     console.log(" ID công ty nhận được:", id)
 
@@ -34,7 +34,7 @@ export async function PATCH(
     company.isVerified = true
     await company.save()
 
-    user.role = "recruiter"
+    user.role = UserRole.RECRUITER
     user.company = company._id
     await user.save()
 
