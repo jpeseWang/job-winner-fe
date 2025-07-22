@@ -90,6 +90,66 @@ export function checkPostingPermission(subscription: ISubscription): {
 }
 
 /**
+ * Check if the user can create more CVs based on their subscription
+ */
+export function checkCVPermission(subscription: ISubscription): {
+  canCreateCV: boolean
+  reason: string
+  quotaLeft: number | "Unlimited"
+} {
+  console.log("📦 [checkCVPermission] Subscription:", subscription)
+
+  const plan = subscription.plan
+  const planLimit = getPlanCVLimit(plan)
+  const used = subscription.usageStats.cvCreated ?? 0
+
+  const quotaLeft = planLimit === Infinity ? "Unlimited" : planLimit - used
+  console.log(`📦 Plan: ${plan}, Limit: ${planLimit}, Used: ${used}, Left: ${quotaLeft}`)
+
+  if (quotaLeft === "Unlimited" || quotaLeft > 0) {
+    console.log("✅ [checkCVPermission] Can create CV: true")
+    return { canCreateCV: true, reason: "OK", quotaLeft }
+  }
+
+  console.log("❌ [checkCVPermission] Can create CV: false")
+  return {
+    canCreateCV: false,
+    reason: "You have used up your cv generating limit for this month. Please upgrade your plan.",
+    quotaLeft: 0,
+  }
+}
+
+/**
+ * Increment the apply count for a job seeker
+ */
+export function checkApplyPermission(subscription: ISubscription): {
+  canApply: boolean
+  reason: string
+  quotaLeft: number | "Unlimited"
+} {
+  console.log("📦 [checkApplyPermission] Subscription:", subscription)
+
+  const plan = subscription.plan
+  const planLimit = getPlanApplyLimit(plan)
+  const used = subscription.usageStats.jobApplications ?? 0
+
+  const quotaLeft = planLimit === Infinity ? "Unlimited" : planLimit - used
+  console.log(`📦 Plan: ${plan}, Limit: ${planLimit}, Used: ${used}, Left: ${quotaLeft}`)
+
+  if (quotaLeft === "Unlimited" || quotaLeft > 0) {
+    console.log("✅ [checkApplyPermission] Can apply: true")
+    return { canApply: true, reason: "OK", quotaLeft }
+  }
+
+  console.log("❌ [checkApplyPermission] Can apply: false")
+  return {
+    canApply: false,
+    reason: "You have used up your cv applying limit for this month. Please upgrade your plan.",
+    quotaLeft: 0,
+  }
+}
+
+/**
  * Increment job posting count
  */
 export async function incrementJobPosting(userId: string, role: SubscriptionRole): Promise<void> {
@@ -103,6 +163,42 @@ export async function incrementJobPosting(userId: string, role: SubscriptionRole
     )
   } catch (err) {
     console.error(`Failed to increment job posting for user ${userId} (${role}):`, err)
+  }
+}
+
+/**
+ * Increment the cvCreated count for a job seeker
+ */
+export async function incrementCVCreating(userId: string, role: SubscriptionRole): Promise<void> {
+  try {
+    const subscription = await Subscription.findOne({ user: userId, role })
+    if (!subscription) throw new Error(`Subscription for ${role} not linked to user.`)
+
+    await Subscription.findByIdAndUpdate(
+      subscription._id,
+      { $inc: { "usageStats.cvCreated": 1 } }
+    )
+  } catch (err) {
+    console.error(`Failed to increment cvCreated for user ${userId} (${role}):`, err)
+  }
+}
+
+/**
+ * Increment the jobCreated count for a job seeker
+ */
+export async function incrementJobApplication(userId: string, role: SubscriptionRole): Promise<void> {
+  try {
+    const subscription = await Subscription.findOne({ user: userId, role })
+    if (!subscription) throw new Error(`Subscription for ${role} not linked to user.`)
+
+    await Subscription.findByIdAndUpdate(
+      subscription._id,
+      { $inc: { "usageStats.jobApplications": 1 } }
+    )
+
+    console.log(`✅ Incremented jobApplications for user ${userId} (${role})`)
+  } catch (err) {
+    console.error(`❌ Failed to increment jobApplications for user ${userId} (${role}):`, err)
   }
 }
 
@@ -153,9 +249,36 @@ export function resetQuota(subscription: ISubscription): void {
     jobPostings: 0,
     cvDownloads: 0,
     featuredJobs: 0,
-    premiumTemplates: 0
+    premiumTemplates: 0,
+    cvCreated: 0,
+    jobApplications: 0,
   }
   console.log(`🔄 Quota reset for subscription ${subscription._id}`)
+}
+
+export function getPlanApplyLimit(plan: SubscriptionPlan): number {
+  switch (plan) {
+    case SubscriptionPlan.FREE:
+      return 15 
+    case SubscriptionPlan.PREMIUM:
+      return Infinity 
+    default:
+      return 15
+  }
+}
+
+/**
+ * Get the CV limit for a subscription plan
+ */
+export function getPlanCVLimit(plan: SubscriptionPlan): number {
+  switch (plan) {
+    case SubscriptionPlan.FREE:
+      return 10 
+    case SubscriptionPlan.PREMIUM:
+      return Infinity 
+    default:
+      return 10
+  }
 }
 
 /**
@@ -192,11 +315,15 @@ export function getJobDurationForPlan(plan: SubscriptionPlan): number {
  * Create fallback FREE subscription if user has none
  */
 async function getFreeSubscriptionFallback(userId: string, role: SubscriptionRole): Promise<ISubscription> {
+  if (!userId) {
+    throw new Error('Cannot create fallback subscription: userId is null')
+  }
+  console.log(`Creating fallback FREE subscription for user ${userId} (${role})`)
   const freeSub = await Subscription.create({
     user: userId,
     role,
     plan: SubscriptionPlan.FREE,
-    usageStats: { jobPostings: 0, cvDownloads: 0, featuredJobs: 0, premiumTemplates: 0 },
+    usageStats: { jobPostings: 0, cvDownloads: 0, featuredJobs: 0, premiumTemplates: 0, cvCreated: 0, jobApplications: 0 },
     startDate: new Date(),
     endDate: addDays(new Date(), 30),
     billingPeriod: BillingPeriod.MONTHLY,

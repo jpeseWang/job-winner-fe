@@ -76,7 +76,7 @@ export default function NewJobPage() {
 
         if (!data.canPostJob) {
           console.warn("🟠 No permission to post job, redirecting...")
-          toast.error(data.reason)
+          toast.error(data.postJobReason)
           router.push("/dashboard/recruiter/unlock")
         }
       } catch (err) {

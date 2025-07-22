@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import dbConnect from "@/lib/db"
-import { getActiveSubscription, checkPostingPermission, extendActiveJobs, getPlanJobLimit, resetQuota } from "@/lib/subscription"
+import { getActiveSubscription, checkPostingPermission, checkApplyPermission, checkCVPermission, extendActiveJobs, getPlanJobLimit, getPlanCVLimit, getPlanApplyLimit, resetQuota } from "@/lib/subscription"
 import Subscription from "@/models/Subscription"
 import { SubscriptionPlan, SubscriptionRole, BillingPeriod  } from "@/types/enums"
 import { addDays } from "date-fns"
@@ -19,24 +19,32 @@ export async function GET(request: Request) {
 
   try {
     const subscription = await getActiveSubscription(userId, role)
-    const permission = checkPostingPermission(subscription)
+    
+    const postingPermission = checkPostingPermission(subscription)
+    const cvPermission = checkCVPermission(subscription)
+    const applyPermission = checkApplyPermission(subscription)
 
     console.log("📦 [GET /api/subscription] Subscription:", subscription)
-    console.log("📦 [GET /api/subscription] Permission:", permission)
 
     // Gắn prefix role vào plan khi trả về API
     const prefixedPlan = `${role}-${subscription.plan}`
 
     return NextResponse.json({
       plan: prefixedPlan,
+      usageStats: subscription.usageStats,
       jobPostingsUsed: subscription.usageStats.jobPostings ?? 0,
       jobPostingsLimit: getPlanJobLimit(subscription.plan),
-      quotaLeft: permission.quotaLeft,
-      canPostJob: permission.canPostJob,
-      reason: permission.reason
-      
+      cvCreated: subscription.usageStats.cvCreated ?? 0,
+      cvLimit: getPlanCVLimit(subscription.plan),
+      applicationsUsed: subscription.usageStats.jobApplications ?? 0,
+      applicationsLimit: getPlanApplyLimit(subscription.plan),
+      canPostJob: postingPermission.canPostJob,
+      postJobReason: postingPermission.reason,
+      canCreateCV: cvPermission.canCreateCV,
+      createCVReason: cvPermission.reason,
+      canApply: applyPermission.canApply,
+      applyReason: applyPermission.reason,
     })
-    
   } catch (err) {
     console.error("Failed to fetch subscription:", err)
     return NextResponse.json({ error: "Server error" }, { status: 500 })
@@ -56,7 +64,13 @@ export async function POST(request: Request) {
 
     await dbConnect()
 
-    // Validate planId
+    // 🎯 Validate planId based on role
+    if (role === SubscriptionRole.JOB_SEEKER && planId === SubscriptionPlan.BASIC) {
+      return NextResponse.json({
+        error: "Job seekers cannot select Basic plan.",
+      }, { status: 400 })
+    }
+
     if (!Object.values(SubscriptionPlan).includes(planId)) {
       return NextResponse.json({ error: `Invalid plan: ${planId}` }, { status: 400 })
     }
@@ -67,6 +81,7 @@ export async function POST(request: Request) {
     // Tìm subscription theo user + role
     let subscription = await Subscription.findOne({ user: userId, role })
     console.log("🔍 [POST /api/subscription] Found subscription:", subscription)
+
     if (!subscription) {
       // Nếu chưa có ➝ tạo mới
       subscription = await Subscription.create({
@@ -81,12 +96,11 @@ export async function POST(request: Request) {
         currency: "USD",
         autoRenew: true,
         paymentMethod: "free",
-        usageStats: { jobPostings: 0, cvDownloads: 0, featuredJobs: 0, premiumTemplates: 0 },
+        usageStats: { jobPostings: 0, cvCreated: 0, jobApplications: 0, featuredJobs: 0, premiumTemplates: 0 },
       })
     }
 
     const oldPlan = subscription.plan
-    const isUpgrade = planId !== SubscriptionPlan.FREE && oldPlan === SubscriptionPlan.FREE
     const isDowngrade = planId === SubscriptionPlan.FREE && oldPlan !== SubscriptionPlan.FREE
 
     // 📝 Update subscription info
@@ -96,11 +110,11 @@ export async function POST(request: Request) {
     subscription.endDate = endDate
     subscription.billingPeriod = BillingPeriod.MONTHLY
     subscription.price =
-      planId === SubscriptionPlan.BASIC
-        ? 49
-        : planId === SubscriptionPlan.PREMIUM
-        ? 99
-        : 0
+      role === SubscriptionRole.RECRUITER
+        ? planId === SubscriptionPlan.BASIC
+          ? 49
+          : 99
+        : 19
     subscription.paymentMethod = planId === SubscriptionPlan.FREE ? "free" : "paypal"
 
     if (isDowngrade) {

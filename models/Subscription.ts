@@ -24,6 +24,8 @@ export interface ISubscription extends Document {
     cvDownloads: number
     featuredJobs: number
     premiumTemplates: number
+    cvCreated: number
+    jobApplications: number
   }
   cancelReason?: string
   createdAt: Date
@@ -122,6 +124,14 @@ const SubscriptionSchema = new Schema<ISubscription>(
         type: Number,
         default: 0,
       },
+      cvCreated: {
+        type: Number,
+        default: 0,
+      },
+      jobApplications: {
+        type: Number,
+        default: 0,
+      }
     },
     cancelReason: {
       type: String,
