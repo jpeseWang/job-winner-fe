@@ -34,7 +34,7 @@ const faqData = [
     category: "For Recruiters",
     questions: [
       {
-        question: "What happens if I exceed my job posting limit?",
+        question: "What happens if I exceed my job posting limit",
         answer:
           "If you reach your monthly limit, you can either upgrade your plan or wait until the next billing cycle. We'll notify you when you're approaching your limit.",
       },
