@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import connectDB from "@/lib/db"
 import Application from "@/models/Application"
+import { UserRole, SubscriptionRole } from "@/types/enums"
+import { getActiveSubscription, checkApplyPermission, incrementJobApplication } from "@/lib/subscription"
 import { z } from "zod"
 
 const applicationSchema = z.object({
@@ -80,27 +82,43 @@ export async function GET(request: Request) {
 // POST /api/applications - Submit new application
 export async function POST(request: Request) {
   try {
+    await connectDB()
+
     const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
+    if (!session || session.user.role !== UserRole.JOB_SEEKER) {
+      console.warn("❌ Unauthorized: user not job seeker or session missing")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    const subscription = await getActiveSubscription(session.user.id, SubscriptionRole.JOB_SEEKER)
+    console.log("📦 [POST /api/applications] Subscription:", subscription)
+    const permission = checkApplyPermission(subscription)
+    console.log("📦 [POST /api/applications] Permission Result:", permission)
+
+    if (!permission.canApply) {
+      return NextResponse.json({
+        error: permission.reason
+      }, { status: 403 })
+    }
+
     const body = await request.json()
+    console.log("📥 [POST /api/applications] Request body:", body)
+
     const validatedData = applicationSchema.parse(body)
+    console.log("✅ [POST /api/applications] Validated data:", validatedData)
 
-    await connectDB()
-
-    // Check if user already applied for this job
+    // 🔄 Check if user already applied for this job
     const existingApplication = await Application.findOne({
       userId: session.user.id,
       jobId: validatedData.jobId,
     })
 
     if (existingApplication) {
+      console.warn("⚠️ User already applied for job:", validatedData.jobId)
       return NextResponse.json({ error: "You have already applied for this job" }, { status: 400 })
     }
 
-    // Create new application
+    // 📝 Create new application
     const application = new Application({
       ...validatedData,
       userId: session.user.id,
@@ -109,6 +127,10 @@ export async function POST(request: Request) {
     })
 
     await application.save()
+    console.log("✅ Application submitted:", application._id)
+
+    // 📈 Increment usageStats.jobApplications
+    await incrementJobApplication(session.user.id, SubscriptionRole.JOB_SEEKER)
 
     // TODO: Send notification to employer
     // TODO: Send confirmation email to applicant
@@ -121,12 +143,12 @@ export async function POST(request: Request) {
       { status: 201 },
     )
   } catch (error) {
-    console.error("Error submitting application:", error)
-
     if (error instanceof z.ZodError) {
+      console.error("❌ Validation error:", error.format())
       return NextResponse.json({ error: "Invalid application data", details: error.errors }, { status: 400 })
     }
 
+    console.error("❌ Error submitting application:", error)
     return NextResponse.json({ error: "Failed to submit application" }, { status: 500 })
   }
 }

@@ -87,7 +87,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // ✅ Lấy subscription và check quyền đăng
     const subscription = await getActiveSubscription(session.user.id, SubscriptionRole.RECRUITER)
     console.log("📦 [POST /api/jobs] Subscription:", subscription)
     const permission = checkPostingPermission(subscription)
@@ -99,7 +98,6 @@ export async function POST(request: Request) {
       }, { status: 403 })
     }
 
-    // ✅ Kiểm tra recruiter đã đăng ký company profile chưa (lấy từ collection companies)
     const company = await Company.findOne({ owner: session.user.id })
     if (!company) {
       console.warn("❌ Company profile not found: must register company before posting jobs")
@@ -118,8 +116,8 @@ export async function POST(request: Request) {
     const enrichedBody = {
       ...body,
       company: company.name,
-      companyId: company._id.toString(), // Convert ObjectId to string for validation
-      companyLogo: company.logo || "https://example.com/default-logo.png", // Default logo if empty
+      companyId: company._id.toString(), 
+      companyLogo: company.logo || "https://example.com/default-logo.png", 
     }
 
     console.log("📥 [POST /api/jobs] Enriched body:", enrichedBody)
@@ -130,7 +128,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: errors }, { status: 400 })
     }
 
-    // 📝 Set job expiry based on plan
     const durationDays = getJobDurationForPlan(subscription.plan)
     const now = new Date()
     const expiresAt = addDays(now, durationDays)
@@ -149,7 +146,6 @@ export async function POST(request: Request) {
 
     const newJob = await Job.create(jobData)
 
-    // 👇 Tăng usageStats sau khi tạo thành công
     await incrementJobPosting(session.user.id, SubscriptionRole.RECRUITER)
     console.log("✅ Job created successfully:", newJob._id)
 

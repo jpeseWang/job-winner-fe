@@ -76,7 +76,7 @@ export default function NewJobPage() {
         setSubscription(data)
         if (!data.canPostJob) {
           console.warn("🟠 No permission to post job, redirecting...")
-          toast.error(data.reason)
+          toast.error(data.postJobReason)
           router.push("/dashboard/recruiter/unlock")
         }
       } catch (err) {
@@ -110,7 +110,7 @@ export default function NewJobPage() {
   if (subscription) {
     rawPlan = (subscription.planName || subscription.plan)?.replace(/^recruiter-/, "") || "free"
     planStyle = planStyles[rawPlan] || planStyles.free
-}
+  }
 
   const handleAddRequirement = () => {
     setRequirements([...requirements, ""])
