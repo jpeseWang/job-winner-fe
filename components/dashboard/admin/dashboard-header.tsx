@@ -10,6 +10,7 @@ export default function AdminDashboardHeader() {
     { name: "Dashboard", href: "/dashboard/admin" },
     { name: "Company Management", href: "/dashboard/admin/companies" },
     { name: "Contact Management", href: "/dashboard/admin/contacts" },
+    { name: "User Management", href: "/dashboard/admin/manage-users" },
   ];
   let activeItem = navItems.find(
     (item) => item.href !== "/dashboard/admin" && pathname.startsWith(item.href)
