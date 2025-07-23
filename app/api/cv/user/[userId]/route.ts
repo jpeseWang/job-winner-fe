@@ -2,11 +2,15 @@ import { NextResponse } from "next/server"
 import dbConnect from "@/lib/db"
 import CV from "@/models/CV"
 
-export async function GET(request: Request, { params }: { params: { userId: string } }) {
+export async function GET(request: Request,
+
+    context: { params: Promise<{ userId: string }> })
+// { params }: { params: { userId: string } })
+{
     try {
         await dbConnect()
 
-        const { userId } = params
+        const userId = (await context.params).userId
         const { searchParams } = new URL(request.url)
         const page = Number.parseInt(searchParams.get("page") || "1")
         const limit = Number.parseInt(searchParams.get("limit") || "10")

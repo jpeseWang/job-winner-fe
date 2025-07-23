@@ -1,90 +1,114 @@
-import { NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
 import dbConnect from "@/lib/db"
 import CV from "@/models/CV"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-    try {
-        await dbConnect()
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    await dbConnect()
 
-        const { id } = params
+    const cv = await CV.findById(params.id).populate("template")
 
-        const cv = await CV.findById(id)
-            .populate("template", "name category thumbnail htmlTemplate")
-            .populate("user", "name email")
-
-        if (!cv) {
-            return NextResponse.json({ success: false, error: "CV not found" }, { status: 404 })
-        }
-
-        // Increment view count
-        await CV.findByIdAndUpdate(id, { $inc: { views: 1 } })
-
-        return NextResponse.json({
-            success: true,
-            data: cv,
-        })
-    } catch (error) {
-        console.error("Error fetching CV:", error)
-        return NextResponse.json({ success: false, error: "Failed to fetch CV" }, { status: 500 })
+    if (!cv) {
+      return NextResponse.json({ success: false, error: "CV not found" }, { status: 404 })
     }
+
+    // Increment view count
+    cv.views = (cv.views || 0) + 1
+    await cv.save()
+
+    return NextResponse.json({
+      success: true,
+      data: cv,
+    })
+  } catch (error) {
+    console.error("Error fetching CV:", error)
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 })
+  }
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
-    try {
-        await dbConnect()
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    await dbConnect()
+    const session = await getServerSession(authOptions)
 
-        const { id } = params
-        const body = await request.json()
-        const { title, content, htmlContent, isPublic } = body
-
-        const cv = await CV.findById(id)
-        if (!cv) {
-            return NextResponse.json({ success: false, error: "CV not found" }, { status: 404 })
-        }
-
-        // Update CV
-        const updatedCV = await CV.findByIdAndUpdate(
-            id,
-            {
-                title,
-                content,
-                htmlContent,
-                isPublic,
-                lastGeneratedAt: new Date(),
-            },
-            { new: true },
-        ).populate("template", "name category")
-
-        return NextResponse.json({
-            success: true,
-            data: updatedCV,
-            message: "CV updated successfully",
-        })
-    } catch (error) {
-        console.error("Error updating CV:", error)
-        return NextResponse.json({ success: false, error: "Failed to update CV" }, { status: 500 })
+    if (!session?.user?.id) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
     }
+
+    const body = await request.json()
+    const { title, templateId, content, htmlContent, isPublic } = body
+
+    // Find CV and verify ownership
+    const cv = await CV.findById(params.id)
+    if (!cv) {
+      return NextResponse.json({ success: false, error: "CV not found" }, { status: 404 })
+    }
+
+    // if (cv.user !== session.user.id) {
+    //   return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 })
+    // }
+    //Parse content
+    if (typeof content.skills === "object" && content.skills["skills-list"]) {
+      const skillsArray = content.skills["skills-list"]
+        .split(",")
+        .map((s: string) => s.trim())
+        .filter(Boolean)
+      content.skills = skillsArray
+    }
+    // Update CV
+    const updatedCV = await CV.findByIdAndUpdate(
+      params.id,
+      {
+        title,
+        template: templateId,
+        content,
+        htmlContent: htmlContent || cv.htmlContent,
+        isPublic: isPublic !== undefined ? isPublic : cv.isPublic,
+        updatedAt: new Date(),
+      },
+      { new: true },
+    ).populate("template")
+
+    return NextResponse.json({
+      success: true,
+      data: updatedCV,
+      message: "CV updated successfully",
+    })
+  } catch (error) {
+    console.error("Error updating CV:", error)
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 })
+  }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-    try {
-        await dbConnect()
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    await dbConnect()
+    const session = await getServerSession(authOptions)
 
-        const { id } = params
-
-        const cv = await CV.findById(id)
-        if (!cv) {
-            return NextResponse.json({ success: false, error: "CV not found" }, { status: 404 })
-        }
-
-        await CV.findByIdAndDelete(id)
-
-        return NextResponse.json({
-            success: true,
-            message: "CV deleted successfully",
-        })
-    } catch (error) {
-        console.error("Error deleting CV:", error)
-        return NextResponse.json({ success: false, error: "Failed to delete CV" }, { status: 500 })
+    if (!session?.user?.id) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
     }
+
+    // Find CV and verify ownership
+    const cv = await CV.findById(params.id)
+    if (!cv) {
+      return NextResponse.json({ success: false, error: "CV not found" }, { status: 404 })
+    }
+
+    if (cv.userId !== session.user.id) {
+      return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 })
+    }
+
+    await CV.findByIdAndDelete(params.id)
+
+    return NextResponse.json({
+      success: true,
+      message: "CV deleted successfully",
+    })
+  } catch (error) {
+    console.error("Error deleting CV:", error)
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 })
+  }
 }
