@@ -14,19 +14,19 @@ export interface ICV extends Document {
       summary?: string
     }
     experience: {
-      title: string
-      company: string
+      title?: string
+      company?: string
       location?: string
-      startDate: Date
+      startDate?: Date
       endDate?: Date
-      description: string
+      description?: string
       isCurrentPosition?: boolean
     }[]
     education: {
-      degree: string
-      institution: string
+      degree?: string
+      institution?: string
       location?: string
-      startDate: Date
+      startDate?: Date
       endDate?: Date
       description?: string
     }[]
@@ -66,12 +66,10 @@ const CVSchema = new Schema<ICV>(
       personal: {
         name: {
           type: String,
-          required: [true, "Please provide your name"],
           trim: true,
         },
         email: {
           type: String,
-          required: [true, "Please provide your email"],
           trim: true,
         },
         phone: {
@@ -95,12 +93,10 @@ const CVSchema = new Schema<ICV>(
         {
           title: {
             type: String,
-            required: true,
             trim: true,
           },
           company: {
             type: String,
-            required: true,
             trim: true,
           },
           location: {
@@ -109,14 +105,12 @@ const CVSchema = new Schema<ICV>(
           },
           startDate: {
             type: Date,
-            required: true,
           },
           endDate: {
             type: Date,
           },
           description: {
             type: String,
-            required: true,
             trim: true,
           },
           isCurrentPosition: {
@@ -129,12 +123,10 @@ const CVSchema = new Schema<ICV>(
         {
           degree: {
             type: String,
-            required: true,
             trim: true,
           },
           institution: {
             type: String,
-            required: true,
             trim: true,
           },
           location: {
@@ -143,7 +135,6 @@ const CVSchema = new Schema<ICV>(
           },
           startDate: {
             type: Date,
-            required: true,
           },
           endDate: {
             type: Date,
@@ -164,12 +155,10 @@ const CVSchema = new Schema<ICV>(
         {
           language: {
             type: String,
-            required: true,
             trim: true,
           },
           proficiency: {
             type: String,
-            required: true,
             enum: ["Beginner", "Intermediate", "Advanced", "Native/Fluent"],
             default: "Intermediate",
           },
@@ -179,17 +168,14 @@ const CVSchema = new Schema<ICV>(
         {
           name: {
             type: String,
-            required: true,
             trim: true,
           },
           issuer: {
             type: String,
-            required: true,
             trim: true,
           },
           date: {
             type: Date,
-            required: true,
           },
         },
       ],
@@ -203,22 +189,18 @@ const CVSchema = new Schema<ICV>(
         {
           name: {
             type: String,
-            required: true,
             trim: true,
           },
           position: {
             type: String,
-            required: true,
             trim: true,
           },
           company: {
             type: String,
-            required: true,
             trim: true,
           },
           contact: {
             type: String,
-            required: true,
             trim: true,
           },
         },
