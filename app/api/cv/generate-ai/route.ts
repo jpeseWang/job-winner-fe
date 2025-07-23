@@ -58,10 +58,7 @@ Please generate a complete CV with the following structure and return it as a JS
     "honors": "Any honors or distinctions"
   },
   "skills": {
-    "technical-skills": "Technical skills separated by commas",
-    "soft-skills": "Soft skills separated by commas",
-    "languages": "Languages with proficiency levels",
-    "certifications": "Professional certifications"
+    "skills-list": "A single comma-separated string of technical skills. Do NOT use bullet points or JSON arrays. Example: Python, TensorFlow, PyTorch, SQL, Docker"
   },
   "projects": {
     "project-1": "Project name",
