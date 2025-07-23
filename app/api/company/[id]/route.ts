@@ -4,12 +4,12 @@ import Company from "@/models/Company"
 
 export async function DELETE(
   req: Request,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   await dbConnect()
 
   try {
-    const companyId = context.params.id
+    const companyId = (await context.params).id
 
     if (!companyId) {
       return NextResponse.json({ message: "Missing company ID" }, { status: 400 })

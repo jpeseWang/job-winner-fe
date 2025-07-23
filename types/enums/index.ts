@@ -6,8 +6,7 @@ export enum UserRole {
 
 export enum UserStatus {
   ACTIVE = "active",
-  PENDING = "pending",
-  SUSPENDED = "suspended",
+  BANNED = "banned",
 }
 
 export enum JobType {

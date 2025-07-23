@@ -32,6 +32,7 @@ export const authOptions: NextAuthOptions = {
         await dbConnect()
         const user = await User.findOne({ email: credentials!.email.toLowerCase() })
 
+
         // so khớp role
         // if (user.role !== role) {
         //   throw new Error("Wrong role selected")        // front-end sẽ nhận error
@@ -46,8 +47,13 @@ export const authOptions: NextAuthOptions = {
 
         // 4) Kiểm tra đã xác thực email chưa
         if (!user.isVerified) throw new Error("Please verify your email")
+          
+        // 5) Nếu tài khoản bị ban
+        if (user.status === "banned") {
+         throw new Error("Your account has been banned.")
+        }
+        
 
-        // 5) Trả object cho NextAuth ghi vào JWT / session
         return {
           id: user._id.toString(),
           name: user.name,
@@ -84,6 +90,11 @@ export const authOptions: NextAuthOptions = {
       if (!dbUser?.isVerified) {
         throw new Error("Please verify your email before signing in.")
       }
+    
+      if (dbUser.status === "banned") {
+        throw new Error("Your account has been banned.")
+      }
+       
 
       return true
     },
