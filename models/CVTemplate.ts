@@ -2,10 +2,11 @@ import mongoose, { type Document, Schema } from "mongoose"
 import type { ICVTemplate } from "@/types/interfaces"
 import { ETemplateCategory } from "@/types/enums"
 
-interface CVTemplate extends Document, Omit<ICVTemplate, "id" | "creator"> {
-  createdAt: Date
-  updatedAt: Date
-  creator: mongoose.Types.ObjectId
+interface CVTemplate extends Document, Omit<ICVTemplate, "id" | "creator" | "_id"> {
+  _id: mongoose.Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+  creator: mongoose.Types.ObjectId;
 }
 
 const CVTemplateSchema = new Schema<CVTemplate>(
