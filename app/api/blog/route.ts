@@ -1,16 +1,13 @@
-import { NextResponse } from "next/server";
-import dbConnect from "@/lib/mongodb";
-import Blog from "@/models/blog.model";
+
+import { NextResponse } from 'next/server';
+import Blog from '@/models/Blog';
 
 export async function GET() {
-  await dbConnect();
-  const blogs = await Blog.find().sort({ createdAt: -1 });
-  return NextResponse.json(blogs);
+  try {
+    const blogPosts = await Blog.find({ status: 'published' }).sort({ publishedAt: -1 });
+    return NextResponse.json(blogPosts);
+  } catch (error) {
+    return NextResponse.json({ message: 'Error fetching blog posts' }, { status: 500 });
+  }
 }
 
-export async function POST(req: Request) {
-  await dbConnect();
-  const body = await req.json();
-  const blog = await Blog.create(body);
-  return NextResponse.json(blog);
-}
