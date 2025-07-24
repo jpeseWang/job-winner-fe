@@ -29,7 +29,7 @@ export function useCompanyById(id: string) {
         data: company,
         error,
         isLoading,
-    } = useSWR<Company>(id ? `/api/my-company?userId=${id}` : null, () => companyService.getCompanyById(id), {
+    } = useSWR<Company>(id ? `/api/company/my-company?userId=${id}` : null, () => companyService.getCompanyById(id), {
         revalidateOnFocus: false,
         revalidateOnReconnect: true,
     })
