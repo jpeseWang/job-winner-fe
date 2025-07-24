@@ -321,7 +321,6 @@ async function getFreeSubscriptionFallback(userId: string, role: SubscriptionRol
   console.log(`Creating fallback FREE subscription for user ${userId} (${role})`)
   const freeSub = await Subscription.create({
     user: userId,
-    userId,
     role,
     plan: SubscriptionPlan.FREE,
     usageStats: { jobPostings: 0, cvDownloads: 0, featuredJobs: 0, premiumTemplates: 0, cvCreated: 0, jobApplications: 0 },

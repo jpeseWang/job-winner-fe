@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,17 +11,32 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/components/ui/use-toast"
-import { ChevronLeft, ChevronRight, Plus, Trash2, Download, Share, FileText, Wand2, Library, Loader2, Lock, Star, Crown } from "lucide-react"
+import {
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  Trash2,
+  Download,
+  Share,
+  FileText,
+  Wand2,
+  Library,
+  Loader2,
+  Lock,
+  Crown,
+  Save,
+  Check,
+} from "lucide-react"
 import CVTemplateLibrary from "@/components/cv/cv-template-library"
 import CVPreview from "@/components/cv/cv-preview"
-import { generateCV, generateFieldContent } from "@/services/cvService"
+import { generateCV, generateFieldContent, saveCV, getCVById } from "@/services/cvService"
 import type { ICVTemplate } from "@/types/interfaces"
-import toast from "react-hot-toast"
 import { Badge } from "@/components/ui/badge"
 // @ts-ignore
-import html2pdf from 'html2pdf.js';
-import { useRef } from "react";
+import html2pdf from "html2pdf.js"
+import { useRef } from "react"
 import { useAuth } from "@/hooks/use-auth"
+import type { JSX } from "react/jsx-runtime" // Import JSX to fix the undeclared variable error
 
 interface FormSection {
   id: string
@@ -50,18 +65,26 @@ export default function GenerateCVPage() {
   }
 
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const cvId = searchParams.get("id")
   const { data: session } = useSession()
+  const { toast } = useToast()
   const [subscription, setSubscription] = useState<any>(null)
   const [loadingSubscription, setLoadingSubscription] = useState(true)
-
   const [activeTab, setActiveTab] = useState("cv-template")
   const [currentStep, setCurrentStep] = useState(0)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [isDownloading, setIsDownloading] = useState(false)
+  const [lastSaved, setLastSaved] = useState<Date | null>(null)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [generatedCV, setGeneratedCV] = useState<any>(null)
   const [aiPrompt, setAiPrompt] = useState("")
+  const [cvTitle, setCvTitle] = useState("")
   const [selectedTemplate, setSelectedTemplate] = useState<ICVTemplate | null>(null)
   const [isGeneratingField, setIsGeneratingField] = useState<string | null>(null)
-  const cvRef = useRef<HTMLDivElement>(null);
+  const cvRef = useRef<HTMLDivElement>(null)
+
   const [sections, setSections] = useState<FormSection[]>([
     {
       id: "personal",
@@ -133,35 +156,79 @@ export default function GenerateCVPage() {
   const { user } = useAuth()
 
   useEffect(() => {
+    if (cvId) {
+      loadExistingCV(cvId)
+    }
+  }, [cvId])
+
+  // Track changes to mark as unsaved
+  useEffect(() => {
+    if (lastSaved) {
+      setHasUnsavedChanges(true)
+    }
+  }, [sections, cvTitle, selectedTemplate])
+
+  useEffect(() => {
     const fetchSubscription = async () => {
       try {
         const res = await fetch(`/api/subscription?userId=${session?.user?.id}&role=job_seeker`)
         if (!res.ok) throw new Error(`HTTP error ${res.status}`)
         const data = await res.json()
-
         console.log("🟢 [GenerateCVPage] Subscription API Response:", data)
         setSubscription(data)
-
         if (!data.canCreateCV) {
           console.warn("🟠 No permission to generate cv, redirecting...")
-          toast.error(data.createCVReason)
+          toast({
+            title: "Subscription Required",
+            description: data.createCVReason,
+            variant: "destructive",
+          })
           router.push("/dashboard/job-seeker/unlock")
         }
       } catch (err) {
         console.error("Failed to fetch subscription:", err)
-        toast.error("Failed to check subscription. Redirecting...")
+        toast({
+          title: "Error",
+          description: "Failed to check subscription. Redirecting...",
+          variant: "destructive",
+        })
         router.push("/dashboard/job-seeker/unlock")
       } finally {
         setLoadingSubscription(false)
       }
     }
-
     if (session?.user?.id) fetchSubscription()
   }, [session?.user?.id, router])
 
+  const loadExistingCV = async (id: string) => {
+    try {
+      const cv = await getCVById(id)
+      // Populate sections with CV data
+      setSections((prevSections) =>
+        prevSections.map((section) => ({
+          ...section,
+          fields: section.fields.map((field) => ({
+            ...field,
+            value: cv.content[section.id]?.[field.id] || "",
+          })),
+        })),
+      )
+      setSelectedTemplate(cv.template)
+      setCvTitle(cv.title)
+      setGeneratedCV(cv)
+      setLastSaved(new Date(cv.updatedAt))
+      setHasUnsavedChanges(false)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load CV. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
   let rawPlan = "free"
   let planStyle = planStyles.free
-
   if (subscription) {
     rawPlan = subscription.plan.replace(/^job_seeker-/, "") || "free"
     planStyle = planStyles[rawPlan] || planStyles.free
@@ -189,11 +256,9 @@ export default function GenerateCVPage() {
   const handleGenerateFieldContent = async (sectionId: string, fieldId: string) => {
     const section = sections.find((s) => s.id === sectionId)
     const field = section?.fields.find((f) => f.id === fieldId)
-
     if (!field) return
 
     setIsGeneratingField(fieldId)
-
     try {
       // Get context from other filled fields
       const context = sections.reduce((acc, section) => {
@@ -207,14 +272,19 @@ export default function GenerateCVPage() {
       }, {})
 
       const result = await generateFieldContent(fieldId, field.label, context)
-
       if (result && result.content) {
         handleFieldChange(sectionId, fieldId, result.content)
-        toast.success(`AI-generated content for ${field.label} has been added.`
-        )
+        toast({
+          title: "Content Generated",
+          description: `AI-generated content for ${field.label} has been added.`,
+        })
       }
     } catch (error) {
-      toast.error("Failed to generate content. Please try again.")
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate content. Please try again.",
+        variant: "destructive",
+      })
     } finally {
       setIsGeneratingField(null)
     }
@@ -283,18 +353,23 @@ export default function GenerateCVPage() {
 
   const handleSelectTemplate = (template: ICVTemplate) => {
     setSelectedTemplate(template)
-    toast.success(`You've selected the ${template.name} template.`
-    )
+    toast({
+      title: "Template Selected",
+      description: `You've selected the ${template.name} template.`,
+    })
   }
 
   const handleGenerateCV = async () => {
     if (!selectedTemplate) {
-      toast.error("Please select a CV template first.")
+      toast({
+        title: "Template Required",
+        description: "Please select a CV template first.",
+        variant: "destructive",
+      })
       return
     }
 
     setIsGenerating(true)
-
     try {
       // Format the data for CV generation
       const formData = sections.reduce((acc, section) => {
@@ -311,10 +386,16 @@ export default function GenerateCVPage() {
       })
 
       setGeneratedCV(result)
-
-      toast.success("Your CV has been generated. You can now download or share it.")
+      toast({
+        title: "CV Generated",
+        description: "Your CV has been generated. You can now download or share it.",
+      })
     } catch (error) {
-      toast.error("There was an error generating your CV. Please try again.")
+      toast({
+        title: "Generation Failed",
+        description: "There was an error generating your CV. Please try again.",
+        variant: "destructive",
+      })
     } finally {
       setIsGenerating(false)
     }
@@ -322,17 +403,23 @@ export default function GenerateCVPage() {
 
   const handleGenerateWithAI = async () => {
     if (!aiPrompt) {
-      toast.error("Please enter a prompt to generate your CV with AI.")
+      toast({
+        title: "Prompt Required",
+        description: "Please enter a prompt to generate your CV with AI.",
+        variant: "destructive",
+      })
       return
     }
-
     if (!selectedTemplate) {
-      toast.error("Please select a CV template first.")
+      toast({
+        title: "Template Required",
+        description: "Please select a CV template first.",
+        variant: "destructive",
+      })
       return
     }
 
     setIsGenerating(true)
-
     try {
       // Call the AI CV generation service
       const result = await generateCV(
@@ -344,7 +431,6 @@ export default function GenerateCVPage() {
       )
 
       setGeneratedCV(result)
-
       // Populate the form with AI-generated data
       const aiData = result.data
       setSections((prevSections) =>
@@ -362,86 +448,223 @@ export default function GenerateCVPage() {
         }),
       )
 
-      toast.success("Your CV has been generated using AI. You can now edit, download, or share it."
-      )
+      setCvTitle(result.title || "My AI Generated CV")
+      setHasUnsavedChanges(true)
+
+      toast({
+        title: "CV Generated with AI",
+        description: "Your CV has been generated using AI. You can now edit, download, or share it.",
+      })
     } catch (error) {
-      toast.error("There was an error generating your CV with AI. Please try again.")
+      toast({
+        title: "AI Generation Failed",
+        description: "There was an error generating your CV with AI. Please try again.",
+        variant: "destructive",
+      })
     } finally {
       setIsGenerating(false)
     }
   }
 
-  const handleDownloadCV = () => {
+  const handleSaveCV = async () => {
+    if (!selectedTemplate || !cvTitle.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please select a template and provide a title.",
+        variant: "destructive",
+      })
+      return
+    }
 
-    if (!cvRef.current) return;
+    // Basic validation - get name and email from sections
+    const personalSection = sections.find((s) => s.id === "personal")
+    const nameField = personalSection?.fields.find((f) => f.id === "name")
+    const emailField = personalSection?.fields.find((f) => f.id === "email")
+
+    if (!nameField?.value || !emailField?.value) {
+      toast({
+        title: "Missing Required Fields",
+        description: "Please fill in at least your name and email.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsSaving(true)
+    try {
+      // Format the data for saving
+      const formData = sections.reduce((acc, section) => {
+        const sectionData = section.fields.reduce((fieldAcc, field) => {
+          return { ...fieldAcc, [field.id]: field.value }
+        }, {})
+        return { ...acc, [section.id]: sectionData }
+      }, {})
+
+      const cvData = {
+        userId: session?.user?.id || "user-1",
+        title: cvTitle,
+        templateId: selectedTemplate._id,
+        content: formData,
+        htmlContent: generatedCV?.htmlContent || "",
+        isPublic: false,
+      }
+
+      let savedCV
+      if (cvId) {
+        // Update existing CV
+        const response = await fetch(`/api/cv/${cvId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(cvData),
+        })
+        const result = await response.json()
+        if (!result.success) throw new Error(result.error)
+        savedCV = result.data
+      } else {
+        // Save new CV
+        savedCV = await saveCV(cvData)
+        // Redirect to edit mode with the new CV ID
+        router.push(`/dashboard/job-seeker/generate-cv?id=${savedCV._id}`)
+      }
+
+      setLastSaved(new Date())
+      setHasUnsavedChanges(false)
+      setGeneratedCV(savedCV)
+
+      toast({
+        title: "CV Saved Successfully!",
+        description: "Your CV has been saved to your library.",
+      })
+    } catch (error) {
+      toast({
+        title: "Save Failed",
+        description: "Failed to save CV. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleDownloadCV = () => {
+    if (!cvRef.current) return
+
+    setIsDownloading(true)
 
     const sanitizeFilename = (name: string) =>
-      name.replace(/[^a-z0-9_\- ]/gi, '').trim().replace(/\s+/g, ' ');
-    const fullName = user?.name || "Unnamed";
-    const fileName = `${sanitizeFilename(fullName)} - CV - by JobWinner.pdf`;
+      name
+        .replace(/[^a-z0-9_\- ]/gi, "")
+        .trim()
+        .replace(/\s+/g, " ")
 
-    const element = cvRef.current as HTMLDivElement;
-    const originalHeight = element.style.height;
-    const scrollHeight = element.scrollHeight;
-    element.style.height = `${element.scrollHeight}px`;
-    console.log("scrollHeight", element.style.height);
+    const fullName = user?.name || "Unnamed"
+    const fileName = `${sanitizeFilename(fullName)} - CV - by JobWinner.pdf`
+
+    const element = cvRef.current as HTMLDivElement
+    const originalHeight = element.style.height
+    const scrollHeight = element.scrollHeight
+    element.style.height = `${element.scrollHeight}px`
 
     const opt = {
       margin: 0,
       filename: fileName,
-      image: { type: 'jpeg', quality: 0.98 },
+      image: { type: "jpeg", quality: 0.98 },
       html2canvas: {
         scale: 2,
         scrollY: 0,
         useCORS: true,
       },
       jsPDF: {
-        unit: 'px',
+        unit: "px",
         format: [element.offsetWidth, scrollHeight],
-        orientation: 'portrait',
+        orientation: "portrait",
       },
-    };
+    }
+
     html2pdf()
       .set(opt)
       .from(element)
       .save()
       .then(() => {
-        toast("Your CV is being downloaded as a PDF.");
-        element.style.height = originalHeight;
+        toast({
+          title: "Download Started",
+          description: "Your CV is being downloaded as a PDF.",
+        })
+        element.style.height = originalHeight
       })
       .catch((err: any) => {
-        toast.error("Something went wrong while generating the PDF.");
-        console.error(err);
-      });
+        toast({
+          title: "Download Failed",
+          description: "Something went wrong while generating the PDF.",
+          variant: "destructive",
+        })
+        console.error(err)
+      })
+      .finally(() => {
+        setIsDownloading(false)
+      })
   }
 
   const handleShareCV = () => {
     // In a real app, this would open a share dialog
-    toast.success("Your CV sharing link has been copied to clipboard."
-    )
+    toast({
+      title: "Share Feature",
+      description: "Your CV sharing link has been copied to clipboard.",
+    })
   }
-  console.log("selectedTemplate", selectedTemplate)
-
 
   return (
     <main className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold">Generate Your CV</h1>
-          <p className="text-gray-600">Create a professional CV in minutes with our easy-to-use builder</p>
-          {subscription && (
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-gray-600">Plan:</span>
-              <Badge variant="outline" className={`${planStyle.color} flex items-center gap-1`}>
-                {planStyle.icon}
-                {rawPlan.toUpperCase()}
-              </Badge>
-              <span className="text-gray-600">
-                ({subscription.cvCreated} / 
-                {["Unlimited", -1, Infinity, null].includes(subscription.cvLimit) ? "∞" : subscription.cvLimit})
-              </span>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-bold">{cvId ? "Edit CV" : "Generate Your CV"}</h1>
+              <p className="text-gray-600">Create a professional CV in minutes with our easy-to-use builder</p>
+              {subscription && (
+                <div className="flex items-center gap-2 text-sm mt-2">
+                  <span className="text-gray-600">Plan:</span>
+                  <Badge variant="outline" className={`${planStyle.color} flex items-center gap-1`}>
+                    {planStyle.icon}
+                    {rawPlan.toUpperCase()}
+                  </Badge>
+                  <span className="text-gray-600">
+                    ({subscription.cvCreated} /
+                    {["Unlimited", -1, Number.POSITIVE_INFINITY, null].includes(subscription.cvLimit)
+                      ? "∞"
+                      : subscription.cvLimit}
+                    )
+                  </span>
+                </div>
+              )}
+              {lastSaved && (
+                <p className="text-sm text-gray-500 mt-1">
+                  {hasUnsavedChanges ? (
+                    <span className="text-amber-600">• Unsaved changes</span>
+                  ) : (
+                    <span className="text-green-600 flex items-center gap-1">
+                      <Check className="h-3 w-3" />
+                      Last saved: {lastSaved.toLocaleString()}
+                    </span>
+                  )}
+                </p>
+              )}
             </div>
-          )}
+            <div className="flex gap-2">
+              <div className="space-y-2">
+                <Label htmlFor="cv-title" className="text-sm">
+                  CV Title
+                </Label>
+                <Input
+                  id="cv-title"
+                  value={cvTitle}
+                  onChange={(e) => setCvTitle(e.target.value)}
+                  placeholder="e.g., Software Engineer Resume"
+                  className="w-64"
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -458,14 +681,6 @@ export default function GenerateCVPage() {
               <Wand2 className="h-4 w-4" />
               AI Resume Builder
             </TabsTrigger>
-            {/* <TabsTrigger value="proposal" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Proposal
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Settings
-            </TabsTrigger> */}
           </TabsList>
 
           <TabsContent value="cv-template" className="space-y-6">
@@ -528,7 +743,7 @@ export default function GenerateCVPage() {
                               variant="outline"
                               size="sm"
                               onClick={addExperienceSection}
-                              className="flex items-center gap-1"
+                              className="flex items-center gap-1 bg-transparent"
                             >
                               <Plus className="h-4 w-4" /> Add Another Experience
                             </Button>
@@ -554,7 +769,7 @@ export default function GenerateCVPage() {
                       variant="outline"
                       onClick={handlePrevious}
                       disabled={currentStep === 0}
-                      className="flex items-center gap-1"
+                      className="flex items-center gap-1 bg-transparent"
                     >
                       <ChevronLeft className="h-4 w-4" /> Previous
                     </Button>
@@ -582,28 +797,36 @@ export default function GenerateCVPage() {
                     <CardTitle>CV Preview</CardTitle>
                     <CardDescription>See how your CV will look</CardDescription>
                   </CardHeader>
-                  <CardContent
-                    ref={cvRef}
-                    className="h-[600px] overflow-auto border rounded-md bg-white">
+                  <CardContent ref={cvRef} className="h-[600px] overflow-auto border rounded-md bg-white">
                     <CVPreview data={sections} generatedCV={generatedCV} template={selectedTemplate} />
                   </CardContent>
                   <CardFooter className="flex justify-end gap-2">
+                    <Button
+                      onClick={handleSaveCV}
+                      disabled={isSaving}
+                      className="flex items-center gap-2 bg-black"
+                      variant={hasUnsavedChanges ? "default" : "outline"}
+                    >
+                      {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                      {isSaving ? "Saving..." : "Save CV"}
+                    </Button>
                     <Button
                       type="button"
                       variant="outline"
                       onClick={handleShareCV}
                       disabled={!generatedCV}
-                      className="flex items-center gap-1"
+                      className="flex items-center gap-1 bg-transparent"
                     >
                       <Share className="h-4 w-4" /> Share
                     </Button>
                     <Button
                       type="button"
                       onClick={handleDownloadCV}
-                      disabled={!generatedCV}
+                      disabled={isDownloading || !generatedCV}
                       className="flex items-center gap-1"
                     >
-                      <Download className="h-4 w-4" /> Download PDF
+                      {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                      {isDownloading ? "Downloading..." : "Download PDF"}
                     </Button>
                   </CardFooter>
                 </Card>
@@ -662,51 +885,37 @@ export default function GenerateCVPage() {
                   </CardContent>
                   <CardFooter className="flex justify-end gap-2">
                     <Button
+                      onClick={handleSaveCV}
+                      disabled={isSaving}
+                      className="flex items-center gap-2"
+                      variant={hasUnsavedChanges ? "default" : "outline"}
+                    >
+                      {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                      {isSaving ? "Saving..." : "Save CV"}
+                    </Button>
+                    <Button
                       type="button"
                       variant="outline"
                       onClick={handleShareCV}
                       disabled={!generatedCV}
-                      className="flex items-center gap-1"
+                      className="flex items-center gap-1 bg-transparent"
                     >
                       <Share className="h-4 w-4" /> Share
                     </Button>
                     <Button
                       type="button"
                       onClick={handleDownloadCV}
-                      disabled={!generatedCV}
+                      disabled={isDownloading || !generatedCV}
                       className="flex items-center gap-1"
                     >
-                      <Download className="h-4 w-4" /> Download PDF
+                      {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                      {isDownloading ? "Downloading..." : "Download PDF"}
                     </Button>
                   </CardFooter>
                 </Card>
               </div>
             </div>
           </TabsContent>
-
-          {/* <TabsContent value="proposal" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Proposal Generator</CardTitle>
-                <CardDescription>Create professional proposals for your clients</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-center py-8">Proposal generator coming soon!</p>
-              </CardContent>
-            </Card>
-          </TabsContent> */}
-
-          {/* <TabsContent value="settings" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Settings</CardTitle>
-                <CardDescription>Customize your CV generation preferences</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-center py-8">Settings panel coming soon!</p>
-              </CardContent>
-            </Card>
-          </TabsContent> */}
         </Tabs>
       </div>
     </main>

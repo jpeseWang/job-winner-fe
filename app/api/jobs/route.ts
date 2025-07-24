@@ -20,6 +20,7 @@ export async function GET(req: NextRequest) {
   try {
     await dbConnect()
 
+    const session = await getServerSession(authOptions)
     const {
       keyword,
       location,
@@ -28,7 +29,9 @@ export async function GET(req: NextRequest) {
       experienceLevel,
       page = "1",
       limit = "20",
-      sort = "latest"
+      sort = "latest",
+      recruiterId,
+      status
     } = Object.fromEntries(req.nextUrl.searchParams)
 
     const query: any = {}
@@ -38,6 +41,14 @@ export async function GET(req: NextRequest) {
     if (category) query.category = { $in: category.split(",") }
     if (type) query.type = { $in: type.split(",") }
     if (experienceLevel) query.experienceLevel = { $in: experienceLevel.split(",") }
+    if (status) query.status = status
+    if (recruiterId) query.recruiter = recruiterId
+    if (session && session.user.role === UserRole.RECRUITER) {
+      query.recruiter = session.user.id
+    }
+    if (!session || (session.user.role !== UserRole.ADMIN && session.user.role !== UserRole.RECRUITER)) {
+      query.status = "active"
+    }
 
     const skip = (parseInt(page) - 1) * parseInt(limit)
 
