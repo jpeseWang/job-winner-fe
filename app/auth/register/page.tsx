@@ -16,9 +16,13 @@ import { Eye, EyeOff, Mail, Lock, Briefcase, User, Building } from "lucide-react
 import { useToast } from "@/hooks/use-toast"
 import { UserRole } from "@/types/enums"
 import { authService } from "@/services"
+import { useSearchParams } from "next/navigation"
 
 export default function RegisterPage() {
-  const [userType, setUserType] = useState<UserRole.JOB_SEEKER | UserRole.RECRUITER>(UserRole.JOB_SEEKER)
+  const searchParams = useSearchParams()
+  const roleParam = searchParams.get("role")
+  const initialRole = roleParam === "recruiter" ? UserRole.RECRUITER : roleParam === "jobseeker" ? UserRole.JOB_SEEKER : UserRole.JOB_SEEKER
+  const [userType, setUserType] = useState<UserRole.JOB_SEEKER | UserRole.RECRUITER>(initialRole)
   const [errorMessage, setErrorMessage] = useState("")
   const router = useRouter()
   const { toast } = useToast()
@@ -119,18 +123,7 @@ export default function RegisterPage() {
         )}
 
         <CardContent>
-          <Tabs defaultValue="job_seeker" onValueChange={(value) => setUserType(value as UserRole.JOB_SEEKER | UserRole.RECRUITER)}>
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="job_seeker" className="flex items-center gap-2">
-                <User className="h-4 w-4" />
-                Job Seeker
-              </TabsTrigger>
-              <TabsTrigger value="recruiter" className="flex items-center gap-2">
-                <Briefcase className="h-4 w-4" />
-                Recruiter
-              </TabsTrigger>
-            </TabsList>
-
+          {roleParam ? (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
@@ -217,7 +210,107 @@ export default function RegisterPage() {
                 {isLoading ? "Creating account..." : "Create account"}
               </Button>
             </form>
-          </Tabs>
+          ) : (
+            <Tabs defaultValue="job_seeker" onValueChange={(value) => setUserType(value as UserRole.JOB_SEEKER | UserRole.RECRUITER)}>
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="job_seeker" className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Job Seeker
+                </TabsTrigger>
+                <TabsTrigger value="recruiter" className="flex items-center gap-2">
+                  <Briefcase className="h-4 w-4" />
+                  Recruiter
+                </TabsTrigger>
+              </TabsList>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="name"
+                      name="name"
+                      placeholder="John Doe"
+                      className="pl-10"
+                      value={formData.name}
+                      onChange={handleChange}
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="name@example.com"
+                      className="pl-10"
+                      value={formData.email}
+                      onChange={handleChange}
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
+
+                {userType === UserRole.RECRUITER && (
+                  <div className="space-y-2">
+                    <Label htmlFor="company">Company Name</Label>
+                    <div className="relative">
+                      <Building className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="company"
+                        name="company"
+                        placeholder="Acme Inc."
+                        className="pl-10"
+                        value={formData.company}
+                        onChange={handleChange}
+                        required={userType === UserRole.RECRUITER}
+                        disabled={isLoading}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      className="pl-10"
+                      value={formData.password}
+                      onChange={handleChange}
+                      required
+                      disabled={isLoading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                      disabled={isLoading}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500">Password must be at least 6 characters long.</p>
+                </div>
+
+                <Button type="submit" className="w-full bg-teal-600 hover:bg-teal-700" disabled={isLoading}>
+                  {isLoading ? "Creating account..." : "Create account"}
+                </Button>
+              </form>
+            </Tabs>
+          )}
 
           <div className="mt-6">
             <div className="relative">

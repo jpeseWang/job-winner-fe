@@ -6,6 +6,7 @@ import { jobService } from "@/services"
 import type { Job, PaginatedResponse } from "@/types/interfaces"
 import { ITEMS_PER_PAGE } from "@/constants"
 import type { JobFilters } from "@/types/interfaces/job"
+import { JobStatus } from "@/types/enums"
 
 interface UseJobsOptions {
   initialData?: PaginatedResponse<Job>
@@ -30,7 +31,12 @@ export function useJobs(filters: JobFilters = {}, options: UseJobsOptions = {}) 
 
   const queryKey = `/jobs?${queryParams.toString()}`
 
-  const { data, error, isLoading, isValidating, mutate } = useSWR( queryKey, () => jobService.getJobs({ ...filters, page, limit }),
+  const effectiveFilters = { ...filters }
+  if (!('status' in effectiveFilters)) {
+    effectiveFilters.status = JobStatus.ACTIVE
+  }
+
+  const { data, error, isLoading, isValidating, mutate } = useSWR( queryKey, () => jobService.getJobs({ ...effectiveFilters, page, limit }),
     {
       initialData: options.initialData,
       refreshInterval: options.refreshInterval,
