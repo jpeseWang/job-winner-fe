@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Loader2, Plus, Eye } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { format } from "date-fns"
+import { useAuth } from "@/hooks/use-auth"
 
 interface Job {
   _id: string
@@ -28,16 +29,18 @@ export default function JobsPage() {
   const { toast } = useToast()
   const [jobs, setJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState(true)
+  const { user } = useAuth()
 
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const response = await fetch("/api/jobs")
+        if (!user?.id) return
+        const response = await fetch(`/api/jobs?recruiterId=${user.id}`)
         if (!response.ok) {
           throw new Error("Failed to fetch jobs")
         }
-        const data = await response.json()
-        setJobs(data)
+        const result = await response.json()
+        setJobs(result.data || [])
       } catch (error) {
         console.error("Error fetching jobs:", error)
         toast({
@@ -49,9 +52,8 @@ export default function JobsPage() {
         setLoading(false)
       }
     }
-
     fetchJobs()
-  }, [toast])
+  }, [toast, user])
 
   if (loading) {
     return (

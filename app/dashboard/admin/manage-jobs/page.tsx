@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -25,6 +25,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { placeholderJobs } from "@/utils/placeholders"
+import { jobService } from "@/services/jobService"
+import { JobStatus } from "@/types/enums"
 
 export default function ManageJobsPage() {
   const [jobs, setJobs] = useState(placeholderJobs)
@@ -34,6 +36,19 @@ export default function ManageJobsPage() {
   const [selectedJob, setSelectedJob] = useState<any>(null)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        // Lấy tất cả job có status khác nhau cho admin
+        const { data } = await jobService.getJobs({ status: undefined, limit: 100 })
+        setJobs(data)
+      } catch (error) {
+        // handle error
+      }
+    }
+    fetchJobs()
+  }, [])
 
   const filteredJobs = jobs.filter((job) => {
     const matchesSearch =
@@ -62,6 +77,15 @@ export default function ManageJobsPage() {
 
   const updateJobStatus = (jobId: string, newStatus: string) => {
     setJobs(jobs.map((job) => (job.id === jobId ? { ...job, status: newStatus } : job)))
+  }
+
+  const approveJob = async (jobId: string) => {
+    try {
+      await jobService.updateJob(jobId, { status: JobStatus.ACTIVE })
+      setJobs(jobs.map((job) => (job.id === jobId ? { ...job, status: JobStatus.ACTIVE } : job)))
+    } catch (error) {
+      // handle error
+    }
   }
 
   const getStatusBadge = (status: string) => {
@@ -205,9 +229,8 @@ export default function ManageJobsPage() {
                         </DropdownMenuItem>
                         {job.status === "pending" && (
                           <>
-                            <DropdownMenuItem onClick={() => updateJobStatus(job.id, "active")}>
-                              <CheckCircle className="mr-2 h-4 w-4" />
-                              Approve Job
+                            <DropdownMenuItem onClick={() => approveJob(job.id)}>
+                              <CheckCircle className="w-4 h-4 mr-2 text-green-600" /> Duyệt
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => updateJobStatus(job.id, "rejected")}>
                               <XCircle className="mr-2 h-4 w-4" />

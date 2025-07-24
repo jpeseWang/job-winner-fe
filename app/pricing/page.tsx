@@ -1,3 +1,5 @@
+
+
 "use client"
 
 import { useState } from "react"
@@ -33,6 +35,7 @@ import {
   Target,
   Globe,
 } from "lucide-react"
+import { useSession } from "next-auth/react"
 
 const recruiterPlans = [
   {
@@ -148,6 +151,7 @@ const jobSeekerPlans = [
 export default function PricingPage() {
   const [isYearly, setIsYearly] = useState(false)
   const [activeTab, setActiveTab] = useState("recruiters")
+  const { data: session } = useSession()
 
   const formatPrice = (price: { monthly: number; yearly: number }) => {
     const amount = isYearly ? price.yearly : price.monthly
@@ -263,27 +267,25 @@ export default function PricingPage() {
                         </div>
                       ))}
                     </div>
-
-                    <Button
-                      asChild
-                      className={`w-full ${plan.popular ? "bg-blue-600 hover:bg-blue-700" : ""}`}
-                      variant={plan.popular ? "default" : "outline"}
-                      disabled={isYearly && plan.price.yearly === 0}
-                    >
-                      {isYearly && plan.price.yearly === 0 ? (
-                        <span className="text-gray-400">Only Available on Monthly</span>
-                      ) : (
-                        <Link
-                          href={
-                            plan.id === "recruiter-free"
-                              ? "/auth/register"
-                              : `/checkout?plan=${plan.id}&billing=${isYearly ? "yearly" : "monthly"}`
-                          }
-                        >
-                          {plan.cta}
-                        </Link>
-                      )}
-                    </Button>
+                    {/* Nếu chưa đăng nhập mới hiển thị nút đăng ký, nếu đã đăng nhập thì không hiển thị nút gì */}
+                    {!session && (
+                      <Button
+                        asChild
+                        className={`w-full ${plan.popular ? "bg-blue-600 hover:bg-blue-700" : ""}`}
+                        variant={plan.popular ? "default" : "outline"}
+                        disabled={isYearly && plan.price.yearly === 0}
+                      >
+                        {isYearly && plan.price.yearly === 0 ? (
+                          <span className="text-gray-400">Only Available on Monthly</span>
+                        ) : (
+                          <Link
+                            href={`/auth/register?role=recruiter`}
+                          >
+                            {plan.cta}
+                          </Link>
+                        )}
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               ))}
@@ -339,27 +341,25 @@ export default function PricingPage() {
                         </div>
                       ))}
                     </div>
-
-                    <Button
-                      asChild
-                      className={`w-full ${plan.popular ? "bg-purple-600 hover:bg-purple-700" : ""}`}
-                      variant={plan.popular ? "default" : "outline"}
-                      disabled={isYearly && plan.price.yearly === 0}
-                    >
-                      {isYearly && plan.price.yearly === 0 ? (
-                        <span className="text-gray-400">Only Available on Monthly</span>
-                      ) : (
-                        <Link
-                          href={
-                            plan.id === "jobseeker-free"
-                              ? "/auth/register"
-                              : `/checkout?plan=${plan.id}&billing=${isYearly ? "yearly" : "monthly"}`
-                          }
-                        >
-                          {plan.cta}
-                        </Link>
-                      )}
-                    </Button>
+                    {/* Nếu chưa đăng nhập mới hiển thị nút đăng ký, nếu đã đăng nhập thì không hiển thị nút gì */}
+                    {!session && (
+                      <Button
+                        asChild
+                        className={`w-full ${plan.popular ? "bg-purple-600 hover:bg-purple-700" : ""}`}
+                        variant={plan.popular ? "default" : "outline"}
+                        disabled={isYearly && plan.price.yearly === 0}
+                      >
+                        {isYearly && plan.price.yearly === 0 ? (
+                          <span className="text-gray-400">Only Available on Monthly</span>
+                        ) : (
+                          <Link
+                            href={`/auth/register?role=job_seeker`}
+                          >
+                            {plan.cta}
+                          </Link>
+                        )}
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               ))}
