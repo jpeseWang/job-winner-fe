@@ -1,6 +1,6 @@
 import mongoose, { type Document, Schema } from "mongoose"
 import bcrypt from "bcryptjs"
-import { UserRole,UserStatus  } from "@/types/enums/index"
+import { UserRole, UserStatus } from "@/types/enums/index"
 
 export interface IUser extends Document {
   name: string
@@ -65,15 +65,15 @@ const UserSchema = new Schema<IUser>(
     resetPasswordToken: String,
     resetPasswordExpires: Date,
     lastLogin: {
-  type: Date,
-  default: Date.now,
-},
+      type: Date,
+      default: Date.now,
+    },
 
-status: {
-  type: String,
-  enum: Object.values(UserStatus),
-  default: UserStatus.ACTIVE,
-},
+    status: {
+      type: String,
+      enum: Object.values(UserStatus),
+      default: UserStatus.ACTIVE,
+    },
 
 
     company: {
