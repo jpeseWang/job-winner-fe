@@ -259,9 +259,9 @@ export function resetQuota(subscription: ISubscription): void {
 export function getPlanApplyLimit(plan: SubscriptionPlan): number {
   switch (plan) {
     case SubscriptionPlan.FREE:
-      return 15 
+      return 15
     case SubscriptionPlan.PREMIUM:
-      return Infinity 
+      return Infinity
     default:
       return 15
   }
@@ -273,9 +273,9 @@ export function getPlanApplyLimit(plan: SubscriptionPlan): number {
 export function getPlanCVLimit(plan: SubscriptionPlan): number {
   switch (plan) {
     case SubscriptionPlan.FREE:
-      return 10 
+      return 10
     case SubscriptionPlan.PREMIUM:
-      return Infinity 
+      return Infinity
     default:
       return 10
   }

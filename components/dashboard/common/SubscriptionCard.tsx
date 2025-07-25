@@ -98,13 +98,12 @@ export default function SubscriptionCard({ plan, className = "" }: SubscriptionC
         <div className="mt-4 flex items-center gap-2">
           <div className={`h-1 w-full rounded-full bg-white border ${config.borderColor}`}>
             <div
-              className={`h-full rounded-full transition-all duration-300 ${
-                normalizedPlan === "free"
+              className={`h-full rounded-full transition-all duration-300 ${normalizedPlan === "free"
                   ? "w-1/3 bg-blue-400"
                   : normalizedPlan === "basic"
-                  ? "w-2/3 bg-orange-400"
-                  : "w-full bg-purple-400"
-              }`}
+                    ? "w-2/3 bg-orange-400"
+                    : "w-full bg-purple-400"
+                }`}
             />
           </div>
           <span className={`text-xs font-medium ${config.accentColor} whitespace-nowrap`}>

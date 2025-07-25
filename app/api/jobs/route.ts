@@ -6,7 +6,7 @@ import dbConnect from "@/lib/db"
 import { validateJob } from "@/utils/validators"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { UserRole, SubscriptionRole  } from "@/types/enums"
+import { UserRole, SubscriptionRole } from "@/types/enums"
 import { addDays } from "date-fns"
 import {
   getActiveSubscription,
@@ -127,8 +127,8 @@ export async function POST(request: Request) {
     const enrichedBody = {
       ...body,
       company: company.name,
-      companyId: company._id.toString(), 
-      companyLogo: company.logo || "https://example.com/default-logo.png", 
+      companyId: company._id.toString(),
+      companyLogo: company.logo || "https://example.com/default-logo.png",
     }
 
     console.log("📥 [POST /api/jobs] Enriched body:", enrichedBody)
@@ -159,6 +159,9 @@ export async function POST(request: Request) {
 
     await incrementJobPosting(session.user.id, SubscriptionRole.RECRUITER)
     console.log("✅ Job created successfully:", newJob._id)
+
+    // 👇 Tăng usageStats sau khi tạo thành công
+    await incrementJobPosting(session.user.id)
 
     return NextResponse.json(newJob, { status: 201 })
   } catch (error) {
