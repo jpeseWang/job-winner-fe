@@ -22,9 +22,9 @@ export function useSubscription() {
         return
       }
       try {
-        const res = await fetch(`/api/subscription?userId=${session.user.id}`)
+        const res = await fetch(`/api/subscription?userId=${session.user.id}&role=recruiter`)
         const data = await res.json()
-        setSubscription(data.subscription)
+        setSubscription(data)
       } catch (err) {
         setError("Failed to fetch subscription")
         console.error("Error fetching subscription:", err)

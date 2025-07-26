@@ -217,7 +217,7 @@ export default function UnlockPage() {
                       await fetch("/api/subscription", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ userId: session.user.id, plan: planShort, role: "recruiter" }),
+                        body: JSON.stringify({ userId: session.user.id, planId: planShort, role: "recruiter" }),
                       })
                     }
                     toast({ title: "Success", description: "Payment successful!" })
