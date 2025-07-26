@@ -160,6 +160,20 @@ export default function UnlockPage() {
                       role: "job_seeker",
                     }),
                   })
+                  // Gọi API lưu payment
+                  await fetch("/api/payment", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      userId: session.user.id,
+                      amount: priceToPay,
+                      currency: "USD",
+                      type: "subscription",
+                      status: "completed",
+                      paymentMethod: "paypal",
+                      transactionId: data.orderID || "paypal",
+                    }),
+                  })
                   const result = await res.json()
                   console.log("📥 API Response:", result)
 
