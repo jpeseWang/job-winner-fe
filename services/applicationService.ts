@@ -1,5 +1,6 @@
 import axiosInstance from "@/lib/axios"
 import type { ApplicationStatus } from "@/types/enums"
+import type { JobApplication } from "@/types/interfaces"
 
 export interface ApplicationFilters {
   search?: string
@@ -138,4 +139,15 @@ export const applicationService = {
 
     return response.data
   },
+
+
+  async submitApplication(applicationData: Partial<JobApplication>): Promise<JobApplication> {
+    try {
+      const response = await axiosInstance.post("/applications", applicationData);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error?.response?.data?.error || "Failed to submit application");
+    }
+  },
+
 }
