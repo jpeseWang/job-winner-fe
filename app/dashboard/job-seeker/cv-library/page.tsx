@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { getUserCVs, deleteCV, shareCV } from "@/services/cvService"
 import { formatDate } from "@/utils"
 import { Plus, Search, Download, Share, Trash2, Edit, Eye, FileText } from "lucide-react"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/useAuth"
 interface CVData {
   _id: string
   title: string

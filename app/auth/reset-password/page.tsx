@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Lock, Eye, EyeOff, AlertCircle } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks/useToast"
 import { authService } from "@/services"
 
 export default function ResetPasswordPage() {
@@ -71,7 +71,7 @@ export default function ResetPasswordPage() {
         title: "Password reset successful",
         description: "Your password has been updated. You can now log in with your new password.",
       })
-      
+
       router.push("/auth/login")
     } catch (error) {
       toast({

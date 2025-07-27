@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Check, Search } from "lucide-react"
 import type { ICVTemplate } from "@/types/interfaces"
 import { ETemplateCategory } from "@/types/enums"
-import { useTemplates } from "@/hooks/use-templates"
+import { useTemplates } from "@/hooks/useTemplates"
 
 interface CVTemplateLibraryProps {
   onSelectTemplate: (template: ICVTemplate) => void

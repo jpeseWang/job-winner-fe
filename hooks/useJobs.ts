@@ -36,7 +36,7 @@ export function useJobs(filters: JobFilters = {}, options: UseJobsOptions = {}) 
     effectiveFilters.status = JobStatus.ACTIVE
   }
 
-  const { data, error, isLoading, isValidating, mutate } = useSWR( queryKey, () => jobService.getJobs({ ...effectiveFilters, page, limit }),
+  const { data, error, isLoading, isValidating, mutate } = useSWR(queryKey, () => jobService.getJobs({ ...effectiveFilters, page, limit }),
     {
       initialData: options.initialData,
       refreshInterval: options.refreshInterval,
