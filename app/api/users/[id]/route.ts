@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import User from "@/models/User";
 
+
+//update user details
 export const PATCH = async (req: Request, { params }: { params: { id: string } }) => {
   try {
     await dbConnect();
@@ -28,3 +30,31 @@ export const PATCH = async (req: Request, { params }: { params: { id: string } }
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 };
+//delete user
+
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    await dbConnect();
+
+    const deleted = await User.findByIdAndDelete(params.id);
+
+    if (!deleted) {
+      return NextResponse.json(
+        { message: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ message: "User deleted successfully" });
+  } catch (err) {
+    console.error("Delete user error:", err);
+    return NextResponse.json(
+      { message: "Failed to delete user" },
+      { status: 500 }
+    );
+  }
+}
