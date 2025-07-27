@@ -169,9 +169,8 @@ export default function ManageUsersPage() {
 
       if (!res.ok) throw new Error("Failed to update user");
 
-      const updatedUser = await res.json();
+      const { user: updatedUser } = await res.json();
 
-      // Cập nhật lại danh sách users trong frontend
       setUsers((prev) =>
         prev.map((user) =>
           user.id === updatedUser._id
@@ -188,8 +187,24 @@ export default function ManageUsersPage() {
     }
   };
 
-  const deleteUser = (userId: string) => {
-    setUsers(users.filter((user) => user.id !== userId));
+  const deleteUser = async (userId: string) => {
+    const confirm = window.confirm(
+      "Are you sure you want to delete this user?"
+    );
+    if (!confirm) return;
+
+    try {
+      const res = await fetch(`/api/users/${userId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) throw new Error("Delete failed");
+
+      setUsers((prev) => prev.filter((user) => user.id !== userId));
+    } catch (err) {
+      console.error("Delete user error:", err);
+      alert("Failed to delete user.");
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -236,10 +251,6 @@ export default function ManageUsersPage() {
           <h1 className="text-3xl font-bold">Manage Users</h1>
           <p className="text-gray-600">View and manage all platform users</p>
         </div>
-        <Button>
-          <UserPlus className="mr-2 h-4 w-4" />
-          Add User
-        </Button>
       </div>
 
       <Card>
