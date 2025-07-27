@@ -7,12 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import BlogCard from "@/components/about/blog-card";
-<<<<<<< HEAD
 import { useToast } from "@/hooks/useToast";
-=======
-import { useToast } from "@/hooks/use-toast";
->>>>>>> 543896366bf0d99bdad43696e8507cc0501df770
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
 interface Post {
