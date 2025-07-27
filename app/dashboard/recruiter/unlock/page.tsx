@@ -217,7 +217,21 @@ export default function UnlockPage() {
                       await fetch("/api/subscription", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ userId: session.user.id, plan: planShort, role: "recruiter" }),
+                        body: JSON.stringify({ userId: session.user.id, planId: planShort, role: "recruiter" }),
+                      })
+                      // Gọi API lưu payment
+                      await fetch("/api/payment", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          userId: session.user.id,
+                          amount: priceToPay,
+                          currency: "USD",
+                          type: "subscription",
+                          status: "completed",
+                          paymentMethod: "paypal",
+                          transactionId: data.orderID || "paypal",
+                        }),
                       })
                     }
                     toast({ title: "Success", description: "Payment successful!" })
