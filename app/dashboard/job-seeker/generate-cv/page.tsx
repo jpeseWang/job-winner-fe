@@ -158,7 +158,7 @@ export default function GenerateCVPage() {
   ])
 
   const { user } = useAuth()
-  console.log(user)
+
   useEffect(() => {
     if (cvId) {
       loadExistingCV(cvId)
@@ -199,16 +199,35 @@ export default function GenerateCVPage() {
   const loadExistingCV = async (id: string) => {
     try {
       const cv = await getCVById(id)
-      // Populate sections with CV data
+      const content = cv.content
+
       setSections((prevSections) =>
-        prevSections.map((section) => ({
-          ...section,
-          fields: section.fields.map((field) => ({
-            ...field,
-            value: cv.content[section.id]?.[field.id] || "",
-          })),
-        })),
+        prevSections.map((section) => {
+          const sectionContent = content[section.id]
+
+          return {
+            ...section,
+            fields: section.fields.map((field) => {
+              let value = ""
+
+              if (section.id === "personal") {
+                value = sectionContent?.[field.id] || ""
+              } else if (section.id === "experience" && Array.isArray(sectionContent) && sectionContent.length > 0) {
+                value = sectionContent[0][field.id.replace(/-\d+$/, "")] || ""
+              } else if (section.id === "education" && Array.isArray(sectionContent) && sectionContent.length > 0) {
+                value = sectionContent[0][field.id.replace(/-\w+$/, "")] || ""
+              } else if (section.id === "skills" && Array.isArray(sectionContent)) {
+                if (field.id === "skills-list") {
+                  value = sectionContent.join(", ")
+                }
+              }
+
+              return { ...field, value }
+            }),
+          }
+        })
       )
+
       setSelectedTemplate(cv.template)
       setCvTitle(cv.title)
       setGeneratedCV(cv)
@@ -218,6 +237,7 @@ export default function GenerateCVPage() {
       toast.error("Failed to load CV. Please try again.")
     }
   }
+
 
   let rawPlan = "free"
   let planStyle = planStyles.free
@@ -480,7 +500,7 @@ export default function GenerateCVPage() {
         // Save new CV
         savedCV = await saveCV(cvData)
         // Redirect to edit mode with the new CV ID
-        router.push(`/dashboard/job-seeker/generate-cv?id=${savedCV._id}`)
+        router.push(`/dashboard/job-seeker/generate-cv`)
       }
 
       setLastSaved(new Date())
@@ -551,7 +571,7 @@ export default function GenerateCVPage() {
     // In a real app, this would open a share dialog
     toast.success("Your CV sharing link has been copied to clipboard.")
   }
-
+  console.log(rawPlan)
   return (
     <main className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
@@ -778,7 +798,7 @@ export default function GenerateCVPage() {
 
           <TabsContent value="ai-resume-builder" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {false ? (<div>
+              {rawPlan === "premium" ? (<div>
                 <Card>
                   <CardHeader>
                     <CardTitle>AI Resume Builder</CardTitle>
