@@ -8,7 +8,7 @@ import { toast } from "@/components/ui/use-toast"
 import { useSession } from "next-auth/react"
 import { companyService } from "@/services/companyService"
 import { usePathname } from "next/navigation"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/useAuth"
 
 export default function RecruiterDashboardHeader() {
   const { user } = useAuth()

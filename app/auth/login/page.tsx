@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label"
 import {
   Eye, EyeOff, Mail, Lock, Briefcase, User, AlertCircle,
 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks/useToast"
 import { UserRole } from "@/types/enums"
 
 export default function LoginPage() {

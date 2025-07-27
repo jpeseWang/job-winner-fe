@@ -33,7 +33,7 @@ import {
 import { jobs, categories } from "@/lib/data"
 import { jobService } from "@/services/jobService"
 import { JobStatus } from "@/types/enums"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks/useToast"
 
 export default function AdminJobsTab() {
   const { toast } = useToast()
@@ -69,7 +69,7 @@ export default function AdminJobsTab() {
       job.location.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesCategory = categoryFilter === "all" || job.category === categoryFilter
-    const matchesStatus = statusFilter === "all" || 
+    const matchesStatus = statusFilter === "all" ||
       (statusFilter === "approved" && (job.status === "approved" || job.status === "active")) ||
       job.status === statusFilter
 
@@ -114,7 +114,7 @@ export default function AdminJobsTab() {
 
   const submitReview = useCallback(async () => {
     if (!selectedJob) return
-    
+
     try {
       if (reviewDecision === "approve") {
         await jobService.updateJob(selectedJob.id, { status: JobStatus.APPROVED })
