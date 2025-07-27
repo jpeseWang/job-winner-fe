@@ -299,17 +299,11 @@ export default function BlogPost({ params }: { params: Promise<{ id: string }> }
           <div className="mt-8 flex gap-4">
             <Button
               onClick={handleLike}
-<<<<<<< HEAD
-              disabled={liked || !session}
-              className={`${liked ? "bg-gray-300" : "bg-teal-500 hover:bg-teal-600"
-                } flex items-center gap-2`}
-=======
               disabled={liked || !session || isSubmitting}
               className={`${
                 liked ? "bg-gray-300" : "bg-teal-500 hover:bg-teal-600"
               } flex items-center gap-2`}
               aria-label={liked ? "Post already liked" : "Like this post"}
->>>>>>> 5438963 (fix manage blog)
             >
               <Heart className={`h-4 w-4 ${liked ? "fill-red-500" : ""}`} aria-hidden="true" />
               Like ({post.likes})
