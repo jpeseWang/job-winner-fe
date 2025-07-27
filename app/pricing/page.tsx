@@ -36,9 +36,29 @@ import {
   Rocket,
   Target,
   Globe,
+  LucideIcon,
 } from "lucide-react"
 
-const recruiterPlans = [
+// Define the Feature interface
+interface Feature {
+  name: string
+  included: boolean
+  icon: LucideIcon
+}
+
+// Define the Plan interface
+interface Plan {
+  id: string
+  name: string
+  price: { monthly: number; yearly: number }
+  description: string
+  badge: string | null
+  features: Feature[]
+  cta: string
+  popular: boolean
+}
+
+const recruiterPlans: Plan[] = [
   {
     id: "recruiter-free",
     name: "Free",
@@ -104,7 +124,7 @@ const recruiterPlans = [
   },
 ]
 
-const jobSeekerPlans = [
+const jobSeekerPlans: Plan[] = [
   {
     id: "jobseeker-free",
     name: "Free",
@@ -164,7 +184,6 @@ export default function PricingPage() {
   const formatPrice = (price: { monthly: number; yearly: number }) => {
     const amount = isYearly ? price.yearly : price.monthly
     if (amount === 0) return "Free"
-
     if (isYearly) {
       const monthlyEquivalent = Math.round(amount / 12)
       return `$${amount}/year ($${monthlyEquivalent}/mo)`
@@ -179,7 +198,7 @@ export default function PricingPage() {
     return Math.round((savings / yearlyTotal) * 100)
   }
 
-  // Filter plans based on session and role (show all plans for viewing)
+  // Filter plans based on session and role
   const filteredRecruiterPlans = session 
     ? session.user?.role === "recruiter" 
       ? recruiterPlans
@@ -203,19 +222,31 @@ export default function PricingPage() {
 
   // Determine if a plan is selectable based on user role and current plan
   const isPlanSelectable = (planId: string) => {
-    if (!session || !session?.user?.plan) return true // Non-logged-in users can select any plan
+    if (!session || !session.user?.subscription?.plan) return true // Non-logged-in users or no subscription can select any plan
     const userRole = session.user.role
-    const userPlan = session.user.plan
+    const userPlan = session.user.subscription.plan
+    const jobPostings = session.user.subscription.usageStats?.jobPostings || 0
     if (userRole === "recruiter") {
       if (userPlan === "free") return planId !== "recruiter-free" // Can select Basic or Premium
-      if (userPlan === "basic") return planId === "recruiter-premium" // Can only select Premium
+      if (userPlan === "basic") {
+        if (jobPostings === 20) {
+          return planId === "recruiter-premium" || planId === "recruiter-basic" // Can select Basic or Premium if jobPostings is 20
+        }
+        return planId === "recruiter-premium" // Otherwise, can only select Premium
+      }
       if (userPlan === "premium") return planId === "recruiter-premium" || planId === "recruiter-basic" // Can select Premium or Basic
     }
     if (userRole === "job_seeker") {
       if (userPlan === "free") return planId === "jobseeker-premium" // Can only select Premium
-      if (userPlan === "premium") return false // Cannot select any plan (but plans are visible)
+      if (userPlan === "premium") return false // Cannot select any plan
     }
     return false
+  }
+
+  // Determine the current plan ID based on role and plan
+  const getCurrentPlanId = () => {
+    if (!session || !session.user?.subscription?.plan || !session.user?.role) return null
+    return `${session.user.role === "recruiter" ? "recruiter" : "jobseeker"}-${session.user.subscription.plan}`
   }
 
   return (
@@ -285,7 +316,7 @@ export default function PricingPage() {
                       <Badge className="bg-blue-600 text-white px-4 py-1">{plan.badge}</Badge>
                     </div>
                   )}
-                  {session && plan.id === `recruiter-${session.user?.plan}` && (
+                  {session && plan.id === getCurrentPlanId() && (
                     <div className="absolute -top-4 right-4">
                       <Badge className="bg-green-600 text-white px-4 py-1">Current Plan</Badge>
                     </div>
@@ -360,7 +391,7 @@ export default function PricingPage() {
                       <Badge className="bg-purple-600 text-white px-4 py-1">{plan.badge}</Badge>
                     </div>
                   )}
-                  {session && plan.id === `jobseeker-${session.user?.plan}` && (
+                  {session && plan.id === getCurrentPlanId() && (
                     <div className="absolute -top-4 right-4">
                       <Badge className="bg-green-600 text-white px-4 py-1">Current Plan</Badge>
                     </div>
@@ -423,7 +454,7 @@ export default function PricingPage() {
         </Tabs>
 
         {/* Selected Plan Summary */}
-        {selectedPlanData && session && session.user?.plan !== "premium" && isPlanSelectable(selectedPlanData.id) && (
+        {selectedPlanData && session && session.user?.subscription?.plan !== "premium" && isPlanSelectable(selectedPlanData.id) && (
           <Card className="bg-blue-50 border-blue-200 mb-8 max-w-2xl mx-auto">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
@@ -438,7 +469,7 @@ export default function PricingPage() {
         )}
 
         {/* Action Buttons */}
-        {session && selectedPlanData && priceToPay > 0 && session.user?.plan !== "premium" && isPlanSelectable(selectedPlanData.id) && (
+        {session && selectedPlanData && priceToPay > 0 && isPlanSelectable(selectedPlanData.id) && (
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
             <Button 
               variant="outline" 
