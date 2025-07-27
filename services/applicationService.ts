@@ -28,8 +28,18 @@ export const applicationService = {
     if (filters.page) params.append("page", filters.page.toString())
     if (filters.limit) params.append("limit", filters.limit.toString())
 
-    const response = await axiosInstance.get(`/applications?${params.toString()}`)
-    return response.data.data
+    // Use recruiter-specific endpoint if no specific jobId is provided
+    const endpoint = filters.jobId ? `/applications?${params.toString()}` : `/applications/by-recruiter?${params.toString()}`
+    const response = await axiosInstance.get(endpoint)
+    
+    // Handle different response structures
+    if (filters.jobId) {
+      // Regular applications endpoint returns { data: [...] }
+      return response.data.data || response.data
+    } else {
+      // Recruiter endpoint returns array directly
+      return response.data
+    }
   },
 
   // Get user's applications
@@ -70,7 +80,8 @@ export const applicationService = {
 
   // Update application status (for recruiters)
   async updateApplicationStatus(id: string, status: ApplicationStatus, feedback?: string) {
-    const response = await axiosInstance.put(`/applications/${id}`, {
+    const response = await axiosInstance.patch(`/applications/by-recruiter`, {
+      applicationId: id,
       status,
       feedback,
     })
