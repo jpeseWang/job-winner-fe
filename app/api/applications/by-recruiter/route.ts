@@ -72,3 +72,54 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Failed to load applications" }, { status: 500 })
   }
 }
+
+export async function PATCH(req: Request) {
+  try {
+    const session = await getServerSession(authOptions)
+
+    if (!session || session.user.role !== UserRole.RECRUITER) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    await dbConnect()
+
+    const { applicationId, status } = await req.json()
+
+    if (!applicationId || !status) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+    }
+
+    // Verify the application belongs to a job posted by this recruiter
+    const application = await Application.findById(applicationId)
+    if (!application) {
+      return NextResponse.json({ error: "Application not found" }, { status: 404 })
+    }
+
+    const job = await Job.findById(application.jobId)
+    if (!job || job.recruiter.toString() !== session.user.id) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 })
+    }
+
+    // Update application status
+    const updatedApplication = await Application.findByIdAndUpdate(
+      applicationId,
+      {
+        status,
+        updatedAt: new Date()
+      },
+      { new: true }
+    )
+
+    return NextResponse.json({
+      message: "Application status updated successfully",
+      application: updatedApplication
+    })
+
+  } catch (error) {
+    console.error("Error updating application status:", error)
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    )
+  }
+}
