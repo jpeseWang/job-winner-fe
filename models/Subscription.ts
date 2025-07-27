@@ -43,9 +43,9 @@ const SubscriptionSchema = new Schema<ISubscription>(
       required: true,
     },
     role: {
-       type: String, 
-       enum: Object.values(SubscriptionRole),
-       required: true
+      type: String,
+      enum: Object.values(SubscriptionRole),
+      required: true
     },
     plan: {
       type: String,

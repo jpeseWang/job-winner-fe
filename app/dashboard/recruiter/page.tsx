@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import RecruiterApplicationsTab from "@/components/dashboard/recruiter/applications-tab"
 import CandidatesTab from "@/components/dashboard/recruiter/candidates-tab"
 import AnalyticsTab from "@/components/dashboard/recruiter/analytics-tab"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/useAuth"
 import { companyService } from "@/services/companyService"
 import { jobService } from "@/services"
 import SubscriptionCard from "@/components/dashboard/common/SubscriptionCard"
@@ -147,8 +147,8 @@ export default function RecruiterDashboard() {
                 {showAllJobs ? "All Job Postings" : "Recent Job Postings"}
               </CardTitle>
               <CardDescription>
-                {showAllJobs 
-                  ? "All your job listings and their performance" 
+                {showAllJobs
+                  ? "All your job listings and their performance"
                   : "Your most recent job listings and their performance"
                 }
               </CardDescription>
@@ -197,8 +197,8 @@ export default function RecruiterDashboard() {
                   ))}
                   {jobs.length > 10 && (
                     <div className="text-center">
-                      <Button 
-                        variant="link" 
+                      <Button
+                        variant="link"
                         onClick={() => setShowAllJobs(!showAllJobs)}
                       >
                         {showAllJobs ? "Show Recent Jobs" : "View All Jobs"}

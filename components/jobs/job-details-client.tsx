@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import JobContactForm from "@/components/jobs/job-contact-form";
 import RelatedJobs from "@/components/jobs/related-jobs";
-import { useJob } from "@/hooks/use-jobs";
+import { useJob } from "@/hooks/useJobs";
 import { useToast } from "@/components/ui/use-toast";
 import Loading from "@/components/ui/loading";
 import { formatSalary } from "@/utils/formatters";

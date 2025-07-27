@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks/useToast"
 import {
   Check,
   Crown,
@@ -34,17 +34,17 @@ const premiumPlan = {
   description: "Apply for unlimited jobs and create unlimited CVs.",
   badge: "Best Value",
   features: [
-      { name: "Access to all premium CV templates", included: true, icon: Crown },
-      { name: "Featured proposals (5x visibility)", included: true, icon: Star },
-      { name: "Priority in search results", included: true, icon: TrendingUp },
-      { name: "Advanced profile analytics", included: true, icon: BarChart3 },
-      { name: "Unlimited CV downloads", included: true, icon: FileText },
-      { name: "Premium support", included: true, icon: Shield },
-      { name: "AI-powered job matching", included: true, icon: Target },
-      { name: "Salary insights & negotiation tips", included: true, icon: Award },
-      { name: "Career coaching resources", included: true, icon: Rocket },
-      { name: "Interview preparation tools", included: true, icon: MessageSquare },
-    ],
+    { name: "Access to all premium CV templates", included: true, icon: Crown },
+    { name: "Featured proposals (5x visibility)", included: true, icon: Star },
+    { name: "Priority in search results", included: true, icon: TrendingUp },
+    { name: "Advanced profile analytics", included: true, icon: BarChart3 },
+    { name: "Unlimited CV downloads", included: true, icon: FileText },
+    { name: "Premium support", included: true, icon: Shield },
+    { name: "AI-powered job matching", included: true, icon: Target },
+    { name: "Salary insights & negotiation tips", included: true, icon: Award },
+    { name: "Career coaching resources", included: true, icon: Rocket },
+    { name: "Interview preparation tools", included: true, icon: MessageSquare },
+  ],
   cta: "Upgrade to Premium",
   popular: true,
 }
@@ -133,11 +133,11 @@ export default function UnlockPage() {
           <Button variant="outline" onClick={() => router.push("/dashboard/job-seeker")} className="min-w-[120px]">
             Back to Dashboard
           </Button>
-            <PayPalScriptProvider
-                options={{
-                clientId: "ARYI_H9cVv4NbfslyZ24d3keT4RO0QLs6on2sPS4oNOZoDIE1Gy1i405HflcAP9pwTLNLoM-QDaV01gN", // Replace with your PayPal Client ID
-                }}
-            >
+          <PayPalScriptProvider
+            options={{
+              clientId: "ARYI_H9cVv4NbfslyZ24d3keT4RO0QLs6on2sPS4oNOZoDIE1Gy1i405HflcAP9pwTLNLoM-QDaV01gN", // Replace with your PayPal Client ID
+            }}
+          >
             <PayPalButtons
               style={{ layout: "vertical" }}
               createOrder={(data, actions) => {
@@ -160,6 +160,20 @@ export default function UnlockPage() {
                       role: "job_seeker",
                     }),
                   })
+                  // Gọi API lưu payment
+                  await fetch("/api/payment", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      userId: session.user.id,
+                      amount: priceToPay,
+                      currency: "USD",
+                      type: "subscription",
+                      status: "completed",
+                      paymentMethod: "paypal",
+                      transactionId: data.orderID || "paypal",
+                    }),
+                  })
                   const result = await res.json()
                   console.log("📥 API Response:", result)
 
@@ -176,21 +190,21 @@ export default function UnlockPage() {
 
         {/* Additional Info */}
         <div className="mt-12 text-center text-gray-600">
-            <p className="mb-4">All plans include:</p>
-            <div className="flex flex-wrap justify-center gap-6 text-sm">
-                <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-green-600" />
-                    <span>Secure payment</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-green-600" />
-                    <span>30-day money back</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-green-600" />
-                    <span>24/7 support</span>
-                </div>
+          <p className="mb-4">All plans include:</p>
+          <div className="flex flex-wrap justify-center gap-6 text-sm">
+            <div className="flex items-center gap-2">
+              <Shield className="h-4 w-4 text-green-600" />
+              <span>Secure payment</span>
             </div>
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-green-600" />
+              <span>30-day money back</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-green-600" />
+              <span>24/7 support</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

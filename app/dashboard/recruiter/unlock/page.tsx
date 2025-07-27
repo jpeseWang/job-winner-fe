@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks/useToast"
 import {
   Check,
   Crown,
@@ -130,13 +130,12 @@ export default function UnlockPage() {
           {recruiterPlans.map((plan) => (
             <Card
               key={plan.id}
-              className={`relative cursor-pointer transition-all duration-200 ${
-                selectedPlan === plan.id
+              className={`relative cursor-pointer transition-all duration-200 ${selectedPlan === plan.id
                   ? "ring-2 ring-blue-500 shadow-xl scale-105"
                   : plan.popular
-                  ? "ring-1 ring-blue-200 shadow-lg"
-                  : "hover:shadow-lg"
-              }`}
+                    ? "ring-1 ring-blue-200 shadow-lg"
+                    : "hover:shadow-lg"
+                }`}
               onClick={() => handlePlanSelect(plan.id)}
             >
               {plan.badge && (
@@ -217,7 +216,21 @@ export default function UnlockPage() {
                       await fetch("/api/subscription", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ userId: session.user.id, plan: planShort, role: "recruiter" }),
+                        body: JSON.stringify({ userId: session.user.id, planId: planShort, role: "recruiter" }),
+                      })
+                      // Gọi API lưu payment
+                      await fetch("/api/payment", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          userId: session.user.id,
+                          amount: priceToPay,
+                          currency: "USD",
+                          type: "subscription",
+                          status: "completed",
+                          paymentMethod: "paypal",
+                          transactionId: data.orderID || "paypal",
+                        }),
                       })
                     }
                     toast({ title: "Success", description: "Payment successful!" })

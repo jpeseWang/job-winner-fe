@@ -140,7 +140,7 @@ export default function RegisterCompanyPage() {
                 socialLinks: Object.fromEntries(Object.entries(form.socialLinks).filter(([_, value]) => value.trim() !== "")),
             }
 
-            const res = await fetch("api/company/register", {
+            const res = await fetch("/api/company/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(submitData),

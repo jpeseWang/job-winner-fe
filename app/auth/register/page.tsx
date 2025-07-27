@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { Eye, EyeOff, Mail, Lock, Briefcase, User, Building } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks/useToast"
 import { UserRole } from "@/types/enums"
 import { authService } from "@/services"
 import { useSearchParams } from "next/navigation"

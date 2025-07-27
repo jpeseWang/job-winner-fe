@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks/useToast"
 import { Check, Crown, Briefcase, BarChart3, Shield, Search, Clock, Palette, FileText, MessageSquare, Users, Target, Eye, Globe } from "lucide-react"
 
 const recruiterPlans = [
@@ -109,15 +109,15 @@ export default function PaymentGateway({ isOpen, onClose, onSuccess }: PaymentGa
     try {
       // Simulate payment processing
       await new Promise(resolve => setTimeout(resolve, 2000))
-      
+
       // Here you would integrate with PayPal or other payment gateway
       // For now, we'll simulate a successful payment
-      
+
       toast({
         title: "Success",
         description: "Payment successful! You can now create jobs.",
       })
-      
+
       onSuccess(selectedPlan)
       onClose()
     } catch (error) {
@@ -164,13 +164,12 @@ export default function PaymentGateway({ isOpen, onClose, onSuccess }: PaymentGa
             {recruiterPlans.map((plan) => (
               <Card
                 key={plan.id}
-                className={`relative cursor-pointer transition-all duration-200 ${
-                  selectedPlan === plan.id
+                className={`relative cursor-pointer transition-all duration-200 ${selectedPlan === plan.id
                     ? "ring-2 ring-blue-500 shadow-lg scale-105"
                     : plan.popular
-                    ? "ring-1 ring-blue-200 shadow-md"
-                    : "hover:shadow-md"
-                }`}
+                      ? "ring-1 ring-blue-200 shadow-md"
+                      : "hover:shadow-md"
+                  }`}
                 onClick={() => handlePlanSelect(plan.id)}
               >
                 {plan.badge && (

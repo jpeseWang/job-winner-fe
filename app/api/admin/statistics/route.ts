@@ -3,6 +3,8 @@ import connectDB from "@/lib/db"
 import User from "@/models/User"
 import Job from "@/models/Job"
 import Application from "@/models/Application"
+import Payment from "@/models/Payment"
+import { PaymentStatus, PaymentType } from "@/types/enums/index"
 
 export async function GET() {
   try {
@@ -45,10 +47,23 @@ export async function GET() {
       { $sort: { count: -1 } }
     ])
 
+    // Revenue: Tổng doanh thu và doanh thu từng tháng
+    const revenuePromise = Payment.aggregate([
+      { $match: { status: PaymentStatus.COMPLETED, type: PaymentType.SUBSCRIPTION } },
+      { $group: { _id: null, total: { $sum: "$amount" } } }
+    ])
+    const monthlyRevenuePromise = Payment.aggregate([
+      { $match: { status: PaymentStatus.COMPLETED, type: PaymentType.SUBSCRIPTION, createdAt: { $gte: new Date(`${year}-01-01`), $lte: new Date(`${year}-12-31`) } } },
+      { $project: { month: { $month: "$createdAt" }, amount: 1 } },
+      { $group: { _id: "$month", total: { $sum: "$amount" } } },
+      { $sort: { _id: 1 } }
+    ])
+
     // Chạy song song
-    const [totalUsers, totalJobs, totalApplications, userGrowth, jobPostings, applications, jobCategories] = await Promise.all([
+    const [totalUsers, totalJobs, totalApplications, userGrowth, jobPostings, applications, jobCategories, revenueAgg, monthlyRevenueAgg] = await Promise.all([
       totalUsersPromise, totalJobsPromise, totalApplicationsPromise,
-      userGrowthPromise, jobPostingsPromise, applicationsPromise, jobCategoriesPromise
+      userGrowthPromise, jobPostingsPromise, applicationsPromise, jobCategoriesPromise,
+      revenuePromise, monthlyRevenuePromise
     ])
 
     // Convert totalUsers to object
@@ -83,6 +98,17 @@ export async function GET() {
     applications.forEach(item => {
       const monthIdx = item._id - 1
       months[monthIdx].applications = item.count
+    })
+
+    // Xử lý revenue
+    const totalRevenue = revenueAgg[0]?.total || 0
+    const monthlyRevenue = Array.from({ length: 12 }, (_, i) => ({
+      name: new Date(0, i).toLocaleString("default", { month: "short" }),
+      revenue: 0
+    }))
+    monthlyRevenueAgg.forEach(item => {
+      const idx = item._id - 1
+      if (idx >= 0 && idx < 12) monthlyRevenue[idx].revenue = item.total
     })
 
     // 📊 Tính % tăng trưởng (current vs previous month)
@@ -120,10 +146,12 @@ export async function GET() {
         users: usersTotals,
         jobs: totalJobs,
         applications: totalApplications,
-        growth
+        growth,
+        totalRevenue
       },
       monthly: months,
-      categories: categoryDistribution
+      categories: categoryDistribution,
+      monthlyRevenue
     })
   } catch (err) {
     console.error(err)

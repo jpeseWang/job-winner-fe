@@ -17,7 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Loader2, Plus, Trash2, Building2, AlertCircle, Lock, Crown, Star } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { JobLocation, JobCategory, JobType, ExperienceLevel } from "@/types/enums"
-import { useCompanyById } from "@/hooks/use-company"
+import { useCompanyById } from "@/hooks/useCompany"
 import { useSubscription } from "@/hooks/useSubscription"
 import toast from "react-hot-toast"
 
@@ -188,14 +188,14 @@ export default function NewJobPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     console.log("🟢 Submitting job with subscription:", subscription)
-    
+
     // Check if user can post job
     if (!subscription?.canPostJob) {
       console.warn("🟠 No permission to post job, redirecting...")
       router.push("/dashboard/recruiter/unlock")
       return
     }
-    
+
     setIsSubmitting(true)
 
     try {
@@ -313,7 +313,7 @@ export default function NewJobPage() {
             <p className="text-gray-600">Upgrade your plan to create more job postings</p>
           </div>
         </div>
-        
+
         <Card className="border-orange-200 bg-orange-50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -356,7 +356,7 @@ export default function NewJobPage() {
             </p>
           </div>
         </div>
-        
+
         {/* Subscription Status */}
         {subscription && (
           <div className="flex items-center gap-2 text-sm">
@@ -366,7 +366,7 @@ export default function NewJobPage() {
               {rawPlan.toUpperCase()}
             </Badge>
             <span className="text-gray-600">
-              ({subscription.jobPostingsUsed} / 
+              ({subscription.jobPostingsUsed} /
               {["Unlimited", -1, Infinity, null].includes(subscription.jobPostingsLimit) ? "∞" : subscription.jobPostingsLimit})
             </span>
           </div>

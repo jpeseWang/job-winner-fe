@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Loader2, Plus, Eye } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { format } from "date-fns"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/useAuth"
 
 interface Job {
   _id: string
