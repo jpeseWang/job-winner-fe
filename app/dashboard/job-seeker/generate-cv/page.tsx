@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
-import { useToast } from "@/components/ui/use-toast"
+import toast from "react-hot-toast"
 import {
   ChevronLeft,
   ChevronRight,
@@ -26,16 +26,18 @@ import {
   Crown,
   Save,
   Check,
+
 } from "lucide-react"
 import CVTemplateLibrary from "@/components/cv/cv-template-library"
 import CVPreview from "@/components/cv/cv-preview"
 import { generateCV, generateFieldContent, saveCV, getCVById } from "@/services/cvService"
 import type { ICVTemplate } from "@/types/interfaces"
 import { Badge } from "@/components/ui/badge"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 // @ts-ignore
 import html2pdf from "html2pdf.js"
 import { useRef } from "react"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/useAuth"
 import type { JSX } from "react/jsx-runtime" // Import JSX to fix the undeclared variable error
 
 interface FormSection {
@@ -68,7 +70,7 @@ export default function GenerateCVPage() {
   const searchParams = useSearchParams()
   const cvId = searchParams.get("id")
   const { data: session } = useSession()
-  const { toast } = useToast()
+  // const { toast } = useToast()
   const [subscription, setSubscription] = useState<any>(null)
   const [loadingSubscription, setLoadingSubscription] = useState(true)
   const [activeTab, setActiveTab] = useState("cv-template")
@@ -85,6 +87,8 @@ export default function GenerateCVPage() {
   const [isGeneratingField, setIsGeneratingField] = useState<string | null>(null)
   const cvRef = useRef<HTMLDivElement>(null)
 
+
+  const hiddenAIFields = ["name", "email", "phone", "phone number", "location", "start-date-1", "end-date-1", "start-date-edu", "end-date-edu"]
   const [sections, setSections] = useState<FormSection[]>([
     {
       id: "personal",
@@ -154,7 +158,7 @@ export default function GenerateCVPage() {
   ])
 
   const { user } = useAuth()
-
+  console.log(user)
   useEffect(() => {
     if (cvId) {
       loadExistingCV(cvId)
@@ -178,20 +182,12 @@ export default function GenerateCVPage() {
         setSubscription(data)
         if (!data.canCreateCV) {
           console.warn("🟠 No permission to generate cv, redirecting...")
-          toast({
-            title: "Subscription Required",
-            description: data.createCVReason,
-            variant: "destructive",
-          })
+          toast.error("Subscription Required")
           router.push("/dashboard/job-seeker/unlock")
         }
       } catch (err) {
         console.error("Failed to fetch subscription:", err)
-        toast({
-          title: "Error",
-          description: "Failed to check subscription. Redirecting...",
-          variant: "destructive",
-        })
+        toast.error("Failed to check subscription. Redirecting...")
         router.push("/dashboard/job-seeker/unlock")
       } finally {
         setLoadingSubscription(false)
@@ -219,11 +215,7 @@ export default function GenerateCVPage() {
       setLastSaved(new Date(cv.updatedAt))
       setHasUnsavedChanges(false)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load CV. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to load CV. Please try again.")
     }
   }
 
@@ -274,17 +266,11 @@ export default function GenerateCVPage() {
       const result = await generateFieldContent(fieldId, field.label, context)
       if (result && result.content) {
         handleFieldChange(sectionId, fieldId, result.content)
-        toast({
-          title: "Content Generated",
-          description: `AI-generated content for ${field.label} has been added.`,
-        })
+        toast.success(`AI-generated content for ${field.label} has been added.`)
       }
     } catch (error) {
-      toast({
-        title: "Generation Failed",
-        description: "Failed to generate content. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to generate content. Please try again.")
+      console.error("Error generating field content:", error)
     } finally {
       setIsGeneratingField(null)
     }
@@ -352,20 +338,17 @@ export default function GenerateCVPage() {
   }
 
   const handleSelectTemplate = (template: ICVTemplate) => {
+    if (template.isPremium && rawPlan === "free") {
+      toast.error("This template is only available for premium users.")
+      return
+    }
     setSelectedTemplate(template)
-    toast({
-      title: "Template Selected",
-      description: `You've selected the ${template.name} template.`,
-    })
+    toast.success(`You've selected the ${template.name} template.`)
   }
 
   const handleGenerateCV = async () => {
     if (!selectedTemplate) {
-      toast({
-        title: "Template Required",
-        description: "Please select a CV template first.",
-        variant: "destructive",
-      })
+      toast.error("Please select a CV template first.")
       return
     }
 
@@ -386,36 +369,23 @@ export default function GenerateCVPage() {
       })
 
       setGeneratedCV(result)
-      toast({
-        title: "CV Generated",
-        description: "Your CV has been generated. You can now download or share it.",
-      })
+      toast.success("Your CV has been generated. You can now download or share it.")
     } catch (error) {
-      toast({
-        title: "Generation Failed",
-        description: "There was an error generating your CV. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
+      toast.error("There was an error generating your CV. Please try again.")
+      console.error("Error generating CV:", error)
+    }
+    finally {
       setIsGenerating(false)
     }
   }
 
   const handleGenerateWithAI = async () => {
     if (!aiPrompt) {
-      toast({
-        title: "Prompt Required",
-        description: "Please enter a prompt to generate your CV with AI.",
-        variant: "destructive",
-      })
+      toast.error("Please enter a prompt to generate your CV with AI.")
       return
     }
     if (!selectedTemplate) {
-      toast({
-        title: "Template Required",
-        description: "Please select a CV template first.",
-        variant: "destructive",
-      })
+      toast.error("Please select a CV template first.")
       return
     }
 
@@ -451,16 +421,10 @@ export default function GenerateCVPage() {
       setCvTitle(result.title || "My AI Generated CV")
       setHasUnsavedChanges(true)
 
-      toast({
-        title: "CV Generated with AI",
-        description: "Your CV has been generated using AI. You can now edit, download, or share it.",
-      })
+      toast.success("Your CV has been generated using AI. You can now edit, download, or share it.")
     } catch (error) {
-      toast({
-        title: "AI Generation Failed",
-        description: "There was an error generating your CV with AI. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("There was an error generating your CV with AI. Please try again.")
+
     } finally {
       setIsGenerating(false)
     }
@@ -468,11 +432,7 @@ export default function GenerateCVPage() {
 
   const handleSaveCV = async () => {
     if (!selectedTemplate || !cvTitle.trim()) {
-      toast({
-        title: "Missing Information",
-        description: "Please select a template and provide a title.",
-        variant: "destructive",
-      })
+      toast.error("Please select a template and provide a title.")
       return
     }
 
@@ -482,11 +442,7 @@ export default function GenerateCVPage() {
     const emailField = personalSection?.fields.find((f) => f.id === "email")
 
     if (!nameField?.value || !emailField?.value) {
-      toast({
-        title: "Missing Required Fields",
-        description: "Please fill in at least your name and email.",
-        variant: "destructive",
-      })
+      toast.error("Please fill in at least your name and email.")
       return
     }
 
@@ -531,16 +487,9 @@ export default function GenerateCVPage() {
       setHasUnsavedChanges(false)
       setGeneratedCV(savedCV)
 
-      toast({
-        title: "CV Saved Successfully!",
-        description: "Your CV has been saved to your library.",
-      })
+      toast.success("Your CV has been saved to your library.")
     } catch (error) {
-      toast({
-        title: "Save Failed",
-        description: "Failed to save CV. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to save CV. Please try again.")
     } finally {
       setIsSaving(false)
     }
@@ -586,18 +535,11 @@ export default function GenerateCVPage() {
       .from(element)
       .save()
       .then(() => {
-        toast({
-          title: "Download Started",
-          description: "Your CV is being downloaded as a PDF.",
-        })
+        toast.success("Your CV is being downloaded as a PDF.")
         element.style.height = originalHeight
       })
       .catch((err: any) => {
-        toast({
-          title: "Download Failed",
-          description: "Something went wrong while generating the PDF.",
-          variant: "destructive",
-        })
+        toast.error("Something went wrong while generating the PDF.")
         console.error(err)
       })
       .finally(() => {
@@ -607,10 +549,7 @@ export default function GenerateCVPage() {
 
   const handleShareCV = () => {
     // In a real app, this would open a share dialog
-    toast({
-      title: "Share Feature",
-      description: "Your CV sharing link has been copied to clipboard.",
-    })
+    toast.success("Your CV sharing link has been copied to clipboard.")
   }
 
   return (
@@ -703,17 +642,20 @@ export default function GenerateCVPage() {
                         <div key={field.id} className="space-y-2">
                           <div className="flex justify-between items-center">
                             <Label htmlFor={field.id}>{field.label}</Label>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleGenerateFieldContent(sections[currentStep].id, field.id)}
-                              disabled={isGeneratingField === field.id}
-                              className="h-8 px-2 text-xs"
-                            >
-                              {isGeneratingField === field.id ? "Generating..." : "✨ Generate with AI"}
-                            </Button>
+                            {!hiddenAIFields.includes(field.id.toLowerCase()) && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleGenerateFieldContent(sections[currentStep].id, field.id)}
+                                disabled={isGeneratingField === field.id}
+                                className="h-8 px-2 text-xs"
+                              >
+                                {isGeneratingField === field.id ? "Generating..." : "✨ Generate with AI"}
+                              </Button>
+                            )}
                           </div>
+
                           {field.type === "textarea" ? (
                             <Textarea
                               id={field.id}
@@ -800,11 +742,11 @@ export default function GenerateCVPage() {
                   <CardContent ref={cvRef} className="h-[600px] overflow-auto border rounded-md bg-white">
                     <CVPreview data={sections} generatedCV={generatedCV} template={selectedTemplate} />
                   </CardContent>
-                  <CardFooter className="flex justify-end gap-2">
+                  <CardFooter className="flex justify-end gap-2 mt-4">
                     <Button
                       onClick={handleSaveCV}
                       disabled={isSaving}
-                      className="flex items-center gap-2 bg-black"
+                      className="flex items-center gap-2 bg-black text-white"
                       variant={hasUnsavedChanges ? "default" : "outline"}
                     >
                       {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
@@ -836,7 +778,7 @@ export default function GenerateCVPage() {
 
           <TabsContent value="ai-resume-builder" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div>
+              {false ? (<div>
                 <Card>
                   <CardHeader>
                     <CardTitle>AI Resume Builder</CardTitle>
@@ -872,7 +814,16 @@ export default function GenerateCVPage() {
                     </Button>
                   </CardFooter>
                 </Card>
-              </div>
+              </div>) : (<div>
+
+                <Alert variant="destructive" className="bg-yellow-50 text-yellow-800 border-yellow-200">
+                  <Lock className="h-5 w-5 text-yellow-600" />
+                  <AlertTitle className="font-semibold">Premium Feature</AlertTitle>
+                  <AlertDescription>
+                    You must be a <span className="font-medium text-yellow-900">Premium member</span> to access this feature.
+                  </AlertDescription>
+                </Alert></div>
+              )}
 
               <div>
                 <Card className="sticky top-8">

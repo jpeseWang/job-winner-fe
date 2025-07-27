@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Heart, MessageCircle, Loader2, User, Clock } from "lucide-react";
 import DOMPurify from "dompurify";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 import { useSession } from "next-auth/react";
 
 interface Post {
@@ -206,9 +206,8 @@ export default function BlogPost({ params }: { params: { id: string } }) {
             <Button
               onClick={handleLike}
               disabled={liked || !session}
-              className={`${
-                liked ? "bg-gray-300" : "bg-teal-500 hover:bg-teal-600"
-              } flex items-center gap-2`}
+              className={`${liked ? "bg-gray-300" : "bg-teal-500 hover:bg-teal-600"
+                } flex items-center gap-2`}
             >
               <Heart className={`h-4 w-4 ${liked ? "fill-red-500" : ""}`} />
               Thích ({post.likes})

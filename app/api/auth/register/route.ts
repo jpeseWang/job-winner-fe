@@ -68,12 +68,12 @@ export async function POST(request: Request) {
 
     // 🎁 Create default FREE subscription for this role
     let subscription = await Subscription.create({
-      user: user._id, 
-      role, 
+      user: user._id,
+      role,
       plan: SubscriptionPlan.FREE,
       status: SubscriptionStatus.ACTIVE,
       startDate: new Date(),
-      endDate: addDays(new Date(), 30), 
+      endDate: addDays(new Date(), 30),
       billingPeriod: BillingPeriod.MONTHLY,
       price: 0,
       currency: "USD",
@@ -109,7 +109,7 @@ export async function POST(request: Request) {
 
     // Setup subscription fields
     const now = new Date()
-    const endDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000) 
+    const endDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
     let plan = SubscriptionPlan.FREE
     let billingPeriod = BillingPeriod.MONTHLY
     let expiresAt: Date | undefined = undefined
@@ -186,5 +186,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
-
-

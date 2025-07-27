@@ -8,7 +8,7 @@ import {
     type UpdateTemplateData,
 } from "@/services/templateService"
 import type { CVTemplate } from "@/types/interfaces"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks/useToast"
 
 export function useTemplates(initialFilters: TemplateFilters = {}) {
     const [templates, setTemplates] = useState<CVTemplate[]>([])

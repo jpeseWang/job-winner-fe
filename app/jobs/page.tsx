@@ -6,7 +6,7 @@ import JobFilters from "@/components/job-filters"
 import type { JobFilters as JobFiltersType } from "@/types/interfaces/job"
 import CompanyCard from "@/components/company-card"
 import { Button } from "@/components/ui/button"
-import { useJobs } from "@/hooks/use-jobs"
+import { useJobs } from "@/hooks/useJobs"
 import { Loader2 } from "lucide-react"
 import type { Job } from "@/types/interfaces"
 import { formatSalary } from "@/utils/formatters";
@@ -45,9 +45,9 @@ export default function JobsPage() {
   return (
     <main className="min-h-screen">
       {/* Jobs Header */}
-      <section className="bg-black text-white py-12 px-4 md:px-8 lg:px-16">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold">Jobs</h1>
+      <section className="bg-black text-white py-16">
+        <div className="container mx-auto text-center">
+          <h1 className="text-4xl font-bold mb-4">Jobs</h1>
         </div>
       </section>
 

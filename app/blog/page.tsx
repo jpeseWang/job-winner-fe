@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import BlogCard from "@/components/about/blog-card";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 
 interface Post {
   _id: string;
@@ -209,7 +209,7 @@ export default function BlogPage() {
               });
             }}
           >
-          
+
             <Button className="bg-black hover:bg-gray-800 text-white">
               Đăng ký
             </Button>
