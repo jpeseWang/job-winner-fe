@@ -70,11 +70,13 @@ export default function AdminStatisticsTab() {
         users: 0,
         jobs: 0,
         applications: 0
-      }
+      },
+      totalRevenue: 0
     },
     monthly: [],
     categories: [],
-    loading: true
+    loading: true,
+    monthlyRevenue: []
   })
 
   useEffect(() => {
@@ -159,11 +161,8 @@ export default function AdminStatisticsTab() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">Revenue</p>
-                <h3 className="text-2xl font-bold mt-1">$265</h3>
-                <div className="flex items-center mt-1 text-xs text-red-600">
-                  <TrendingDown className="h-3 w-3 mr-1" />
-                  <span>-3% from last month</span>
-                </div>
+                <h3 className="text-2xl font-bold mt-1">${stats.loading ? "..." : stats.totals.totalRevenue?.toLocaleString() || 0}</h3>
+                {/* Có thể thêm tăng trưởng doanh thu nếu muốn */}
               </div>
               <div className="bg-green-100 p-3 rounded-full">
                 <DollarSign className="h-6 w-6 text-green-600" />
@@ -293,7 +292,7 @@ export default function AdminStatisticsTab() {
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
-                data={revenueData}
+                data={stats.monthlyRevenue || []}
                 margin={{
                   top: 10,
                   right: 30,
