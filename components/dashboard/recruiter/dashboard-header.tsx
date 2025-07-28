@@ -9,7 +9,6 @@ import { useSession } from "next-auth/react"
 import { companyService } from "@/services/companyService"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/hooks/useAuth"
-
 export default function RecruiterDashboardHeader() {
   const { user } = useAuth()
   const [myCompany, setMyCompany] = useState<any>(null)
@@ -44,9 +43,9 @@ export default function RecruiterDashboardHeader() {
             <Link href="/dashboard/recruiter">Back to Dashboard</Link>
           </Button>}
 
-          <Button asChild>
-            <Link href="/dashboard/recruiter/jobs/new">Post New Job</Link>
-          </Button>
+                      <Button asChild>
+              <Link href="/dashboard/recruiter/jobs/new">Post New Job</Link>
+            </Button>
 
           {myCompany && !myCompany.isVerified && (
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-100 text-yellow-700 text-sm font-medium rounded-md border border-yellow-400 cursor-not-allowed">

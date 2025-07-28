@@ -1,15 +1,17 @@
-
-
 "use client"
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { useToast } from "@/hooks/useToast"
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js"
 import PricingFAQ from "@/components/pricing/pricing-faq"
 import PricingComparison from "@/components/pricing/pricing-comparison"
 import PricingTestimonials from "@/components/pricing/pricing-testimonials"
@@ -34,10 +36,29 @@ import {
   Rocket,
   Target,
   Globe,
+  LucideIcon,
 } from "lucide-react"
-import { useSession } from "next-auth/react"
 
-const recruiterPlans = [
+// Define the Feature interface
+interface Feature {
+  name: string
+  included: boolean
+  icon: LucideIcon
+}
+
+// Define the Plan interface
+interface Plan {
+  id: string
+  name: string
+  price: { monthly: number; yearly: number }
+  description: string
+  badge: string | null
+  features: Feature[]
+  cta: string
+  popular: boolean
+}
+
+const recruiterPlans: Plan[] = [
   {
     id: "recruiter-free",
     name: "Free",
@@ -103,7 +124,7 @@ const recruiterPlans = [
   },
 ]
 
-const jobSeekerPlans = [
+const jobSeekerPlans: Plan[] = [
   {
     id: "jobseeker-free",
     name: "Free",
@@ -150,13 +171,19 @@ const jobSeekerPlans = [
 
 export default function PricingPage() {
   const [isYearly, setIsYearly] = useState(false)
-  const [activeTab, setActiveTab] = useState("recruiters")
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
   const { data: session } = useSession()
+  const { toast } = useToast()
+  const router = useRouter()
+
+  // Manage active tab dynamically with state
+  const [activeTab, setActiveTab] = useState(
+    session ? (session.user?.role === "recruiter" ? "recruiters" : "jobseekers") : "recruiters"
+  )
 
   const formatPrice = (price: { monthly: number; yearly: number }) => {
     const amount = isYearly ? price.yearly : price.monthly
     if (amount === 0) return "Free"
-
     if (isYearly) {
       const monthlyEquivalent = Math.round(amount / 12)
       return `$${amount}/year ($${monthlyEquivalent}/mo)`
@@ -171,6 +198,57 @@ export default function PricingPage() {
     return Math.round((savings / yearlyTotal) * 100)
   }
 
+  // Filter plans based on session and role
+  const filteredRecruiterPlans = session 
+    ? session.user?.role === "recruiter" 
+      ? recruiterPlans
+      : []
+    : recruiterPlans
+
+  const filteredJobSeekerPlans = session 
+    ? session.user?.role === "job_seeker" 
+      ? jobSeekerPlans
+      : []
+    : jobSeekerPlans
+
+  const selectedPlanData = [...recruiterPlans, ...jobSeekerPlans].find((plan) => plan.id === selectedPlan)
+  const priceToPay = selectedPlanData ? (isYearly ? selectedPlanData.price.yearly : selectedPlanData.price.monthly) : 0
+
+  const handlePlanSelect = (planId: string) => {
+    if (isPlanSelectable(planId)) {
+      setSelectedPlan(planId)
+    }
+  }
+
+  // Determine if a plan is selectable based on user role and current plan
+  const isPlanSelectable = (planId: string) => {
+    if (!session || !session.user?.subscription?.plan) return true // Non-logged-in users or no subscription can select any plan
+    const userRole = session.user.role
+    const userPlan = session.user.subscription.plan
+    const jobPostings = session.user.subscription.usageStats?.jobPostings || 0
+    if (userRole === "recruiter") {
+      if (userPlan === "free") return planId !== "recruiter-free" // Can select Basic or Premium
+      if (userPlan === "basic") {
+        if (jobPostings === 20) {
+          return planId === "recruiter-premium" || planId === "recruiter-basic" // Can select Basic or Premium if jobPostings is 20
+        }
+        return planId === "recruiter-premium" // Otherwise, can only select Premium
+      }
+      if (userPlan === "premium") return planId === "recruiter-premium" || planId === "recruiter-basic" // Can select Premium or Basic
+    }
+    if (userRole === "job_seeker") {
+      if (userPlan === "free") return planId === "jobseeker-premium" // Can only select Premium
+      if (userPlan === "premium") return false // Cannot select any plan
+    }
+    return false
+  }
+
+  // Determine the current plan ID based on role and plan
+  const getCurrentPlanId = () => {
+    if (!session || !session.user?.subscription?.plan || !session.user?.role) return null
+    return `${session.user.role === "recruiter" ? "recruiter" : "jobseeker"}-${session.user.subscription.plan}`
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
@@ -178,8 +256,10 @@ export default function PricingPage() {
         <div className="max-w-7xl mx-auto px-4 py-16 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Choose Your Perfect Plan</h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Whether you're hiring top talent or searching for your dream job, we have the right plan to accelerate your
-            success.
+            {session 
+              ? `Upgrade your ${session.user?.role === "recruiter" ? "recruiting" : "job search"} experience with our premium plans.`
+              : "Whether you're hiring top talent or searching for your dream job, we have the right plan to accelerate your success."
+            }
           </p>
 
           {/* Billing Toggle */}
@@ -222,15 +302,23 @@ export default function PricingPage() {
 
           {/* Recruiter Plans */}
           <TabsContent value="recruiters">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-              {recruiterPlans.map((plan) => (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16 max-w-4xl mx-auto">
+              {filteredRecruiterPlans.map((plan) => (
                 <Card
                   key={plan.id}
-                  className={`relative ${plan.popular ? "ring-2 ring-blue-500 shadow-xl scale-105" : "shadow-lg"} transition-all duration-300 hover:shadow-xl`}
+                  className={`relative transition-all duration-300 ${
+                    isPlanSelectable(plan.id) ? "hover:shadow-lg cursor-pointer" : "opacity-50 cursor-not-allowed"
+                  } ${selectedPlan === plan.id ? "ring-2 ring-blue-500 shadow-xl scale-105" : ""}`}
+                  onClick={() => handlePlanSelect(plan.id)}
                 >
                   {plan.badge && (
                     <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                       <Badge className="bg-blue-600 text-white px-4 py-1">{plan.badge}</Badge>
+                    </div>
+                  )}
+                  {session && plan.id === getCurrentPlanId() && (
+                    <div className="absolute -top-4 right-4">
+                      <Badge className="bg-green-600 text-white px-4 py-1">Current Plan</Badge>
                     </div>
                   )}
 
@@ -267,7 +355,6 @@ export default function PricingPage() {
                         </div>
                       ))}
                     </div>
-                    {/* Nếu chưa đăng nhập mới hiển thị nút đăng ký, nếu đã đăng nhập thì không hiển thị nút gì */}
                     {!session && (
                       <Button
                         asChild
@@ -278,11 +365,7 @@ export default function PricingPage() {
                         {isYearly && plan.price.yearly === 0 ? (
                           <span className="text-gray-400">Only Available on Monthly</span>
                         ) : (
-                          <Link
-                            href={`/auth/register?role=recruiter`}
-                          >
-                            {plan.cta}
-                          </Link>
+                          <Link href={`/auth/register?role=recruiter`}>{plan.cta}</Link>
                         )}
                       </Button>
                     )}
@@ -294,15 +377,23 @@ export default function PricingPage() {
 
           {/* Job Seeker Plans */}
           <TabsContent value="jobseekers">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-16">
-              {jobSeekerPlans.map((plan) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-16">
+              {filteredJobSeekerPlans.map((plan) => (
                 <Card
                   key={plan.id}
-                  className={`relative ${plan.popular ? "ring-2 ring-purple-500 shadow-xl scale-105" : "shadow-lg"} transition-all duration-300 hover:shadow-xl`}
+                  className={`relative transition-all duration-300 ${
+                    isPlanSelectable(plan.id) ? "hover:shadow-lg cursor-pointer" : "opacity-50 cursor-not-allowed"
+                  } ${selectedPlan === plan.id ? "ring-2 ring-purple-500 shadow-xl scale-105" : ""}`}
+                  onClick={() => handlePlanSelect(plan.id)}
                 >
                   {plan.badge && (
                     <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                       <Badge className="bg-purple-600 text-white px-4 py-1">{plan.badge}</Badge>
+                    </div>
+                  )}
+                  {session && plan.id === getCurrentPlanId() && (
+                    <div className="absolute -top-4 right-4">
+                      <Badge className="bg-green-600 text-white px-4 py-1">Current Plan</Badge>
                     </div>
                   )}
 
@@ -341,7 +432,6 @@ export default function PricingPage() {
                         </div>
                       ))}
                     </div>
-                    {/* Nếu chưa đăng nhập mới hiển thị nút đăng ký, nếu đã đăng nhập thì không hiển thị nút gì */}
                     {!session && (
                       <Button
                         asChild
@@ -352,11 +442,7 @@ export default function PricingPage() {
                         {isYearly && plan.price.yearly === 0 ? (
                           <span className="text-gray-400">Only Available on Monthly</span>
                         ) : (
-                          <Link
-                            href={`/auth/register?role=job_seeker`}
-                          >
-                            {plan.cta}
-                          </Link>
+                          <Link href={`/auth/register?role=job_seeker`}>{plan.cta}</Link>
                         )}
                       </Button>
                     )}
@@ -366,6 +452,85 @@ export default function PricingPage() {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Selected Plan Summary */}
+        {selectedPlanData && session && session.user?.subscription?.plan !== "premium" && isPlanSelectable(selectedPlanData.id) && (
+          <Card className="bg-blue-50 border-blue-200 mb-8 max-w-2xl mx-auto">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Star className="h-5 w-5 text-blue-600" />
+                Selected Plan: {selectedPlanData.name}
+              </CardTitle>
+              <CardDescription>
+                {formatPrice(selectedPlanData.price)} - {selectedPlanData.description}
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        )}
+
+        {/* Action Buttons */}
+        {session && selectedPlanData && priceToPay > 0 && isPlanSelectable(selectedPlanData.id) && (
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+            <Button 
+              variant="outline" 
+              onClick={() => router.push(session.user?.role === "recruiter" ? "/dashboard/recruiter" : "/dashboard/jobseeker")} 
+              className="min-w-[120px]"
+            >
+              Back to Dashboard
+            </Button>
+            <div className="min-w-[220px]">
+              <PayPalScriptProvider
+                options={{
+                  clientId: "ARYI_H9cVv4NbfslyZ24d3keT4RO0QLs6on2sPS4oNOZoDIE1Gy1i405HflcAP9pwTLNLoM-QDaV01gN",
+                }}
+              >
+                <PayPalButtons
+                  style={{ layout: "vertical" }}
+                  createOrder={(data, actions) => {
+                    return actions.order.create({
+                      intent: "CAPTURE",
+                      purchase_units: [
+                        {
+                          amount: { value: String(priceToPay), currency_code: "USD" },
+                        },
+                      ],
+                    })
+                  }}
+                  onApprove={async (data, actions) => {
+                    await actions.order?.capture()
+                    if (session.user?.id && selectedPlan) {
+                      const planShort = selectedPlan.replace(/^(recruiter|jobseeker)-/, '')
+                      const role = selectedPlan.startsWith('recruiter') ? 'recruiter' : 'job_seeker'
+                      await fetch("/api/subscription", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ userId: session.user.id, planId: planShort, role }),
+                      })
+                      await fetch("/api/payment", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          userId: session.user.id,
+                          amount: priceToPay,
+                          currency: "USD",
+                          type: "subscription",
+                          status: "completed",
+                          paymentMethod: "paypal",
+                          transactionId: data.orderID || "paypal",
+                        }),
+                      })
+                    }
+                    toast({ title: "Success", description: "Payment successful!" })
+                    router.push(session.user?.role === "recruiter" ? "/dashboard/recruiter/jobs/new" : "/dashboard/jobseeker")
+                  }}
+                  onError={() => {
+                    toast({ title: "Error", description: "Payment failed. Please try again.", variant: "destructive" })
+                  }}
+                />
+              </PayPalScriptProvider>
+            </div>
+          </div>
+        )}
 
         {/* Feature Comparison */}
         <PricingComparison activeTab={activeTab} />
@@ -377,20 +542,22 @@ export default function PricingPage() {
         <PricingFAQ />
 
         {/* CTA Section */}
-        <div className="text-center py-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Ready to Get Started?</h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Join thousands of companies and job seekers who trust our platform to connect talent with opportunity.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700">
-              <Link href="/auth/register">Start Free Trial</Link>
-            </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link href="/contact-us">Contact Sales</Link>
-            </Button>
+        {!session && (
+          <div className="text-center py-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Ready to Get Started?</h2>
+            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+              Join thousands of companies and job seekers who trust our platform to connect talent with opportunity.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700">
+                <Link href="/auth/register">Start Free Trial</Link>
+              </Button>
+              <Button asChild variant="outline" size="lg">
+                <Link href="/contact-us">Contact Sales</Link>
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   )
