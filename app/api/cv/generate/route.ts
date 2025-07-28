@@ -12,14 +12,14 @@ export async function POST(request: Request) {
 
     const session = await getServerSession(authOptions)
     if (!session || session.user.role !== UserRole.JOB_SEEKER) {
-      console.warn("❌ Unauthorized: user not job seeker or session missing")
+      console.warn("Unauthorized: user not job seeker or session missing")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const subscription = await getActiveSubscription(session.user.id, SubscriptionRole.JOB_SEEKER)
-    console.log("📦 [POST /api/cv] Subscription:", subscription)
+    console.log("[POST /api/cv] Subscription:", subscription)
     const permission = checkCVPermission(subscription)
-    console.log("📦 [POST /api/cv] Permission Result:", permission)
+    console.log("[POST /api/cv] Permission Result:", permission)
 
     if (!permission.canCreateCV) {
       return NextResponse.json({
@@ -35,12 +35,12 @@ export async function POST(request: Request) {
       user: session.user.id
     }
 
-    console.log("📝 [POST /api/cv] Final CV data:", enrichedData)
+    console.log("[POST /api/cv] Final CV data:", enrichedData)
 
     // const newCV = await CV.create(enrichedData)
     // console.log("✅ CV created successfully:", newCV._id)
 
-    // 📈 Tăng usageStats.cvCreated
+    // Tăng usageStats.cvCreated
     await incrementCVCreating(session.user.id, SubscriptionRole.JOB_SEEKER)
 
     return NextResponse.json({ status: 201 })

@@ -86,14 +86,14 @@ export async function POST(request: Request) {
 
     const session = await getServerSession(authOptions)
     if (!session || session.user.role !== UserRole.JOB_SEEKER) {
-      console.warn("❌ Unauthorized: user not job seeker or session missing")
+      console.warn("Unauthorized: user not job seeker or session missing")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const subscription = await getActiveSubscription(session.user.id, SubscriptionRole.JOB_SEEKER)
-    console.log("📦 [POST /api/applications] Subscription:", subscription)
+    console.log("[POST /api/applications] Subscription:", subscription)
     const permission = checkApplyPermission(subscription)
-    console.log("📦 [POST /api/applications] Permission Result:", permission)
+    console.log("POST /api/applications] Permission Result:", permission)
 
     if (!permission.canApply) {
       return NextResponse.json({
@@ -102,23 +102,23 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    console.log("📥 [POST /api/applications] Request body:", body)
+    console.log("[POST /api/applications] Request body:", body)
 
     const validatedData = applicationSchema.parse(body)
-    console.log("✅ [POST /api/applications] Validated data:", validatedData)
+    console.log("[POST /api/applications] Validated data:", validatedData)
 
-    // 🔄 Check if user already applied for this job
+    // Check if user already applied for this job
     const existingApplication = await Application.findOne({
       userId: session.user.id,
       jobId: validatedData.jobId,
     })
 
     if (existingApplication) {
-      console.warn("⚠️ User already applied for job:", validatedData.jobId)
+      console.warn("User already applied for job:", validatedData.jobId)
       return NextResponse.json({ error: "You have already applied for this job" }, { status: 400 })
     }
 
-    // 📝 Create new application
+    // Create new application
     const application = new Application({
       ...validatedData,
       userId: session.user.id,
@@ -127,9 +127,9 @@ export async function POST(request: Request) {
     })
 
     await application.save()
-    console.log("✅ Application submitted:", application._id)
+    console.log("Application submitted:", application._id)
 
-    // 📈 Increment usageStats.jobApplications
+    // Increment usageStats.jobApplications
     await incrementJobApplication(session.user.id, SubscriptionRole.JOB_SEEKER)
 
     // TODO: Send notification to employer

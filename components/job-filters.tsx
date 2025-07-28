@@ -48,7 +48,6 @@ export default function JobFilters({ onChange }: Props) {
     fetchFilters()
   }, [])
 
-  // ✅ Debounced keyword handler
   const debouncedKeywordChange = useMemo(
     () =>
       debounce((updatedKeyword: string) => {

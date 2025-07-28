@@ -5,7 +5,7 @@ import Subscription from "@/models/Subscription"
 import { SubscriptionPlan, SubscriptionRole, BillingPeriod  } from "@/types/enums"
 import { addDays } from "date-fns"
 
-// 📦 GET: Lấy subscription hiện tại + quyền post job
+//Lấy subscription hiện tại + quyền post job
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const userId = searchParams.get("userId")
@@ -24,9 +24,6 @@ export async function GET(request: Request) {
     const cvPermission = checkCVPermission(subscription)
     const applyPermission = checkApplyPermission(subscription)
 
-    console.log("📦 [GET /api/subscription] Subscription:", subscription)
-
-    // Gắn prefix role vào plan khi trả về API
     const prefixedPlan = `${role}-${subscription.plan}`
 
     return NextResponse.json({
@@ -51,20 +48,19 @@ export async function GET(request: Request) {
   }
 }
 
-// 📦 POST: Update/Upgrade subscription
+//Update/Upgrade subscription
 export async function POST(request: Request) {
   try {
     const body = await request.json()
     const { userId, planId, role } = body
-    console.log("📦 [POST /api/subscription] Body:", body)
-
+    
     if (!userId || !planId || !role) {
       return NextResponse.json({ error: "Missing userId or planId or role" }, { status: 400 })
     }
 
     await dbConnect()
 
-    // 🎯 Validate planId based on role
+    // Validate planId based on role
     if (role === SubscriptionRole.JOB_SEEKER && planId === SubscriptionPlan.BASIC) {
       return NextResponse.json({
         error: "Job seekers cannot select Basic plan.",
@@ -78,12 +74,10 @@ export async function POST(request: Request) {
     const now = new Date()
     const endDate = addDays(now, 30)
 
-    // Tìm subscription theo user + role
     let subscription = await Subscription.findOne({ user: userId, role })
-    console.log("🔍 [POST /api/subscription] Found subscription:", subscription)
+    console.log("[POST /api/subscription] Found subscription:", subscription)
 
     if (!subscription) {
-      // Nếu chưa có ➝ tạo mới
       subscription = await Subscription.create({
         user: userId,
         role,
@@ -103,7 +97,7 @@ export async function POST(request: Request) {
     const oldPlan = subscription.plan
     const isDowngrade = planId === SubscriptionPlan.FREE && oldPlan !== SubscriptionPlan.FREE
 
-    // 📝 Update subscription info
+    //Update subscription info
     subscription.plan = planId
     subscription.status = "active"
     subscription.startDate = now

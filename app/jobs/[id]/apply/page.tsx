@@ -35,14 +35,12 @@ export default function ApplyJobPage({ params }: ApplyJobPageProps) {
         if (!response.ok) throw new Error(`HTTP error ${response.status}`)
         const data = await response.json()
 
-        console.log("📦 [ApplyJobPage] Subscription check:", data)
-
         if (!data.canApply) {
           toast.error(data.applyReason)
           router.push("/dashboard/job-seeker/unlock")
         }
       } catch (error) {
-        console.error("❌ Error checking subscription:", error)
+        console.error("Error checking subscription:", error)
         toast.error("Failed to check subscription. Redirecting...")
         redirect("/dashboard/job-seeker/unlock")
       } finally {

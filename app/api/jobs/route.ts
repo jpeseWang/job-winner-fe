@@ -6,7 +6,7 @@ import dbConnect from "@/lib/db"
 import { validateJob } from "@/utils/validators"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { UserRole, SubscriptionRole } from "@/types/enums"
+import { UserRole, SubscriptionRole  } from "@/types/enums"
 import { addDays } from "date-fns"
 import {
   getActiveSubscription,
@@ -20,7 +20,6 @@ export async function GET(req: NextRequest) {
   try {
     await dbConnect()
 
-    const session = await getServerSession(authOptions)
     const {
       keyword,
       location,
@@ -29,9 +28,7 @@ export async function GET(req: NextRequest) {
       experienceLevel,
       page = "1",
       limit = "20",
-      sort = "latest",
-      recruiterId,
-      status
+      sort = "latest"
     } = Object.fromEntries(req.nextUrl.searchParams)
 
     const query: any = {}
@@ -41,14 +38,6 @@ export async function GET(req: NextRequest) {
     if (category) query.category = { $in: category.split(",") }
     if (type) query.type = { $in: type.split(",") }
     if (experienceLevel) query.experienceLevel = { $in: experienceLevel.split(",") }
-    if (status) query.status = status
-    if (recruiterId) query.recruiter = recruiterId
-    if (session && session.user.role === UserRole.RECRUITER) {
-      query.recruiter = session.user.id
-    }
-    if (!session || (session.user.role !== UserRole.ADMIN && session.user.role !== UserRole.RECRUITER)) {
-      query.status = "active"
-    }
 
     const skip = (parseInt(page) - 1) * parseInt(limit)
 
@@ -94,14 +83,14 @@ export async function POST(request: Request) {
 
     const session = await getServerSession(authOptions)
     if (!session || session.user.role !== UserRole.RECRUITER) {
-      console.warn("❌ Unauthorized: user not recruiter or session missing")
+      console.warn("Unauthorized: user not recruiter or session missing")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const subscription = await getActiveSubscription(session.user.id, SubscriptionRole.RECRUITER)
-    console.log("📦 [POST /api/jobs] Subscription:", subscription)
+    console.log("[POST /api/jobs] Subscription:", subscription)
     const permission = checkPostingPermission(subscription)
-    console.log("📦 [POST /api/jobs] Permission Result:", permission)
+    console.log("[POST /api/jobs] Permission Result:", permission)
 
     if (!permission.canPostJob) {
       return NextResponse.json({
@@ -127,8 +116,8 @@ export async function POST(request: Request) {
     const enrichedBody = {
       ...body,
       company: company.name,
-      companyId: company._id.toString(),
-      companyLogo: company.logo || "https://example.com/default-logo.png",
+      companyId: company._id.toString(), 
+      companyLogo: company.logo || "https://example.com/default-logo.png", 
     }
 
     console.log("📥 [POST /api/jobs] Enriched body:", enrichedBody)
@@ -159,9 +148,6 @@ export async function POST(request: Request) {
 
     await incrementJobPosting(session.user.id, SubscriptionRole.RECRUITER)
     console.log("✅ Job created successfully:", newJob._id)
-
-    // 👇 Tăng usageStats sau khi tạo thành công
-    await incrementJobPosting(session.user.id)
 
     return NextResponse.json(newJob, { status: 201 })
   } catch (error) {

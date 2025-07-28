@@ -118,7 +118,7 @@ export default function AdminJobsTab() {
     try {
       if (reviewDecision === "approve") {
         await jobService.updateJob(selectedJob.id, { status: JobStatus.APPROVED })
-        setJobsData(prev => prev.map((job) => (job.id === selectedJob.id ? { ...job, status: JobStatus.APPROVED } : job)))
+        setJobsData(prev => prev.map((job) => (job.id === selectedJob.id ? { ...job, status: "active" } : job)))
         toast({
           title: "Success",
           description: "Job approved successfully!",
