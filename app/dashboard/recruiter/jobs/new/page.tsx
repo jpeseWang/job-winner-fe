@@ -18,7 +18,6 @@ import { Loader2, Plus, Trash2, Building2, AlertCircle, Lock, Crown, Star } from
 import { useToast } from "@/components/ui/use-toast"
 import { JobLocation, JobCategory, JobType, ExperienceLevel } from "@/types/enums"
 import { useCompanyById } from "@/hooks/useCompany"
-import { useSubscription } from "@/hooks/useSubscription"
 import toast from "react-hot-toast"
 
 export default function NewJobPage() {
@@ -40,13 +39,13 @@ export default function NewJobPage() {
   const router = useRouter()
   const { data: session } = useSession()
   const { company, isLoading: companyLoading, isError: companyError, hasCompany } = useCompanyById(session?.user?.id || "")
-  const { subscription, isLoading: subscriptionLoading } = useSubscription()
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [requirements, setRequirements] = useState<string[]>([""])
   const [benefits, setBenefits] = useState<string[]>([""])
   const [responsibilities, setResponsibilities] = useState<string[]>([""])
   const [skills, setSkills] = useState<string[]>([""])
+  const [subscription, setSubscription] = useState<any>(null)
   const [loadingSubscription, setLoadingSubscription] = useState(true)
 
   const [formData, setFormData] = useState({
@@ -74,6 +73,7 @@ export default function NewJobPage() {
         const data = await res.json()
         console.log("🟢 [Frontend] Subscription API Response:", data)
 
+        setSubscription(data)
         if (!data.canPostJob) {
           console.warn("🟠 No permission to post job, redirecting...")
           toast.error(data.postJobReason)
@@ -188,14 +188,14 @@ export default function NewJobPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     console.log("🟢 Submitting job with subscription:", subscription)
-
+    
     // Check if user can post job
     if (!subscription?.canPostJob) {
-      console.warn("🟠 No permission to post job, redirecting...")
+      console.warn("No permission to post job, redirecting...")
       router.push("/dashboard/recruiter/unlock")
       return
     }
-
+    
     setIsSubmitting(true)
 
     try {
@@ -219,6 +219,7 @@ export default function NewJobPage() {
         responsibilities: responsibilities.filter((resp) => resp.trim() !== ""),
         skills: skills.filter((skill) => skill.trim() !== ""),
         salary: transformedSalary,
+        status: "active",
         postedDate: new Date().toISOString(),
         recruiter: session?.user?.id || "",
       }
@@ -302,48 +303,6 @@ export default function NewJobPage() {
     )
   }
 
-  // Show subscription warning if user can't post job
-  if (!subscriptionLoading && !subscription?.canPostJob) {
-    return (
-      <main className="max-w-4xl mx-auto py-8 px-4">
-        <div className="flex items-center gap-3 mb-6">
-          <Lock className="h-8 w-8 text-orange-600" />
-          <div>
-            <h1 className="text-2xl font-bold">Post a New Job</h1>
-            <p className="text-gray-600">Upgrade your plan to create more job postings</p>
-          </div>
-        </div>
-
-        <Card className="border-orange-200 bg-orange-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Crown className="h-5 w-5 text-orange-600" />
-              Subscription Required
-            </CardTitle>
-            <CardDescription>
-              You've reached your job posting limit. Upgrade your plan to continue posting jobs.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-white rounded-lg">
-                <div>
-                  <p className="font-medium">Current Plan: {subscription?.planId}</p>
-                  <p className="text-sm text-gray-600">
-                    {subscription?.jobPostingsUsed} / {subscription?.jobPostingsLimit === -1 ? "Unlimited" : subscription?.jobPostingsLimit} jobs posted
-                  </p>
-                </div>
-                <Button onClick={() => router.push("/dashboard/recruiter/unlock")}>
-                  Upgrade Plan
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </main>
-    )
-  }
-
   return (
     <main className="max-w-4xl mx-auto py-8 px-4">
       <div className="flex items-center justify-between mb-6">
@@ -356,7 +315,7 @@ export default function NewJobPage() {
             </p>
           </div>
         </div>
-
+        
         {/* Subscription Status */}
         {subscription && (
           <div className="flex items-center gap-2 text-sm">
@@ -366,7 +325,7 @@ export default function NewJobPage() {
               {rawPlan.toUpperCase()}
             </Badge>
             <span className="text-gray-600">
-              ({subscription.jobPostingsUsed} /
+              ({subscription.jobPostingsUsed} / 
               {["Unlimited", -1, Infinity, null].includes(subscription.jobPostingsLimit) ? "∞" : subscription.jobPostingsLimit})
             </span>
           </div>

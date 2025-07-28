@@ -15,7 +15,6 @@ export async function getActiveSubscription(userId: string, role?: SubscriptionR
   }
 
   if (role === SubscriptionRole.ADMIN) {
-    console.log(`👑 User ${userId} is admin, skipping subscription.`)
     return {
       user: userId,
       plan: "admin",
@@ -47,14 +46,13 @@ export async function getActiveSubscription(userId: string, role?: SubscriptionR
     const now = new Date()
     // Downgrade to FREE if subscription expired
     if (subscription.endDate < now) {
-      console.log(`⚠️ Subscription expired for user ${userId}. Downgrading to FREE.`)
       resetSubscriptionToFree(subscription)
       await subscription.save()
     }
 
     return subscription
   } catch (err) {
-    console.error(`❌ Failed to get active subscription for user ${userId} (${role}):`, err)
+    console.error(`Failed to get active subscription for user ${userId} (${role}):`, err)
     return await getFreeSubscriptionFallback(userId, role)
   }
 }
@@ -67,21 +65,21 @@ export function checkPostingPermission(subscription: ISubscription): {
   reason: string
   quotaLeft: number | "Unlimited"
 } {
-  console.log("📦 [checkPostingPermission] Subscription:", subscription)
+  console.log("[checkPostingPermission] Subscription:", subscription)
 
   const plan = subscription.plan
   const planLimit = getPlanJobLimit(plan)
   const used = subscription.usageStats.jobPostings ?? 0
 
   const quotaLeft = planLimit === Infinity ? "Unlimited" : planLimit - used
-  console.log(`📦 Plan: ${plan}, Limit: ${planLimit}, Used: ${used}, Left: ${quotaLeft}`)
+  console.log(`Plan: ${plan}, Limit: ${planLimit}, Used: ${used}, Left: ${quotaLeft}`)
 
   if (quotaLeft === "Unlimited" || quotaLeft > 0) {
-    console.log("✅ [checkPostingPermission] Can post job: true")
+    console.log("[checkPostingPermission] Can post job: true")
     return { canPostJob: true, reason: "OK", quotaLeft }
   }
 
-  console.log("❌ [checkPostingPermission] Can post job: false")
+  console.log("[checkPostingPermission] Can post job: false")
   return {
     canPostJob: false,
     reason: "You have used up your job posting limit for this month. Please upgrade your plan.",
@@ -97,21 +95,21 @@ export function checkCVPermission(subscription: ISubscription): {
   reason: string
   quotaLeft: number | "Unlimited"
 } {
-  console.log("📦 [checkCVPermission] Subscription:", subscription)
+  console.log("[checkCVPermission] Subscription:", subscription)
 
   const plan = subscription.plan
   const planLimit = getPlanCVLimit(plan)
   const used = subscription.usageStats.cvCreated ?? 0
 
   const quotaLeft = planLimit === Infinity ? "Unlimited" : planLimit - used
-  console.log(`📦 Plan: ${plan}, Limit: ${planLimit}, Used: ${used}, Left: ${quotaLeft}`)
+  console.log(`Plan: ${plan}, Limit: ${planLimit}, Used: ${used}, Left: ${quotaLeft}`)
 
   if (quotaLeft === "Unlimited" || quotaLeft > 0) {
-    console.log("✅ [checkCVPermission] Can create CV: true")
+    console.log("[checkCVPermission] Can create CV: true")
     return { canCreateCV: true, reason: "OK", quotaLeft }
   }
 
-  console.log("❌ [checkCVPermission] Can create CV: false")
+  console.log("[checkCVPermission] Can create CV: false")
   return {
     canCreateCV: false,
     reason: "You have used up your cv generating limit for this month. Please upgrade your plan.",
@@ -127,21 +125,21 @@ export function checkApplyPermission(subscription: ISubscription): {
   reason: string
   quotaLeft: number | "Unlimited"
 } {
-  console.log("📦 [checkApplyPermission] Subscription:", subscription)
+  console.log("[checkApplyPermission] Subscription:", subscription)
 
   const plan = subscription.plan
   const planLimit = getPlanApplyLimit(plan)
   const used = subscription.usageStats.jobApplications ?? 0
 
   const quotaLeft = planLimit === Infinity ? "Unlimited" : planLimit - used
-  console.log(`📦 Plan: ${plan}, Limit: ${planLimit}, Used: ${used}, Left: ${quotaLeft}`)
+  console.log(`Plan: ${plan}, Limit: ${planLimit}, Used: ${used}, Left: ${quotaLeft}`)
 
   if (quotaLeft === "Unlimited" || quotaLeft > 0) {
-    console.log("✅ [checkApplyPermission] Can apply: true")
+    console.log("[checkApplyPermission] Can apply: true")
     return { canApply: true, reason: "OK", quotaLeft }
   }
 
-  console.log("❌ [checkApplyPermission] Can apply: false")
+  console.log("[checkApplyPermission] Can apply: false")
   return {
     canApply: false,
     reason: "You have used up your cv applying limit for this month. Please upgrade your plan.",
@@ -196,9 +194,9 @@ export async function incrementJobApplication(userId: string, role: Subscription
       { $inc: { "usageStats.jobApplications": 1 } }
     )
 
-    console.log(`✅ Incremented jobApplications for user ${userId} (${role})`)
+    console.log(`Incremented jobApplications for user ${userId} (${role})`)
   } catch (err) {
-    console.error(`❌ Failed to increment jobApplications for user ${userId} (${role}):`, err)
+    console.error(`Failed to increment jobApplications for user ${userId} (${role}):`, err)
   }
 }
 
@@ -253,7 +251,7 @@ export function resetQuota(subscription: ISubscription): void {
     cvCreated: 0,
     jobApplications: 0,
   }
-  console.log(`🔄 Quota reset for subscription ${subscription._id}`)
+  console.log(`Quota reset for subscription ${subscription._id}`)
 }
 
 export function getPlanApplyLimit(plan: SubscriptionPlan): number {
@@ -287,13 +285,13 @@ export function getPlanCVLimit(plan: SubscriptionPlan): number {
 export function getPlanJobLimit(plan: SubscriptionPlan): number {
   switch (plan) {
     case SubscriptionPlan.FREE:
-      return 5
+      return 3
     case SubscriptionPlan.BASIC:
-      return 20
+      return 5
     case SubscriptionPlan.PREMIUM:
       return Infinity
     default:
-      return 5
+      return 3
   }
 }
 

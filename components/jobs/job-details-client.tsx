@@ -57,7 +57,7 @@ export default function JobDetailsClient({ id }: JobDetailsClientProps) {
     <main className="flex flex-col min-h-screen">
       {/* Job Posted Time */}
       <div className="container mx-auto px-4 md:px-6 py-4">
-        <div className="flex justify-between items-center">
+        {/* <div className="flex justify-between items-center">
           <span className="text-sm text-gray-500">
             Posted {(job.postedDays || 0)} day{job.postedDays !== 1 ? "s" : ""} ago
           </span>
@@ -65,7 +65,7 @@ export default function JobDetailsClient({ id }: JobDetailsClientProps) {
             <Bookmark className="h-4 w-4" />
             <span className="sr-only">Save job</span>
           </Button>
-        </div>
+        </div> */}
       </div>
 
       {/* Job Header */}

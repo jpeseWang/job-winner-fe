@@ -132,9 +132,9 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
         if (!res.ok) throw new Error(`HTTP error ${res.status}`)
         const data = await res.json()
         setSubscription(data)
-        console.log("📦 [JobApplicationForm] Subscription:", data)
+        console.log("[JobApplicationForm] Subscription:", data)
       } catch (error) {
-        console.error("❌ Failed to fetch subscription:", error)
+        console.error("Failed to fetch subscription:", error)
         toast({
           title: "Subscription Error",
           description: "Could not load subscription details.",
